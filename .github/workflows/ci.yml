@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-bookworm
+        env:
+          POSTGRES_DB: pinaks
+          POSTGRES_USER: pinaks
+          POSTGRES_PASSWORD: pinaks
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pinaks -d pinaks"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://pinaks:pinaks@localhost:5432/pinaks
+      DJANGO_SETTINGS_MODULE: pinaks.settings.test
+      DJANGO_SECRET_KEY: ci-only-not-a-secret
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.11.12"
+          enable-cache: true
+      - run: uv sync --frozen --all-packages --all-groups
+      - run: uv run ruff check backend
+      - run: uv run ruff format --check backend
+      - run: uv run mypy backend/src backend/tests
+      - run: >-
+          uv run pytest backend
+          --cov=pinaks
+          --cov-report=term-missing
+          --cov-fail-under=80
+          --cov-config=backend/pyproject.toml
+      - run: uv run python backend/manage.py check --settings=pinaks.settings.test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.5.1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @pinaks/web lint
+      - run: pnpm --filter @pinaks/web format:check
+      - run: pnpm --filter @pinaks/web typecheck
+      - run: pnpm --filter @pinaks/web test --coverage
+      - run: pnpm --filter @pinaks/web build
