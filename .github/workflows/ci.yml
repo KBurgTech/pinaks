@@ -35,7 +35,7 @@ jobs:
       DJANGO_SETTINGS_MODULE: pinaks.settings.test
       DJANGO_SECRET_KEY: ci-only-not-a-secret
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           version: "0.11.12"
@@ -58,7 +58,7 @@ jobs:
     name: Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 12.5.1
