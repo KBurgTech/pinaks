@@ -71,9 +71,18 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "pinaks.api.pagination.StandardPageNumberPagination",
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "EXCEPTION_HANDLER": "pinaks.api.exceptions.api_exception_handler",
+    "ORDERING_PARAM": "ordering",
+    "PAGE_SIZE": 50,
+    "SEARCH_PARAM": "search",
 }
 
 SPECTACULAR_SETTINGS = {
