@@ -1,0 +1,74 @@
+[project]
+name = "pinaks-backend"
+version = "0.1.0"
+description = "Backend scaffold for Pinaks"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "dj-database-url>=3.0,<4",
+    "django>=6.1,<6.2",
+    "django-allauth>=65,<66",
+    "djangorestframework>=3.16,<4",
+    "drf-spectacular>=0.28,<0.29",
+    "gunicorn>=23,<24",
+    "psycopg[binary]>=3.2,<4",
+    "weasyprint>=67,<68",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs[compatible-mypy]>=5.2,<6",
+    "mypy>=1.18,<2",
+    "pytest>=8.4,<9",
+    "pytest-cov>=7,<8",
+    "pytest-django>=4.11,<5",
+    "ruff>=0.13,<0.14",
+]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pinaks"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "pinaks.settings.test"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = ["--strict-config", "--strict-markers"]
+
+[tool.coverage.run]
+branch = true
+source = ["pinaks"]
+omit = [
+    "*/asgi.py",
+    "*/wsgi.py",
+    "*/settings/development.py",
+    "*/settings/production.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pinaks"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+plugins = ["mypy_django_plugin.main"]
+mypy_path = "backend/src"
+
+[tool.django-stubs]
+django_settings_module = "pinaks.settings.test"
