@@ -7,9 +7,12 @@ from rest_framework.reverse import reverse
 
 from pinaks.api.serializers import (
     ApiRootSerializer,
+    CapabilitiesSerializer,
     ErrorEnvelopeSerializer,
     ProbeSerializer,
 )
+from pinaks.apps.accounts.capabilities import FEATURE_FLAGS, ROLE_CAPABILITIES
+from pinaks.apps.accounts.models import User, UserRole
 
 
 @extend_schema(
@@ -27,6 +30,7 @@ def api_root(request: Request) -> Response:
     """Return discoverable links for the versioned product API."""
     return Response(
         {
+            "capabilities": reverse("api-v1:capabilities", request=request),
             "probe": reverse("api-v1:probe", request=request),
             "schema": reverse("api-v1:schema", request=request),
         }
@@ -39,3 +43,19 @@ def api_root(request: Request) -> Response:
 def probe(_request: Request) -> Response:
     """Confirm that the API process can serve requests without dependency checks."""
     return Response({"status": "ok", "checks": []})
+
+
+@extend_schema(operation_id="capabilities", responses={200: CapabilitiesSerializer})
+@api_view(["GET"])
+def capabilities(request: Request) -> Response:
+    """Return backend-authoritative role capabilities and installed feature flags."""
+    user = request.user
+    assert isinstance(user, User)
+    role = UserRole(user.role)
+    return Response(
+        {
+            "role": role.value,
+            "capabilities": ROLE_CAPABILITIES[role],
+            "features": FEATURE_FLAGS,
+        }
+    )

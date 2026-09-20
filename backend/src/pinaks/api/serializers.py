@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 
 class ApiRootSerializer(serializers.Serializer[dict[str, str]]):
+    capabilities = serializers.URLField()
     probe = serializers.URLField()
     schema = serializers.URLField()
 
@@ -9,6 +10,12 @@ class ApiRootSerializer(serializers.Serializer[dict[str, str]]):
 class ProbeSerializer(serializers.Serializer[dict[str, object]]):
     status = serializers.CharField()
     checks = serializers.ListField(child=serializers.CharField())
+
+
+class CapabilitiesSerializer(serializers.Serializer[dict[str, object]]):
+    role = serializers.ChoiceField(choices=("admin", "company_member", "read_only"))
+    capabilities = serializers.DictField(child=serializers.BooleanField())
+    features = serializers.DictField(child=serializers.BooleanField())
 
 
 class ErrorItemSerializer(serializers.Serializer[dict[str, str]]):

@@ -38,6 +38,32 @@
                 }
             }
         },
+        "/api/v1/capabilities/": {
+            "get": {
+                "operationId": "capabilities",
+                "description": "Return backend-authoritative role capabilities and installed feature flags.",
+                "tags": [
+                    "capabilities"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Capabilities"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -71,6 +97,10 @@
             "ApiRoot": {
                 "type": "object",
                 "properties": {
+                    "capabilities": {
+                        "type": "string",
+                        "format": "uri"
+                    },
                     "probe": {
                         "type": "string",
                         "format": "uri"
@@ -81,8 +111,34 @@
                     }
                 },
                 "required": [
+                    "capabilities",
                     "probe",
                     "schema"
+                ]
+            },
+            "Capabilities": {
+                "type": "object",
+                "properties": {
+                    "role": {
+                        "$ref": "#/components/schemas/RoleEnum"
+                    },
+                    "capabilities": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    },
+                    "features": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "required": [
+                    "capabilities",
+                    "features",
+                    "role"
                 ]
             },
             "ErrorBody": {
@@ -153,6 +209,15 @@
                     "checks",
                     "status"
                 ]
+            },
+            "RoleEnum": {
+                "enum": [
+                    "admin",
+                    "company_member",
+                    "read_only"
+                ],
+                "type": "string",
+                "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
             }
         },
         "securitySchemes": {
