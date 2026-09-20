@@ -1,0 +1,231 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Pinaks API",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/v1/": {
+            "get": {
+                "operationId": "api_root",
+                "description": "Return discoverable links for the versioned product API.",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiRoot"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Authentication is required."
+                    }
+                }
+            }
+        },
+        "/api/v1/capabilities/": {
+            "get": {
+                "operationId": "capabilities",
+                "description": "Return backend-authoritative role capabilities and installed feature flags.",
+                "tags": [
+                    "capabilities"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Capabilities"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/probe/": {
+            "get": {
+                "operationId": "probe",
+                "description": "Confirm that the API process can serve requests without dependency checks.",
+                "tags": [
+                    "probe"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Probe"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiRoot": {
+                "type": "object",
+                "properties": {
+                    "capabilities": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "probe": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "schema": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": [
+                    "capabilities",
+                    "probe",
+                    "schema"
+                ]
+            },
+            "Capabilities": {
+                "type": "object",
+                "properties": {
+                    "role": {
+                        "$ref": "#/components/schemas/RoleEnum"
+                    },
+                    "capabilities": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    },
+                    "features": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "required": [
+                    "capabilities",
+                    "features",
+                    "role"
+                ]
+            },
+            "ErrorBody": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "fields": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/ErrorItem"
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "code",
+                    "fields",
+                    "message"
+                ]
+            },
+            "ErrorEnvelope": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                },
+                "required": [
+                    "error"
+                ]
+            },
+            "ErrorItem": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "message"
+                ]
+            },
+            "Probe": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "checks": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "checks",
+                    "status"
+                ]
+            },
+            "RoleEnum": {
+                "enum": [
+                    "admin",
+                    "company_member",
+                    "read_only"
+                ],
+                "type": "string",
+                "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "sessionid"
+            }
+        }
+    }
+}

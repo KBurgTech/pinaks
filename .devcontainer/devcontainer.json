@@ -5,18 +5,16 @@
   "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "24",
-      "pnpmVersion": "12.5.1"
-    },
-    "ghcr.io/astral-sh/uv-dev-container-feature:0": {
-      "version": "0.11.12"
+      "pnpmVersion": "12.5.1",
+      "nodeGypDependencies": false
     }
   },
   "containerEnv": {
     "UV_LINK_MODE": "copy"
   },
-  "postCreateCommand": "uv sync --all-packages --all-groups && corepack pnpm install --frozen-lockfile",
+  "postCreateCommand": "uv sync --frozen --all-packages --all-groups && pnpm install --frozen-lockfile",
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {
