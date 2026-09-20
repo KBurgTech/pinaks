@@ -39,7 +39,9 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           version: "0.11.12"
+          python-version: "3.14"
           enable-cache: true
+          cache-python: true
       - run: uv sync --frozen --all-packages --all-groups
       - run: uv run ruff check backend
       - run: uv run ruff format --check backend
