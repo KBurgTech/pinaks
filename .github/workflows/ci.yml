@@ -67,6 +67,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @pinaks/web api:check
       - run: pnpm --filter @pinaks/web lint
       - run: pnpm --filter @pinaks/web format:check
       - run: pnpm --filter @pinaks/web typecheck
