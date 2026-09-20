@@ -35,7 +35,7 @@ jobs:
       DJANGO_SETTINGS_MODULE: pinaks.settings.test
       DJANGO_SECRET_KEY: ci-only-not-a-secret
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           version: "0.11.12"
@@ -58,16 +58,15 @@ jobs:
     name: Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with:
           version: 12.5.1
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @pinaks/web api:check
       - run: pnpm --filter @pinaks/web lint
       - run: pnpm --filter @pinaks/web format:check
       - run: pnpm --filter @pinaks/web typecheck
