@@ -78,14 +78,18 @@ class SubmissionError extends Error {
   }
 }
 
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
 function normalizeErrorFields(value: unknown): ErrorFields {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+  if (typeof value !== "object" || value === null || isUnknownArray(value)) {
     return {};
   }
 
   const fields: Record<string, ErrorItem[]> = {};
   for (const [field, messages] of Object.entries(value)) {
-    if (!Array.isArray(messages)) {
+    if (!isUnknownArray(messages)) {
       continue;
     }
     const validMessages = messages.filter(

@@ -154,7 +154,7 @@ describe("application shell", () => {
         time_tracking: false,
       },
     };
-    get.mockImplementation(async (path) => {
+    get.mockImplementation((path) => {
       if (path === "/api/v1/capabilities/") {
         return {
           data: {
@@ -188,11 +188,10 @@ describe("application shell", () => {
     fireEvent.change(legalName, { target: { value: "Neue GmbH" } });
     fireEvent.click(screen.getByRole("button", { name: "Save settings" }));
 
-    await waitFor(() => {
-      expect(put).toHaveBeenCalledWith("/api/v1/configuration/company/", {
-        body: expect.objectContaining({ legal_name: "Neue GmbH" }),
-      });
-    });
+    await waitFor(() => expect(put).toHaveBeenCalledOnce());
+    const [path, options] = put.mock.calls[0] ?? [];
+    expect(path).toBe("/api/v1/configuration/company/");
+    expect(options?.body.legal_name).toBe("Neue GmbH");
     expect(await screen.findByText("Settings saved.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Deutsch" }));
