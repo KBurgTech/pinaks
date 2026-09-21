@@ -1,1 +1,1 @@
-"""Audit boundary."""
+"""Append-only security and business audit evidence."""
