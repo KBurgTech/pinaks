@@ -20,6 +20,10 @@ class UserQuerySet(models.QuerySet["User"]):
         return super().delete()
 
     def update(self, **kwargs: object) -> int:
+        if {"role", "is_active"}.intersection(kwargs):
+            raise ValueError(
+                "Queryset updates cannot change audited access fields; save each user instead."
+            )
         if self.filter(is_protected=True).exists():
             raise ValueError("A protected administrator cannot be changed or deactivated.")
         return super().update(**kwargs)
@@ -68,6 +72,13 @@ class User(AbstractUser):
 
     # Django's model persistence hook is an intentionally framework-owned dynamic boundary.
     def save(self, *args: Any, **kwargs: Any) -> None:
+        audit_actor = kwargs.pop("audit_actor", None)
+        audit_correlation_id = kwargs.pop("audit_correlation_id", None)
+        previous_access = (
+            type(self).objects.filter(pk=self.pk).values("role", "is_active").first()
+            if self.pk
+            else None
+        )
         was_protected = bool(
             self.pk and type(self).objects.filter(pk=self.pk, is_protected=True).exists()
         )
@@ -80,6 +91,30 @@ class User(AbstractUser):
         ):
             raise ValueError("A protected administrator cannot be changed or deactivated.")
         super().save(*args, **kwargs)
+        if previous_access is not None:
+            from pinaks.apps.audit.services import record_event
+
+            if previous_access["role"] != self.role:
+                record_event(
+                    actor=audit_actor,
+                    action_code="account.role_changed",
+                    target_type="accounts.user",
+                    target_identifier=str(self.pk),
+                    correlation_id=audit_correlation_id,
+                    metadata={"old_role": previous_access["role"], "new_role": self.role},
+                )
+            if previous_access["is_active"] != self.is_active:
+                record_event(
+                    actor=audit_actor,
+                    action_code="account.activation_changed",
+                    target_type="accounts.user",
+                    target_identifier=str(self.pk),
+                    correlation_id=audit_correlation_id,
+                    metadata={
+                        "was_active": previous_access["is_active"],
+                        "is_active": self.is_active,
+                    },
+                )
 
     def delete(
         self, using: str | None = None, keep_parents: bool = False
