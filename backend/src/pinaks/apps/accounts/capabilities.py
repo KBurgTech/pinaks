@@ -34,9 +34,3 @@ ROLE_CAPABILITIES: Final[dict[UserRole, CapabilityValues]] = {
         "administration": False,
     },
 }
-
-FEATURE_FLAGS: Final[dict[str, bool]] = {
-    "payment_requests": False,
-    "reminders": False,
-    "time_tracking": False,
-}

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CompanyProfileForm } from "@/configuration/company-profile-form";
 import { setUiLanguage } from "@/i18n";
 
 import type { components } from "@/api/generated/schema";
@@ -101,6 +102,21 @@ function Shell() {
                 <a href="/app/invoices/new">{t("newInvoice")}</a>
               </li>
             )}
+            {capabilities.data.features.payment_requests && (
+              <li>
+                <a href="/app/payment-requests/">{t("paymentRequests")}</a>
+              </li>
+            )}
+            {capabilities.data.features.reminders && (
+              <li>
+                <a href="/app/reminders/">{t("reminders")}</a>
+              </li>
+            )}
+            {capabilities.data.features.time_tracking && (
+              <li>
+                <a href="/app/time-tracking/">{t("timeTracking")}</a>
+              </li>
+            )}
             {canAdminister && (
               <li>
                 <a href="/app/settings/">{t("settings")}</a>
@@ -114,8 +130,14 @@ function Shell() {
           </ul>
         </nav>
         <main>
-          <h1 className="text-3xl font-semibold tracking-tight">{t("workspaceHeading")}</h1>
-          <p className="mt-2 text-neutral-600">{t("workspaceDescription")}</p>
+          {canAdminister && window.location.pathname === "/app/settings/" ? (
+            <CompanyProfileForm />
+          ) : (
+            <>
+              <h1 className="text-3xl font-semibold tracking-tight">{t("workspaceHeading")}</h1>
+              <p className="mt-2 text-neutral-600">{t("workspaceDescription")}</p>
+            </>
+          )}
         </main>
       </div>
     </div>

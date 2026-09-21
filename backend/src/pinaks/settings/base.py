@@ -11,6 +11,7 @@ ALLOWED_HOSTS: list[str] = []
 INSTALLED_APPS = [
     "pinaks.apps.accounts",
     "pinaks.apps.audit",
+    "pinaks.apps.configuration",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

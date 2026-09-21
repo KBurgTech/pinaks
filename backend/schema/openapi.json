@@ -64,6 +64,186 @@
                 }
             }
         },
+        "/api/v1/configuration/company/": {
+            "get": {
+                "operationId": "company_profile_retrieve",
+                "tags": [
+                    "configuration"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CompanyProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "company_profile_replace",
+                "tags": [
+                    "configuration"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompanyProfile"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompanyProfile"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompanyProfile"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CompanyProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CompanyProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "company_profile_update",
+                "tags": [
+                    "configuration"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CompanyProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -141,6 +321,159 @@
                     "role"
                 ]
             },
+            "CompanyProfile": {
+                "type": "object",
+                "properties": {
+                    "legal_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "tax_number": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "vat_identifier": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "company_identifier": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "bank_account_holder": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "iban": {
+                        "type": "string",
+                        "maxLength": 34
+                    },
+                    "bic": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "payment_instructions": {
+                        "type": "string"
+                    },
+                    "default_currency": {
+                        "$ref": "#/components/schemas/DefaultCurrencyEnum"
+                    },
+                    "default_locale": {
+                        "$ref": "#/components/schemas/DefaultLocaleEnum"
+                    },
+                    "default_ui_language": {
+                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                    },
+                    "default_document_language": {
+                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                    },
+                    "invoice_number_prefix": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "invoice_number_next": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "invoice_number_padding": {
+                        "type": "integer",
+                        "maximum": 12,
+                        "minimum": 1
+                    },
+                    "invoice_number_reset": {
+                        "$ref": "#/components/schemas/InvoiceNumberResetEnum"
+                    },
+                    "features": {
+                        "$ref": "#/components/schemas/FeatureFlags"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "bank_account_holder",
+                    "bic",
+                    "city",
+                    "company_identifier",
+                    "country_code",
+                    "default_currency",
+                    "default_document_language",
+                    "default_locale",
+                    "default_ui_language",
+                    "email",
+                    "features",
+                    "iban",
+                    "invoice_number_next",
+                    "invoice_number_padding",
+                    "invoice_number_prefix",
+                    "invoice_number_reset",
+                    "legal_name",
+                    "payment_instructions",
+                    "phone",
+                    "postal_code",
+                    "tax_number",
+                    "vat_identifier"
+                ]
+            },
+            "DefaultCurrencyEnum": {
+                "enum": [
+                    "EUR"
+                ],
+                "type": "string",
+                "description": "* `EUR` - EUR"
+            },
+            "DefaultDocumentLanguageEnum": {
+                "enum": [
+                    "en",
+                    "de"
+                ],
+                "type": "string",
+                "description": "* `en` - en\n* `de` - de"
+            },
+            "DefaultLocaleEnum": {
+                "enum": [
+                    "en-DE",
+                    "de-DE"
+                ],
+                "type": "string",
+                "description": "* `en-DE` - en-DE\n* `de-DE` - de-DE"
+            },
+            "DefaultUiLanguageEnum": {
+                "enum": [
+                    "en",
+                    "de"
+                ],
+                "type": "string",
+                "description": "* `en` - en\n* `de` - de"
+            },
             "ErrorBody": {
                 "type": "object",
                 "properties": {
@@ -191,6 +524,129 @@
                     "code",
                     "message"
                 ]
+            },
+            "FeatureFlags": {
+                "type": "object",
+                "properties": {
+                    "payment_requests": {
+                        "type": "boolean"
+                    },
+                    "reminders": {
+                        "type": "boolean"
+                    },
+                    "time_tracking": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "payment_requests",
+                    "reminders",
+                    "time_tracking"
+                ]
+            },
+            "InvoiceNumberResetEnum": {
+                "enum": [
+                    "never",
+                    "annual"
+                ],
+                "type": "string",
+                "description": "* `never` - never\n* `annual` - annual"
+            },
+            "PatchedCompanyProfile": {
+                "type": "object",
+                "properties": {
+                    "legal_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "tax_number": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "vat_identifier": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "company_identifier": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "bank_account_holder": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "iban": {
+                        "type": "string",
+                        "maxLength": 34
+                    },
+                    "bic": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "payment_instructions": {
+                        "type": "string"
+                    },
+                    "default_currency": {
+                        "$ref": "#/components/schemas/DefaultCurrencyEnum"
+                    },
+                    "default_locale": {
+                        "$ref": "#/components/schemas/DefaultLocaleEnum"
+                    },
+                    "default_ui_language": {
+                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                    },
+                    "default_document_language": {
+                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                    },
+                    "invoice_number_prefix": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "invoice_number_next": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "invoice_number_padding": {
+                        "type": "integer",
+                        "maximum": 12,
+                        "minimum": 1
+                    },
+                    "invoice_number_reset": {
+                        "$ref": "#/components/schemas/InvoiceNumberResetEnum"
+                    },
+                    "features": {
+                        "$ref": "#/components/schemas/FeatureFlags"
+                    }
+                }
             },
             "Probe": {
                 "type": "object",

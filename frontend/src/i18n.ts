@@ -17,6 +17,49 @@ export const resources = {
       invoices: "Invoices",
       newInvoice: "New invoice",
       settings: "Settings",
+      paymentRequests: "Payment requests",
+      reminders: "Reminders",
+      timeTracking: "Time tracking",
+      company: {
+        heading: "Company settings",
+        description: "Manage the company details used for future drafts and documents.",
+        identity: "Company identity and contact",
+        legalName: "Legal name",
+        companyIdentifier: "Company identifier",
+        addressLine1: "Address line 1",
+        addressLine2: "Address line 2",
+        postalCode: "Postal code",
+        city: "City",
+        countryCode: "Country code",
+        email: "Email",
+        phone: "Phone",
+        taxNumber: "Tax number",
+        vatIdentifier: "VAT identifier",
+        payment: "Payment details",
+        accountHolder: "Account holder",
+        iban: "IBAN",
+        bic: "BIC",
+        paymentInstructions: "Payment instructions",
+        defaults: "Language and currency defaults",
+        currency: "Currency",
+        locale: "Locale",
+        uiLanguage: "Default UI language",
+        documentLanguage: "Default document language",
+        numbering: "Invoice numbering",
+        numberPrefix: "Number prefix",
+        nextNumber: "Next number",
+        numberPadding: "Minimum digits",
+        numberReset: "Reset sequence",
+        annual: "Annually",
+        never: "Never",
+        features: "Features",
+        save: "Save settings",
+        saved: "Settings saved.",
+        loadError: "Company settings could not be loaded.",
+        saveError: "Company settings could not be saved.",
+        requiredLegalName: "Enter a legal name.",
+        invalidField: "Check this value.",
+      },
       users: "Users",
       switchToGerman: "Deutsch",
       switchToEnglish: "English",
@@ -37,6 +80,49 @@ export const resources = {
       invoices: "Rechnungen",
       newInvoice: "Neue Rechnung",
       settings: "Einstellungen",
+      paymentRequests: "Zahlungsanforderungen",
+      reminders: "Mahnungen",
+      timeTracking: "Zeiterfassung",
+      company: {
+        heading: "Unternehmenseinstellungen",
+        description: "Verwalten Sie die Firmendaten für künftige Entwürfe und Dokumente.",
+        identity: "Unternehmensidentität und Kontakt",
+        legalName: "Rechtlicher Name",
+        companyIdentifier: "Unternehmenskennung",
+        addressLine1: "Adresszeile 1",
+        addressLine2: "Adresszeile 2",
+        postalCode: "Postleitzahl",
+        city: "Ort",
+        countryCode: "Ländercode",
+        email: "E-Mail",
+        phone: "Telefon",
+        taxNumber: "Steuernummer",
+        vatIdentifier: "USt-IdNr.",
+        payment: "Zahlungsdaten",
+        accountHolder: "Kontoinhaber",
+        iban: "IBAN",
+        bic: "BIC",
+        paymentInstructions: "Zahlungshinweise",
+        defaults: "Sprach- und Währungsvorgaben",
+        currency: "Währung",
+        locale: "Gebietsschema",
+        uiLanguage: "Standardsprache der Oberfläche",
+        documentLanguage: "Standardsprache der Dokumente",
+        numbering: "Rechnungsnummerierung",
+        numberPrefix: "Nummernpräfix",
+        nextNumber: "Nächste Nummer",
+        numberPadding: "Mindeststellen",
+        numberReset: "Nummernfolge zurücksetzen",
+        annual: "Jährlich",
+        never: "Nie",
+        features: "Funktionen",
+        save: "Einstellungen speichern",
+        saved: "Einstellungen gespeichert.",
+        loadError: "Die Unternehmenseinstellungen konnten nicht geladen werden.",
+        saveError: "Die Unternehmenseinstellungen konnten nicht gespeichert werden.",
+        requiredLegalName: "Geben Sie einen rechtlichen Namen ein.",
+        invalidField: "Prüfen Sie diesen Wert.",
+      },
       users: "Benutzer",
       switchToGerman: "Deutsch",
       switchToEnglish: "English",
@@ -46,13 +132,24 @@ export const resources = {
   },
 } as const;
 
+function isTranslationRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export function assertCompleteTranslations(
-  reference: Readonly<Record<string, string>>,
-  candidate: Readonly<Record<string, string>>,
+  reference: Readonly<Record<string, unknown>>,
+  candidate: Readonly<Record<string, unknown>>,
+  prefix = "",
 ): void {
-  const missingKeys = Object.keys(reference).filter((key) => !(key in candidate));
-  if (missingKeys.length > 0) {
-    throw new Error(`Missing translation keys: ${missingKeys.join(", ")}`);
+  for (const [key, referenceValue] of Object.entries(reference)) {
+    const path = prefix === "" ? key : `${prefix}.${key}`;
+    if (!(key in candidate)) {
+      throw new Error(`Missing translation key: ${path}`);
+    }
+    const candidateValue = candidate[key];
+    if (isTranslationRecord(referenceValue) && isTranslationRecord(candidateValue)) {
+      assertCompleteTranslations(referenceValue, candidateValue, path);
+    }
   }
 }
 

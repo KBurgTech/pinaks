@@ -38,6 +38,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/configuration/company/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["company_profile_retrieve"];
+        readonly put: operations["company_profile_replace"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["company_profile_update"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/probe/": {
         readonly parameters: {
             readonly query?: never;
@@ -76,6 +92,56 @@ export interface components {
                 readonly [key: string]: boolean;
             };
         };
+        readonly CompanyProfile: {
+            readonly legal_name: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly tax_number: string;
+            readonly vat_identifier: string;
+            readonly company_identifier: string;
+            readonly bank_account_holder: string;
+            readonly iban: string;
+            readonly bic: string;
+            readonly payment_instructions: string;
+            readonly default_currency: components["schemas"]["DefaultCurrencyEnum"];
+            readonly default_locale: components["schemas"]["DefaultLocaleEnum"];
+            readonly default_ui_language: components["schemas"]["DefaultUiLanguageEnum"];
+            readonly default_document_language: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly invoice_number_prefix: string;
+            readonly invoice_number_next: number;
+            readonly invoice_number_padding: number;
+            readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
+            readonly features: components["schemas"]["FeatureFlags"];
+        };
+        /**
+         * @description * `EUR` - EUR
+         * @enum {string}
+         */
+        readonly DefaultCurrencyEnum: "EUR";
+        /**
+         * @description * `en` - en
+         *     * `de` - de
+         * @enum {string}
+         */
+        readonly DefaultDocumentLanguageEnum: "en" | "de";
+        /**
+         * @description * `en-DE` - en-DE
+         *     * `de-DE` - de-DE
+         * @enum {string}
+         */
+        readonly DefaultLocaleEnum: "en-DE" | "de-DE";
+        /**
+         * @description * `en` - en
+         *     * `de` - de
+         * @enum {string}
+         */
+        readonly DefaultUiLanguageEnum: "en" | "de";
         readonly ErrorBody: {
             readonly code: string;
             readonly message: string;
@@ -89,6 +155,44 @@ export interface components {
         readonly ErrorItem: {
             readonly code: string;
             readonly message: string;
+        };
+        readonly FeatureFlags: {
+            readonly payment_requests: boolean;
+            readonly reminders: boolean;
+            readonly time_tracking: boolean;
+        };
+        /**
+         * @description * `never` - never
+         *     * `annual` - annual
+         * @enum {string}
+         */
+        readonly InvoiceNumberResetEnum: "never" | "annual";
+        readonly PatchedCompanyProfile: {
+            readonly legal_name?: string;
+            readonly address_line_1?: string;
+            readonly address_line_2?: string;
+            readonly postal_code?: string;
+            readonly city?: string;
+            readonly country_code?: string;
+            /** Format: email */
+            readonly email?: string;
+            readonly phone?: string;
+            readonly tax_number?: string;
+            readonly vat_identifier?: string;
+            readonly company_identifier?: string;
+            readonly bank_account_holder?: string;
+            readonly iban?: string;
+            readonly bic?: string;
+            readonly payment_instructions?: string;
+            readonly default_currency?: components["schemas"]["DefaultCurrencyEnum"];
+            readonly default_locale?: components["schemas"]["DefaultLocaleEnum"];
+            readonly default_ui_language?: components["schemas"]["DefaultUiLanguageEnum"];
+            readonly default_document_language?: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly invoice_number_prefix?: string;
+            readonly invoice_number_next?: number;
+            readonly invoice_number_padding?: number;
+            readonly invoice_number_reset?: components["schemas"]["InvoiceNumberResetEnum"];
+            readonly features?: components["schemas"]["FeatureFlags"];
         };
         readonly Probe: {
             readonly status: string;
@@ -153,6 +257,131 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["Capabilities"];
+                };
+            };
+        };
+    };
+    readonly company_profile_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CompanyProfile"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly company_profile_replace: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CompanyProfile"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CompanyProfile"];
+                readonly "multipart/form-data": components["schemas"]["CompanyProfile"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CompanyProfile"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CompanyProfile"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly company_profile_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedCompanyProfile"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCompanyProfile"];
+                readonly "multipart/form-data": components["schemas"]["PatchedCompanyProfile"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CompanyProfile"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
