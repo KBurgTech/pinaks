@@ -1,6 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+import { catalogTranslations } from "@/catalog/translations";
+
 export const UI_LANGUAGE_STORAGE_KEY = "pinaks.uiLanguage";
 
 export const resources = {
@@ -158,6 +160,7 @@ export const resources = {
         recipientLoadError: "Billing recipients could not be loaded.",
         recipientSaveError: "The billing recipient could not be saved.",
       },
+      catalogPage: catalogTranslations.en,
       users: "Users",
       switchToGerman: "Deutsch",
       switchToEnglish: "English",
@@ -319,6 +322,7 @@ export const resources = {
         recipientLoadError: "Die Rechnungsempfänger konnten nicht geladen werden.",
         recipientSaveError: "Der Rechnungsempfänger konnte nicht gespeichert werden.",
       },
+      catalogPage: catalogTranslations.de,
       users: "Benutzer",
       switchToGerman: "Deutsch",
       switchToEnglish: "English",
