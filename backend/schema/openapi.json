@@ -76,6 +76,27 @@
                         }
                     },
                     {
+                        "in": "query",
+                        "name": "custom_field",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_operator",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_value",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "ordering",
                         "required": false,
                         "in": "query",
@@ -382,6 +403,52 @@
                         "description": ""
                     },
                     "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/{item_id}/sensitive-fields/": {
+            "get": {
+                "operationId": "catalog_item_sensitive_fields",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "item_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -822,6 +889,239 @@
                 }
             }
         },
+        "/api/v1/custom-fields/": {
+            "get": {
+                "operationId": "custom_field_definition_list",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "target",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "custom-fields"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CustomFieldDefinition"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "custom_field_definition_create",
+                "tags": [
+                    "custom-fields"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomFieldDefinitionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomFieldDefinitionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomFieldDefinitionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomFieldDefinition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/custom-fields/{field_id}/": {
+            "get": {
+                "operationId": "custom_field_definition_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "field_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "custom-fields"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomFieldDefinition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "custom_field_definition_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "field_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "custom-fields"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomFieldDefinitionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomFieldDefinitionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomFieldDefinitionRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomFieldDefinition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "custom_field_definition_retire",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "field_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "custom-fields"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Definition retired."
+                    }
+                }
+            }
+        },
         "/api/v1/customers/": {
             "get": {
                 "operationId": "customer_list",
@@ -831,6 +1131,27 @@
                         "name": "archived",
                         "schema": {
                             "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_field",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_operator",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_value",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
@@ -1436,6 +1757,52 @@
                 }
             }
         },
+        "/api/v1/customers/{customer_id}/sensitive-fields/": {
+            "get": {
+                "operationId": "customer_sensitive_fields",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -1704,7 +2071,8 @@
                     "is_archived": {
                         "type": "boolean",
                         "readOnly": true
-                    }
+                    },
+                    "custom_data": {}
                 },
                 "required": [
                     "code",
@@ -1760,7 +2128,8 @@
                         "type": "integer",
                         "minimum": 1,
                         "writeOnly": true
-                    }
+                    },
+                    "custom_data": {}
                 },
                 "required": [
                     "code",
@@ -2056,6 +2425,137 @@
                     "vat_identifier"
                 ]
             },
+            "CustomFieldDefinition": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "key": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "target": {
+                        "$ref": "#/components/schemas/TargetEnum"
+                    },
+                    "data_type": {
+                        "$ref": "#/components/schemas/DataTypeEnum"
+                    },
+                    "label_en": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "label_de": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "help_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "help_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default_value": {
+                        "nullable": true
+                    },
+                    "choices": {},
+                    "display_order": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "visibility": {
+                        "$ref": "#/components/schemas/VisibilityEnum"
+                    },
+                    "search_mode": {
+                        "$ref": "#/components/schemas/SearchModeEnum"
+                    },
+                    "is_sensitive": {
+                        "type": "boolean"
+                    },
+                    "is_retired": {
+                        "type": "boolean",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "data_type",
+                    "id",
+                    "is_retired",
+                    "key",
+                    "label_de",
+                    "label_en",
+                    "target"
+                ]
+            },
+            "CustomFieldDefinitionRequest": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "target": {
+                        "$ref": "#/components/schemas/TargetEnum"
+                    },
+                    "data_type": {
+                        "$ref": "#/components/schemas/DataTypeEnum"
+                    },
+                    "label_en": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "label_de": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "help_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "help_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default_value": {
+                        "nullable": true
+                    },
+                    "choices": {},
+                    "display_order": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "visibility": {
+                        "$ref": "#/components/schemas/VisibilityEnum"
+                    },
+                    "search_mode": {
+                        "$ref": "#/components/schemas/SearchModeEnum"
+                    },
+                    "is_sensitive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "data_type",
+                    "key",
+                    "label_de",
+                    "label_en",
+                    "target"
+                ]
+            },
             "Customer": {
                 "type": "object",
                 "properties": {
@@ -2106,7 +2606,8 @@
                         "items": {
                             "$ref": "#/components/schemas/CustomerAddress"
                         }
-                    }
+                    },
+                    "custom_data": {}
                 },
                 "required": [
                     "addresses",
@@ -2253,7 +2754,8 @@
                         "items": {
                             "$ref": "#/components/schemas/CustomerAddressRequest"
                         }
-                    }
+                    },
+                    "custom_data": {}
                 },
                 "required": [
                     "addresses",
@@ -2266,6 +2768,19 @@
                     "phone",
                     "preferred_language"
                 ]
+            },
+            "DataTypeEnum": {
+                "enum": [
+                    "text",
+                    "long_text",
+                    "integer",
+                    "decimal",
+                    "boolean",
+                    "date",
+                    "choice"
+                ],
+                "type": "string",
+                "description": "* `text` - text\n* `long_text` - long_text\n* `integer` - integer\n* `decimal` - decimal\n* `boolean` - boolean\n* `date` - date\n* `choice` - choice"
             },
             "DefaultCurrencyEnum": {
                 "enum": [
@@ -2550,7 +3065,8 @@
                         "type": "integer",
                         "minimum": 1,
                         "writeOnly": true
-                    }
+                    },
+                    "custom_data": {}
                 }
             },
             "PatchedCompanyProfileRequest": {
@@ -2651,6 +3167,61 @@
                     }
                 }
             },
+            "PatchedCustomFieldDefinitionRequest": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "target": {
+                        "$ref": "#/components/schemas/TargetEnum"
+                    },
+                    "data_type": {
+                        "$ref": "#/components/schemas/DataTypeEnum"
+                    },
+                    "label_en": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "label_de": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "help_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "help_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "default_value": {
+                        "nullable": true
+                    },
+                    "choices": {},
+                    "display_order": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "visibility": {
+                        "$ref": "#/components/schemas/VisibilityEnum"
+                    },
+                    "search_mode": {
+                        "$ref": "#/components/schemas/SearchModeEnum"
+                    },
+                    "is_sensitive": {
+                        "type": "boolean"
+                    }
+                }
+            },
             "PatchedCustomerRequest": {
                 "type": "object",
                 "properties": {
@@ -2690,7 +3261,8 @@
                         "items": {
                             "$ref": "#/components/schemas/CustomerAddressRequest"
                         }
-                    }
+                    },
+                    "custom_data": {}
                 }
             },
             "PatchedTaxProfileRequest": {
@@ -2786,6 +3358,24 @@
                 ],
                 "type": "string",
                 "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
+            },
+            "SearchModeEnum": {
+                "enum": [
+                    "none",
+                    "exact",
+                    "range",
+                    "text"
+                ],
+                "type": "string",
+                "description": "* `none` - none\n* `exact` - exact\n* `range` - range\n* `text` - text"
+            },
+            "TargetEnum": {
+                "enum": [
+                    "customer",
+                    "catalog_item"
+                ],
+                "type": "string",
+                "description": "* `customer` - customer\n* `catalog_item` - catalog_item"
             },
             "TaxCategoryEnum": {
                 "enum": [
@@ -2957,6 +3547,14 @@
                 ],
                 "type": "string",
                 "description": "* `C62` - C62\n* `HUR` - HUR\n* `DAY` - DAY"
+            },
+            "VisibilityEnum": {
+                "enum": [
+                    "internal",
+                    "document"
+                ],
+                "type": "string",
+                "description": "* `internal` - internal\n* `document` - document"
             }
         },
         "securitySchemes": {

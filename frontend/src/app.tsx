@@ -7,6 +7,7 @@ import { CatalogPage } from "@/catalog/catalog-page";
 import { CompanyProfileForm } from "@/configuration/company-profile-form";
 import { TaxProfileForm } from "@/configuration/tax-profile-form";
 import { CustomerPage } from "@/customers/customer-page";
+import { CustomFieldsAdmin } from "@/custom-fields/custom-fields";
 import { setUiLanguage } from "@/i18n";
 
 import type { components } from "@/api/generated/schema";
@@ -127,6 +128,11 @@ function Shell() {
             )}
             {canAdminister && (
               <li>
+                <a href="/app/custom-fields/">{t("customFields.heading")}</a>
+              </li>
+            )}
+            {canAdminister && (
+              <li>
                 <a href="/app/users/">{t("users")}</a>
               </li>
             )}
@@ -137,6 +143,8 @@ function Shell() {
             <CustomerPage canMutate={canCreateDrafts} />
           ) : window.location.pathname === "/app/catalog/" ? (
             <CatalogPage canMutate={canCreateDrafts} />
+          ) : canAdminister && window.location.pathname === "/app/custom-fields/" ? (
+            <CustomFieldsAdmin />
           ) : canAdminister && window.location.pathname === "/app/settings/" ? (
             <>
               <CompanyProfileForm />

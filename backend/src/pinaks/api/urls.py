@@ -16,6 +16,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("", api_root, name="root"),
     path("capabilities/", capabilities, name="capabilities"),
     path("catalog/", include("pinaks.apps.catalog.urls")),
+    path("custom-fields/", include("pinaks.apps.custom_fields.urls")),
     path("customers/", include("pinaks.apps.customers.urls")),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),
     path(

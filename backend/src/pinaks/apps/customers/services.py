@@ -6,6 +6,7 @@ from django.db.models import Q, QuerySet
 
 from pinaks.apps.accounts.models import User
 from pinaks.apps.audit.services import record_event
+from pinaks.apps.custom_fields.services import validate_custom_data
 from pinaks.apps.customers.models import BillingRecipient, Customer, CustomerAddress
 
 _CUSTOMER_FIELDS = (
@@ -64,6 +65,9 @@ def create_customer(*, values: Mapping[str, object], actor: User, correlation_id
     for field in _CUSTOMER_FIELDS:
         if field in values:
             setattr(customer, field, values[field])
+    customer.custom_data = validate_custom_data(
+        target="customer", values=values.get("custom_data", {}), existing=customer.custom_data
+    )
     customer.full_clean()
     customer.save(force_insert=True)
     _replace_addresses(customer, values.get("addresses", []))
@@ -91,6 +95,9 @@ def update_customer(
     for field in _CUSTOMER_FIELDS:
         if field in values:
             setattr(customer, field, values[field])
+    customer.custom_data = validate_custom_data(
+        target="customer", values=values.get("custom_data", {}), existing=customer.custom_data
+    )
     customer.full_clean()
     customer.save()
     if "addresses" in values:

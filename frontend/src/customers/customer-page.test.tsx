@@ -126,6 +126,26 @@ describe("customer management", () => {
     expect(screen.getByText("English")).toBeInTheDocument();
   });
 
+  it("shows custom-field validation errors from the backend", async () => {
+    page([]);
+    post.mockResolvedValueOnce({
+      error: {
+        error: {
+          code: "validation_error",
+          message: "Request validation failed.",
+          fields: { custom_data: [{ code: "invalid", message: "Unknown field: private_note." }] },
+        },
+      },
+      response: new Response(null, { status: 400 }),
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "New customer" }));
+    fireEvent.change(screen.getByLabelText("Customer number"), { target: { value: "C-1" } });
+    fireEvent.change(screen.getByLabelText("Given name"), { target: { value: "Ada" } });
+    fireEvent.change(screen.getByLabelText("Family name"), { target: { value: "Lovelace" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create customer" }));
+    expect(await screen.findByText("Unknown field: private_note.")).toBeInTheDocument();
+  });
+
   it("creates a customer and maps authoritative backend field errors", async () => {
     page([]);
     post.mockResolvedValueOnce({

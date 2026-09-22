@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import ClassVar
 
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
@@ -56,12 +57,18 @@ class CatalogItem(models.Model):
         on_delete=models.PROTECT,
         related_name="catalog_items",
     )
+    custom_data: models.JSONField[dict[str, object], dict[str, object]] = models.JSONField(
+        default=dict, blank=True
+    )
     is_archived: models.BooleanField[bool, bool] = models.BooleanField(default=False)
     created_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now_add=True)
     modified_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ("code",)
+        indexes: ClassVar[list[models.Index]] = [
+            GinIndex(fields=("custom_data",), name="catalog_custom_data_gin"),
+        ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
                 condition=~Q(description_en=""),

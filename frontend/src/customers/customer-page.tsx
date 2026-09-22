@@ -4,6 +4,7 @@ import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CustomFields } from "@/custom-fields/custom-fields";
 import { DataTable, DestructiveConfirmation, Field, PageHeader, Status } from "@/ui/primitives";
 
 import type { components } from "@/api/generated/schema";
@@ -182,6 +183,14 @@ interface CustomerFormProps {
 
 function CustomerForm({ customer, onCancel, onSaved }: CustomerFormProps) {
   const { t } = useTranslation("shell");
+  const [customData, setCustomData] = useState<Record<string, unknown>>(
+    customer &&
+      typeof customer.custom_data === "object" &&
+      customer.custom_data !== null &&
+      !Array.isArray(customer.custom_data)
+      ? (customer.custom_data as Record<string, unknown>)
+      : {},
+  );
   const {
     formState: { errors, isDirty },
     handleSubmit,
@@ -193,7 +202,11 @@ function CustomerForm({ customer, onCancel, onSaved }: CustomerFormProps) {
   });
   const partyType = useWatch({ control, name: "party_type" });
   const mutation = useMutation({
-    mutationFn: (values: CustomerRequest) => saveCustomer(customer?.id ?? null, values),
+    mutationFn: (values: CustomerRequest) =>
+      saveCustomer(customer?.id ?? null, {
+        ...values,
+        ...(Object.keys(customData).length ? { custom_data: customData } : {}),
+      }),
     onSuccess: onSaved,
     onError(error) {
       if (!(error instanceof SubmissionError)) return;
@@ -322,6 +335,8 @@ function CustomerForm({ customer, onCancel, onSaved }: CustomerFormProps) {
           />
         </Field>
       </fieldset>
+      <CustomFields target="customer" values={customData} onChange={setCustomData} />
+      {errors.custom_data?.message && <p role="alert">{errors.custom_data.message}</p>}
       {mutation.isError && !(mutation.error instanceof SubmissionError) && (
         <p role="alert">{t("customer.saveError")}</p>
       )}

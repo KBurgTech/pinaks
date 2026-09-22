@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from pinaks.api.exceptions import BusinessRuleViolation
 from pinaks.api.serializers import ErrorEnvelopeSerializer
 from pinaks.apps.accounts.models import User
-from pinaks.apps.accounts.permissions import CanMutateDrafts, CanRead
+from pinaks.apps.accounts.permissions import CanAdminister, CanMutateDrafts, CanRead
 from pinaks.apps.audit.services import request_correlation_id
 from pinaks.apps.catalog.models import CatalogItem
 from pinaks.apps.catalog.serializers import CatalogItemSerializer
@@ -22,6 +22,7 @@ from pinaks.apps.catalog.services import (
     search_catalog_items,
     update_catalog_item,
 )
+from pinaks.apps.custom_fields.services import filter_custom_data, sensitive_custom_data
 
 
 class ReadOrMutatePermissionMixin:
@@ -55,6 +56,9 @@ class CatalogItemListView(ReadOrMutatePermissionMixin, GenericAPIView[CatalogIte
             OpenApiParameter("archived", bool),
             OpenApiParameter("page", int),
             OpenApiParameter("page_size", int),
+            OpenApiParameter("custom_field", str),
+            OpenApiParameter("custom_operator", str),
+            OpenApiParameter("custom_value", str),
         ],
         responses={200: CatalogItemSerializer(many=True), 403: ErrorEnvelopeSerializer},
     )
@@ -63,6 +67,18 @@ class CatalogItemListView(ReadOrMutatePermissionMixin, GenericAPIView[CatalogIte
         items = search_catalog_items(
             search=request.query_params.get("search", ""), archived=archived
         )
+        custom_field = request.query_params.get("custom_field")
+        if custom_field:
+            try:
+                items = filter_custom_data(
+                    items,
+                    target="catalog_item",
+                    key=custom_field,
+                    operator=request.query_params.get("custom_operator", "exact"),
+                    value=request.query_params.get("custom_value", ""),
+                )
+            except DjangoValidationError as error:
+                raise _validation_error(error) from error
         page = self.paginate_queryset(items)
         serializer = CatalogItemSerializer(page, many=True)  # type: ignore[arg-type]
         return self.get_paginated_response(serializer.data)
@@ -152,3 +168,25 @@ class CatalogItemDetailView(ReadOrMutatePermissionMixin, APIView):
             correlation_id=request_correlation_id(request),
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SensitiveCatalogItemFieldsView(APIView):
+    permission_classes = (CanAdminister,)
+
+    @extend_schema(
+        operation_id="catalog_item_sensitive_fields",
+        responses={200: dict, 403: ErrorEnvelopeSerializer},
+    )
+    def get(self, request: Request, item_id: int) -> Response:
+        try:
+            instance = CatalogItem.objects.get(pk=item_id)
+        except CatalogItem.DoesNotExist as error:
+            raise NotFound("Record was not found.") from error
+        return Response(
+            sensitive_custom_data(
+                target="catalog_item",
+                instance=instance,
+                actor=_actor(request),
+                correlation_id=request_correlation_id(request),
+            )
+        )

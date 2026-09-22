@@ -5,9 +5,15 @@ from pinaks.apps.customers.views import (
     BillingRecipientListView,
     CustomerDetailView,
     CustomerListView,
+    SensitiveCustomerFieldsView,
 )
 
 urlpatterns: list[URLPattern] = [
+    path(
+        "<int:customer_id>/sensitive-fields/",
+        SensitiveCustomerFieldsView.as_view(),
+        name="customer-sensitive-fields",
+    ),
     path("", CustomerListView.as_view(), name="customer-list"),
     path("<int:customer_id>/", CustomerDetailView.as_view(), name="customer-detail"),
     path(
