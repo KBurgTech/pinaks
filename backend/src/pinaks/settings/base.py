@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     "pinaks.apps.accounts",
     "pinaks.apps.audit",
     "pinaks.apps.configuration",
+    "pinaks.apps.customers",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -118,6 +119,9 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Pinaks API",
     "VERSION": "0.1.0",
+    "ENUM_NAME_OVERRIDES": {
+        "DocumentLanguage": ["en", "de"],
+    },
     "COMPONENT_SPLIT_REQUEST": True,
     "SERVE_INCLUDE_SCHEMA": False,
 }

@@ -1,4 +1,4 @@
-from django.urls import URLPattern, path
+from django.urls import URLPattern, URLResolver, include, path
 from drf_spectacular.views import SpectacularJSONAPIView
 
 from pinaks.api.views import (
@@ -12,9 +12,10 @@ from pinaks.api.views import (
 
 app_name = "api-v1"
 
-urlpatterns: list[URLPattern] = [
+urlpatterns: list[URLPattern | URLResolver] = [
     path("", api_root, name="root"),
     path("capabilities/", capabilities, name="capabilities"),
+    path("customers/", include("pinaks.apps.customers.urls")),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),
     path(
         "configuration/tax-profiles/",

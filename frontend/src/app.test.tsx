@@ -334,13 +334,24 @@ describe("application shell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save tax profile" }));
 
     await waitFor(() => expect(post).toHaveBeenCalledOnce());
-    expect(post.mock.calls[0]?.[0]).toBe("/api/v1/configuration/tax-profiles/");
-    expect(post.mock.calls[0]?.[1]?.body).toMatchObject({
-      code: "medical-exempt",
-      tax_category: "E",
-      rate: "0.00",
-      exemption_wording_de: "Steuerfreie Heilbehandlung",
-    });
+    expect(post.mock.calls[0]).toEqual([
+      "/api/v1/configuration/tax-profiles/",
+      {
+        body: {
+          code: "medical-exempt",
+          name: "Medical care",
+          tax_category: "E",
+          rate: "0.00",
+          exemption_reason_code: "VATEX-EU-132",
+          exemption_wording_en: "Tax exempt medical care",
+          exemption_wording_de: "Steuerfreie Heilbehandlung",
+          price_entry_policy: "net",
+          tax_column_policy: "hide",
+          required_seller_identifiers: ["tax_number"],
+          is_default: true,
+        },
+      },
+    ]);
     expect(await screen.findByText("Tax profile saved.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Deutsch" }));
