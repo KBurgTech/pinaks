@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { apiClient } from "@/api/client";
 import { CompanyProfileForm } from "@/configuration/company-profile-form";
 import { TaxProfileForm } from "@/configuration/tax-profile-form";
+import { CustomerPage } from "@/customers/customer-page";
 import { setUiLanguage } from "@/i18n";
 
 import type { components } from "@/api/generated/schema";
@@ -131,7 +132,9 @@ function Shell() {
           </ul>
         </nav>
         <main>
-          {canAdminister && window.location.pathname === "/app/settings/" ? (
+          {window.location.pathname === "/app/customers/" ? (
+            <CustomerPage canMutate={canCreateDrafts} />
+          ) : canAdminister && window.location.pathname === "/app/settings/" ? (
             <>
               <CompanyProfileForm />
               <TaxProfileForm />
