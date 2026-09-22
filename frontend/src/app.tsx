@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CatalogPage } from "@/catalog/catalog-page";
 import { CompanyProfileForm } from "@/configuration/company-profile-form";
 import { TaxProfileForm } from "@/configuration/tax-profile-form";
 import { CustomerPage } from "@/customers/customer-page";
@@ -134,6 +135,8 @@ function Shell() {
         <main>
           {window.location.pathname === "/app/customers/" ? (
             <CustomerPage canMutate={canCreateDrafts} />
+          ) : window.location.pathname === "/app/catalog/" ? (
+            <CatalogPage canMutate={canCreateDrafts} />
           ) : canAdminister && window.location.pathname === "/app/settings/" ? (
             <>
               <CompanyProfileForm />

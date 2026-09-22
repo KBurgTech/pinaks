@@ -82,6 +82,34 @@ describe("application shell", () => {
     expect(screen.getByRole("link", { name: "New invoice" })).toBeInTheDocument();
   });
 
+  it("renders the catalog management page at its application route", async () => {
+    window.history.pushState({}, "", "/app/catalog/");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/capabilities/") {
+        return Promise.resolve({
+          data: {
+            role: "read_only",
+            capabilities: { read: true, draft_mutation: false },
+            features: {},
+          },
+          response: new Response(null, { status: 200 }),
+        });
+      }
+      if (path === "/api/v1/catalog/") {
+        return Promise.resolve({
+          data: { count: 0, next: null, previous: null, results: [] },
+          response: new Response(null, { status: 200 }),
+        });
+      }
+      return Promise.resolve({ data: [], response: new Response(null, { status: 200 }) });
+    });
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Catalog" })).toBeInTheDocument();
+    expect(screen.getByText("Read-only access")).toBeInTheDocument();
+  });
+
   it.each(["company_member", "read_only"] as const)(
     "does not render administration navigation for %s",
     async (role) => {
