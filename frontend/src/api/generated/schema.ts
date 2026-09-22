@@ -86,6 +86,70 @@ export interface paths {
         readonly patch: operations["tax_profile_update"];
         readonly trace?: never;
     };
+    readonly "/api/v1/customers/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["customer_list"];
+        readonly put?: never;
+        readonly post: operations["customer_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/customers/{customer_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["customer_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete: operations["customer_archive"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["customer_update"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/customers/{customer_id}/billing-recipients/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["billing_recipient_list"];
+        readonly put?: never;
+        readonly post: operations["billing_recipient_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/customers/{customer_id}/billing-recipients/{recipient_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["billing_recipient_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["billing_recipient_update"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/probe/": {
         readonly parameters: {
             readonly query?: never;
@@ -115,6 +179,37 @@ export interface components {
             /** Format: uri */
             readonly schema: string;
         };
+        readonly BillingRecipient: {
+            readonly id: number;
+            readonly customer_id: number;
+            readonly party_type: components["schemas"]["PartyTypeEnum"];
+            readonly given_name: string;
+            readonly family_name: string;
+            readonly organization_name: string;
+            readonly display_name: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+        };
+        readonly BillingRecipientRequest: {
+            readonly party_type: components["schemas"]["PartyTypeEnum"];
+            readonly given_name: string;
+            readonly family_name: string;
+            readonly organization_name: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+        };
         readonly Capabilities: {
             readonly role: components["schemas"]["RoleEnum"];
             readonly capabilities: {
@@ -143,8 +238,8 @@ export interface components {
             readonly payment_instructions: string;
             readonly default_currency: components["schemas"]["DefaultCurrencyEnum"];
             readonly default_locale: components["schemas"]["DefaultLocaleEnum"];
-            readonly default_ui_language: components["schemas"]["DefaultUiLanguageEnum"];
-            readonly default_document_language: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly default_ui_language: components["schemas"]["DocumentLanguage"];
+            readonly default_document_language: components["schemas"]["DocumentLanguage"];
             readonly invoice_number_prefix: string;
             readonly invoice_number_next: number;
             readonly invoice_number_padding: number;
@@ -170,25 +265,65 @@ export interface components {
             readonly payment_instructions: string;
             readonly default_currency: components["schemas"]["DefaultCurrencyEnum"];
             readonly default_locale: components["schemas"]["DefaultLocaleEnum"];
-            readonly default_ui_language: components["schemas"]["DefaultUiLanguageEnum"];
-            readonly default_document_language: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly default_ui_language: components["schemas"]["DocumentLanguage"];
+            readonly default_document_language: components["schemas"]["DocumentLanguage"];
             readonly invoice_number_prefix: string;
             readonly invoice_number_next: number;
             readonly invoice_number_padding: number;
             readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features: components["schemas"]["FeatureFlagsRequest"];
         };
+        readonly Customer: {
+            readonly id: number;
+            readonly customer_number: string;
+            readonly party_type: components["schemas"]["PartyTypeEnum"];
+            readonly given_name: string;
+            readonly family_name: string;
+            readonly organization_name: string;
+            readonly display_name: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly preferred_language: components["schemas"]["DocumentLanguage"];
+            readonly is_archived: boolean;
+            readonly addresses: readonly components["schemas"]["CustomerAddress"][];
+        };
+        readonly CustomerAddress: {
+            readonly id: number;
+            readonly label: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+            readonly is_primary: boolean;
+        };
+        readonly CustomerAddressRequest: {
+            readonly label: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+            readonly is_primary: boolean;
+        };
+        readonly CustomerRequest: {
+            readonly customer_number: string;
+            readonly party_type: components["schemas"]["PartyTypeEnum"];
+            readonly given_name: string;
+            readonly family_name: string;
+            readonly organization_name: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly preferred_language: components["schemas"]["DocumentLanguage"];
+            readonly addresses: readonly components["schemas"]["CustomerAddressRequest"][];
+        };
         /**
          * @description * `EUR` - EUR
          * @enum {string}
          */
         readonly DefaultCurrencyEnum: "EUR";
-        /**
-         * @description * `en` - en
-         *     * `de` - de
-         * @enum {string}
-         */
-        readonly DefaultDocumentLanguageEnum: "en" | "de";
         /**
          * @description * `en-DE` - en-DE
          *     * `de-DE` - de-DE
@@ -200,7 +335,7 @@ export interface components {
          *     * `de` - de
          * @enum {string}
          */
-        readonly DefaultUiLanguageEnum: "en" | "de";
+        readonly DocumentLanguage: "en" | "de";
         readonly ErrorBody: {
             readonly code: string;
             readonly message: string;
@@ -231,6 +366,41 @@ export interface components {
          * @enum {string}
          */
         readonly InvoiceNumberResetEnum: "never" | "annual";
+        readonly PaginatedCustomerList: {
+            /** @example 123 */
+            readonly count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            readonly next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            readonly previous?: string | null;
+            readonly results: readonly components["schemas"]["Customer"][];
+        };
+        /**
+         * @description * `person` - person
+         *     * `organization` - organization
+         * @enum {string}
+         */
+        readonly PartyTypeEnum: "person" | "organization";
+        readonly PatchedBillingRecipientRequest: {
+            readonly party_type?: components["schemas"]["PartyTypeEnum"];
+            readonly given_name?: string;
+            readonly family_name?: string;
+            readonly organization_name?: string;
+            /** Format: email */
+            readonly email?: string;
+            readonly phone?: string;
+            readonly address_line_1?: string;
+            readonly address_line_2?: string;
+            readonly postal_code?: string;
+            readonly city?: string;
+            readonly country_code?: string;
+        };
         readonly PatchedCompanyProfileRequest: {
             readonly legal_name?: string;
             readonly address_line_1?: string;
@@ -250,13 +420,25 @@ export interface components {
             readonly payment_instructions?: string;
             readonly default_currency?: components["schemas"]["DefaultCurrencyEnum"];
             readonly default_locale?: components["schemas"]["DefaultLocaleEnum"];
-            readonly default_ui_language?: components["schemas"]["DefaultUiLanguageEnum"];
-            readonly default_document_language?: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly default_ui_language?: components["schemas"]["DocumentLanguage"];
+            readonly default_document_language?: components["schemas"]["DocumentLanguage"];
             readonly invoice_number_prefix?: string;
             readonly invoice_number_next?: number;
             readonly invoice_number_padding?: number;
             readonly invoice_number_reset?: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features?: components["schemas"]["FeatureFlagsRequest"];
+        };
+        readonly PatchedCustomerRequest: {
+            readonly customer_number?: string;
+            readonly party_type?: components["schemas"]["PartyTypeEnum"];
+            readonly given_name?: string;
+            readonly family_name?: string;
+            readonly organization_name?: string;
+            /** Format: email */
+            readonly email?: string;
+            readonly phone?: string;
+            readonly preferred_language?: components["schemas"]["DocumentLanguage"];
+            readonly addresses?: readonly components["schemas"]["CustomerAddressRequest"][];
         };
         readonly PatchedTaxProfileRequest: {
             readonly code?: string;
@@ -656,6 +838,383 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["TaxProfile"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_list: {
+        readonly parameters: {
+            readonly query?: {
+                readonly archived?: boolean;
+                /** @description Which field to use when ordering the results. */
+                readonly ordering?: string;
+                readonly page?: number;
+                readonly page_size?: number;
+                readonly search?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PaginatedCustomerList"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CustomerRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CustomerRequest"];
+                readonly "multipart/form-data": components["schemas"]["CustomerRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Customer"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Customer"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_archive: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Customer archived. */
+            readonly 204: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedCustomerRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCustomerRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedCustomerRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Customer"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly billing_recipient_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["BillingRecipient"][];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly billing_recipient_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["BillingRecipientRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["BillingRecipientRequest"];
+                readonly "multipart/form-data": components["schemas"]["BillingRecipientRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["BillingRecipient"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly billing_recipient_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+                readonly recipient_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["BillingRecipient"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly billing_recipient_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+                readonly recipient_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedBillingRecipientRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedBillingRecipientRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedBillingRecipientRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["BillingRecipient"];
                 };
             };
             readonly 400: {

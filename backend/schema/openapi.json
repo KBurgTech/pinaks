@@ -492,6 +492,620 @@
                 }
             }
         },
+        "/api/v1/customers/": {
+            "get": {
+                "operationId": "customer_list",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedCustomerList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "customer_create",
+                "tags": [
+                    "customers"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer_id}/": {
+            "get": {
+                "operationId": "customer_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "customer_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomerRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomerRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCustomerRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "customer_archive",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Customer archived."
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer_id}/billing-recipients/": {
+            "get": {
+                "operationId": "billing_recipient_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BillingRecipient"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "billing_recipient_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BillingRecipientRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BillingRecipientRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BillingRecipientRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BillingRecipient"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/{customer_id}/billing-recipients/{recipient_id}/": {
+            "get": {
+                "operationId": "billing_recipient_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "recipient_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BillingRecipient"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "billing_recipient_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "recipient_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedBillingRecipientRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedBillingRecipientRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedBillingRecipientRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BillingRecipient"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -542,6 +1156,146 @@
                     "capabilities",
                     "probe",
                     "schema"
+                ]
+            },
+            "BillingRecipient": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "customer_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "city",
+                    "country_code",
+                    "customer_id",
+                    "display_name",
+                    "email",
+                    "family_name",
+                    "given_name",
+                    "id",
+                    "organization_name",
+                    "party_type",
+                    "phone",
+                    "postal_code"
+                ]
+            },
+            "BillingRecipientRequest": {
+                "type": "object",
+                "properties": {
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "city",
+                    "country_code",
+                    "email",
+                    "family_name",
+                    "given_name",
+                    "organization_name",
+                    "party_type",
+                    "phone",
+                    "postal_code"
                 ]
             },
             "Capabilities": {
@@ -639,10 +1393,10 @@
                         "$ref": "#/components/schemas/DefaultLocaleEnum"
                     },
                     "default_ui_language": {
-                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "default_document_language": {
-                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "invoice_number_prefix": {
                         "type": "string",
@@ -763,10 +1517,10 @@
                         "$ref": "#/components/schemas/DefaultLocaleEnum"
                     },
                     "default_ui_language": {
-                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "default_document_language": {
-                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "invoice_number_prefix": {
                         "type": "string",
@@ -815,20 +1569,223 @@
                     "vat_identifier"
                 ]
             },
+            "Customer": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "customer_number": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "preferred_language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "is_archived": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "addresses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomerAddress"
+                        }
+                    }
+                },
+                "required": [
+                    "addresses",
+                    "customer_number",
+                    "display_name",
+                    "email",
+                    "family_name",
+                    "given_name",
+                    "id",
+                    "is_archived",
+                    "organization_name",
+                    "party_type",
+                    "phone",
+                    "preferred_language"
+                ]
+            },
+            "CustomerAddress": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "label": {
+                        "type": "string",
+                        "maxLength": 80
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    },
+                    "is_primary": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "city",
+                    "country_code",
+                    "id",
+                    "is_primary",
+                    "label",
+                    "postal_code"
+                ]
+            },
+            "CustomerAddressRequest": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    },
+                    "is_primary": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "city",
+                    "country_code",
+                    "is_primary",
+                    "label",
+                    "postal_code"
+                ]
+            },
+            "CustomerRequest": {
+                "type": "object",
+                "properties": {
+                    "customer_number": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                    },
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "preferred_language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "addresses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomerAddressRequest"
+                        }
+                    }
+                },
+                "required": [
+                    "addresses",
+                    "customer_number",
+                    "email",
+                    "family_name",
+                    "given_name",
+                    "organization_name",
+                    "party_type",
+                    "phone",
+                    "preferred_language"
+                ]
+            },
             "DefaultCurrencyEnum": {
                 "enum": [
                     "EUR"
                 ],
                 "type": "string",
                 "description": "* `EUR` - EUR"
-            },
-            "DefaultDocumentLanguageEnum": {
-                "enum": [
-                    "en",
-                    "de"
-                ],
-                "type": "string",
-                "description": "* `en` - en\n* `de` - de"
             },
             "DefaultLocaleEnum": {
                 "enum": [
@@ -838,7 +1795,7 @@
                 "type": "string",
                 "description": "* `en-DE` - en-DE\n* `de-DE` - de-DE"
             },
-            "DefaultUiLanguageEnum": {
+            "DocumentLanguage": {
                 "enum": [
                     "en",
                     "de"
@@ -943,6 +1900,95 @@
                 "type": "string",
                 "description": "* `never` - never\n* `annual` - annual"
             },
+            "PaginatedCustomerList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Customer"
+                        }
+                    }
+                }
+            },
+            "PartyTypeEnum": {
+                "enum": [
+                    "person",
+                    "organization"
+                ],
+                "type": "string",
+                "description": "* `person` - person\n* `organization` - organization"
+            },
+            "PatchedBillingRecipientRequest": {
+                "type": "object",
+                "properties": {
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    }
+                }
+            },
             "PatchedCompanyProfileRequest": {
                 "type": "object",
                 "properties": {
@@ -1015,10 +2061,10 @@
                         "$ref": "#/components/schemas/DefaultLocaleEnum"
                     },
                     "default_ui_language": {
-                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "default_document_language": {
-                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                        "$ref": "#/components/schemas/DocumentLanguage"
                     },
                     "invoice_number_prefix": {
                         "type": "string",
@@ -1038,6 +2084,48 @@
                     },
                     "features": {
                         "$ref": "#/components/schemas/FeatureFlagsRequest"
+                    }
+                }
+            },
+            "PatchedCustomerRequest": {
+                "type": "object",
+                "properties": {
+                    "customer_number": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                    },
+                    "party_type": {
+                        "$ref": "#/components/schemas/PartyTypeEnum"
+                    },
+                    "given_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "family_name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "organization_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "preferred_language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "addresses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomerAddressRequest"
+                        }
                     }
                 }
             },
