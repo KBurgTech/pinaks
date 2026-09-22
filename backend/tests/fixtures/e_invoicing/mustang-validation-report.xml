@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validation filename="representative-invoice.pdf" datetime="2026-09-22 11:23:37">
+  <pdf>ValidationResult [flavour=3b, totalAssertions=939, assertions=[], isCompliant=true]
+    <info>
+      <signature>Factur/X Python</signature>
+      <duration unit="ms">881</duration>
+    </info>
+    <summary status="valid"/>
+  </pdf>
+  <xml>
+    <info>
+      <version>2</version>
+      <profile>urn:cen.eu:en16931:2017</profile>
+      <validator version="2.23.0"/>
+      <rules>
+        <fired>70</fired>
+        <failed>0</failed>
+      </rules>
+      <duration unit="ms">1367</duration>
+    </info>
+    <summary status="valid"/>
+  </xml>
+  <summary status="valid"/>
+</validation>
