@@ -117,17 +117,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CompanyProfile"
+                                "$ref": "#/components/schemas/CompanyProfileRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/CompanyProfile"
+                                "$ref": "#/components/schemas/CompanyProfileRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/CompanyProfile"
+                                "$ref": "#/components/schemas/CompanyProfileRequest"
                             }
                         }
                     },
@@ -190,17 +190,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                                "$ref": "#/components/schemas/PatchedCompanyProfileRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                                "$ref": "#/components/schemas/PatchedCompanyProfileRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedCompanyProfile"
+                                "$ref": "#/components/schemas/PatchedCompanyProfileRequest"
                             }
                         }
                     }
@@ -232,6 +232,254 @@
                         "description": ""
                     },
                     "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/configuration/tax-profiles/": {
+            "get": {
+                "operationId": "tax_profile_list",
+                "tags": [
+                    "configuration"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TaxProfile"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "tax_profile_create",
+                "tags": [
+                    "configuration"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxProfileRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxProfileRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxProfileRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/configuration/tax-profiles/{profile_id}/": {
+            "get": {
+                "operationId": "tax_profile_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "profile_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "configuration"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "tax_profile_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "profile_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "configuration"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTaxProfileRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTaxProfileRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTaxProfileRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxProfile"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -443,6 +691,130 @@
                     "vat_identifier"
                 ]
             },
+            "CompanyProfileRequest": {
+                "type": "object",
+                "properties": {
+                    "legal_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "address_line_1": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "address_line_2": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "postal_code": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "city": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "country_code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2,
+                        "pattern": "^[A-Z]{2}$"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "tax_number": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "vat_identifier": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "company_identifier": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "bank_account_holder": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "iban": {
+                        "type": "string",
+                        "maxLength": 34
+                    },
+                    "bic": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "payment_instructions": {
+                        "type": "string"
+                    },
+                    "default_currency": {
+                        "$ref": "#/components/schemas/DefaultCurrencyEnum"
+                    },
+                    "default_locale": {
+                        "$ref": "#/components/schemas/DefaultLocaleEnum"
+                    },
+                    "default_ui_language": {
+                        "$ref": "#/components/schemas/DefaultUiLanguageEnum"
+                    },
+                    "default_document_language": {
+                        "$ref": "#/components/schemas/DefaultDocumentLanguageEnum"
+                    },
+                    "invoice_number_prefix": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "invoice_number_next": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "invoice_number_padding": {
+                        "type": "integer",
+                        "maximum": 12,
+                        "minimum": 1
+                    },
+                    "invoice_number_reset": {
+                        "$ref": "#/components/schemas/InvoiceNumberResetEnum"
+                    },
+                    "features": {
+                        "$ref": "#/components/schemas/FeatureFlagsRequest"
+                    }
+                },
+                "required": [
+                    "address_line_1",
+                    "address_line_2",
+                    "bank_account_holder",
+                    "bic",
+                    "city",
+                    "company_identifier",
+                    "country_code",
+                    "default_currency",
+                    "default_document_language",
+                    "default_locale",
+                    "default_ui_language",
+                    "email",
+                    "features",
+                    "iban",
+                    "invoice_number_next",
+                    "invoice_number_padding",
+                    "invoice_number_prefix",
+                    "invoice_number_reset",
+                    "legal_name",
+                    "payment_instructions",
+                    "phone",
+                    "postal_code",
+                    "tax_number",
+                    "vat_identifier"
+                ]
+            },
             "DefaultCurrencyEnum": {
                 "enum": [
                     "EUR"
@@ -544,6 +916,25 @@
                     "time_tracking"
                 ]
             },
+            "FeatureFlagsRequest": {
+                "type": "object",
+                "properties": {
+                    "payment_requests": {
+                        "type": "boolean"
+                    },
+                    "reminders": {
+                        "type": "boolean"
+                    },
+                    "time_tracking": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "payment_requests",
+                    "reminders",
+                    "time_tracking"
+                ]
+            },
             "InvoiceNumberResetEnum": {
                 "enum": [
                     "never",
@@ -552,11 +943,12 @@
                 "type": "string",
                 "description": "* `never` - never\n* `annual` - annual"
             },
-            "PatchedCompanyProfile": {
+            "PatchedCompanyProfileRequest": {
                 "type": "object",
                 "properties": {
                     "legal_name": {
                         "type": "string",
+                        "minLength": 1,
                         "maxLength": 255
                     },
                     "address_line_1": {
@@ -577,6 +969,7 @@
                     },
                     "country_code": {
                         "type": "string",
+                        "minLength": 1,
                         "maxLength": 2,
                         "pattern": "^[A-Z]{2}$"
                     },
@@ -644,9 +1037,68 @@
                         "$ref": "#/components/schemas/InvoiceNumberResetEnum"
                     },
                     "features": {
-                        "$ref": "#/components/schemas/FeatureFlags"
+                        "$ref": "#/components/schemas/FeatureFlagsRequest"
                     }
                 }
+            },
+            "PatchedTaxProfileRequest": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "exemption_wording_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "exemption_wording_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "tax_column_policy": {
+                        "$ref": "#/components/schemas/TaxColumnPolicyEnum"
+                    },
+                    "required_seller_identifiers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RequiredSellerIdentifiersEnum"
+                        }
+                    },
+                    "is_default": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PriceEntryPolicyEnum": {
+                "enum": [
+                    "net",
+                    "gross"
+                ],
+                "type": "string",
+                "description": "* `net` - net\n* `gross` - gross"
             },
             "Probe": {
                 "type": "object",
@@ -666,6 +1118,14 @@
                     "status"
                 ]
             },
+            "RequiredSellerIdentifiersEnum": {
+                "enum": [
+                    "tax_number",
+                    "vat_identifier"
+                ],
+                "type": "string",
+                "description": "* `tax_number` - tax_number\n* `vat_identifier` - vat_identifier"
+            },
             "RoleEnum": {
                 "enum": [
                     "admin",
@@ -674,6 +1134,168 @@
                 ],
                 "type": "string",
                 "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
+            },
+            "TaxCategoryEnum": {
+                "enum": [
+                    "S",
+                    "E"
+                ],
+                "type": "string",
+                "description": "* `S` - S\n* `E` - E"
+            },
+            "TaxColumnPolicyEnum": {
+                "enum": [
+                    "show",
+                    "hide"
+                ],
+                "type": "string",
+                "description": "* `show` - show\n* `hide` - hide"
+            },
+            "TaxProfile": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "code": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "exemption_wording_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "exemption_wording_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "tax_column_policy": {
+                        "$ref": "#/components/schemas/TaxColumnPolicyEnum"
+                    },
+                    "required_seller_identifiers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RequiredSellerIdentifiersEnum"
+                        }
+                    },
+                    "is_default": {
+                        "type": "boolean"
+                    },
+                    "is_current": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "translation_complete": {
+                        "type": "boolean",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "code",
+                    "exemption_reason_code",
+                    "exemption_wording_de",
+                    "exemption_wording_en",
+                    "id",
+                    "is_current",
+                    "is_default",
+                    "name",
+                    "price_entry_policy",
+                    "rate",
+                    "required_seller_identifiers",
+                    "tax_category",
+                    "tax_column_policy",
+                    "translation_complete",
+                    "version"
+                ]
+            },
+            "TaxProfileRequest": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "exemption_wording_en": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "exemption_wording_de": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "tax_column_policy": {
+                        "$ref": "#/components/schemas/TaxColumnPolicyEnum"
+                    },
+                    "required_seller_identifiers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RequiredSellerIdentifiersEnum"
+                        }
+                    },
+                    "is_default": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "code",
+                    "exemption_reason_code",
+                    "exemption_wording_de",
+                    "exemption_wording_en",
+                    "is_default",
+                    "name",
+                    "price_entry_policy",
+                    "rate",
+                    "required_seller_identifiers",
+                    "tax_category",
+                    "tax_column_policy"
+                ]
             }
         },
         "securitySchemes": {

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from pinaks.apps.configuration.models import FEATURE_FIELDS, CompanyProfile
+from pinaks.apps.configuration.models import FEATURE_FIELDS, CompanyProfile, TaxProfile
 
 
 class ApiRootSerializer(serializers.Serializer[dict[str, str]]):
@@ -118,6 +118,61 @@ class CompanyProfileSerializer(serializers.Serializer[CompanyProfile]):
             for code, model_field in FEATURE_FIELDS.items()
         }
         return representation
+
+
+class TaxProfileSerializer(serializers.Serializer[TaxProfile]):
+    id = serializers.IntegerField(read_only=True)
+    code = serializers.SlugField(max_length=80)
+    version = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=120)
+    tax_category = serializers.ChoiceField(choices=("S", "E"))
+    rate = serializers.DecimalField(max_digits=5, decimal_places=2)
+    exemption_reason_code = serializers.CharField(max_length=50, allow_blank=True)
+    exemption_wording_en = serializers.CharField(max_length=255, allow_blank=True)
+    exemption_wording_de = serializers.CharField(max_length=255, allow_blank=True)
+    price_entry_policy = serializers.ChoiceField(choices=("net", "gross"))
+    tax_column_policy = serializers.ChoiceField(choices=("show", "hide"))
+    required_seller_identifiers = serializers.MultipleChoiceField(
+        choices=("tax_number", "vat_identifier"), allow_empty=False
+    )
+    is_default = serializers.BooleanField()
+    is_current = serializers.BooleanField(read_only=True)
+    translation_complete = serializers.BooleanField(read_only=True)
+
+    def to_internal_value(self, data: object) -> dict[str, object]:
+        if isinstance(data, dict):
+            unknown_fields = set(data).difference(self.fields)
+            if unknown_fields:
+                raise serializers.ValidationError(
+                    {
+                        field: [
+                            serializers.ErrorDetail(
+                                "This field is not accepted.", code="unknown_field"
+                            )
+                        ]
+                        for field in sorted(unknown_fields)
+                    }
+                )
+        return super().to_internal_value(data)
+
+    def to_representation(self, instance: TaxProfile) -> dict[str, object]:
+        return {
+            "id": instance.pk,
+            "code": instance.code,
+            "version": instance.version,
+            "name": instance.name,
+            "tax_category": instance.tax_category,
+            "rate": f"{instance.rate:.2f}",
+            "exemption_reason_code": instance.exemption_reason_code,
+            "exemption_wording_en": instance.exemption_wording_en,
+            "exemption_wording_de": instance.exemption_wording_de,
+            "price_entry_policy": instance.price_entry_policy,
+            "tax_column_policy": instance.tax_column_policy,
+            "required_seller_identifiers": instance.required_seller_identifiers,
+            "is_default": instance.is_default,
+            "is_current": instance.is_current,
+            "translation_complete": instance.translation_complete,
+        }
 
 
 class ErrorItemSerializer(serializers.Serializer[dict[str, str]]):

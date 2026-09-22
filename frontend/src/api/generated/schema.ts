@@ -54,6 +54,38 @@ export interface paths {
         readonly patch: operations["company_profile_update"];
         readonly trace?: never;
     };
+    readonly "/api/v1/configuration/tax-profiles/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["tax_profile_list"];
+        readonly put?: never;
+        readonly post: operations["tax_profile_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/configuration/tax-profiles/{profile_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["tax_profile_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["tax_profile_update"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/probe/": {
         readonly parameters: {
             readonly query?: never;
@@ -119,6 +151,33 @@ export interface components {
             readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features: components["schemas"]["FeatureFlags"];
         };
+        readonly CompanyProfileRequest: {
+            readonly legal_name: string;
+            readonly address_line_1: string;
+            readonly address_line_2: string;
+            readonly postal_code: string;
+            readonly city: string;
+            readonly country_code: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly tax_number: string;
+            readonly vat_identifier: string;
+            readonly company_identifier: string;
+            readonly bank_account_holder: string;
+            readonly iban: string;
+            readonly bic: string;
+            readonly payment_instructions: string;
+            readonly default_currency: components["schemas"]["DefaultCurrencyEnum"];
+            readonly default_locale: components["schemas"]["DefaultLocaleEnum"];
+            readonly default_ui_language: components["schemas"]["DefaultUiLanguageEnum"];
+            readonly default_document_language: components["schemas"]["DefaultDocumentLanguageEnum"];
+            readonly invoice_number_prefix: string;
+            readonly invoice_number_next: number;
+            readonly invoice_number_padding: number;
+            readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
+            readonly features: components["schemas"]["FeatureFlagsRequest"];
+        };
         /**
          * @description * `EUR` - EUR
          * @enum {string}
@@ -161,13 +220,18 @@ export interface components {
             readonly reminders: boolean;
             readonly time_tracking: boolean;
         };
+        readonly FeatureFlagsRequest: {
+            readonly payment_requests: boolean;
+            readonly reminders: boolean;
+            readonly time_tracking: boolean;
+        };
         /**
          * @description * `never` - never
          *     * `annual` - annual
          * @enum {string}
          */
         readonly InvoiceNumberResetEnum: "never" | "annual";
-        readonly PatchedCompanyProfile: {
+        readonly PatchedCompanyProfileRequest: {
             readonly legal_name?: string;
             readonly address_line_1?: string;
             readonly address_line_2?: string;
@@ -192,12 +256,38 @@ export interface components {
             readonly invoice_number_next?: number;
             readonly invoice_number_padding?: number;
             readonly invoice_number_reset?: components["schemas"]["InvoiceNumberResetEnum"];
-            readonly features?: components["schemas"]["FeatureFlags"];
+            readonly features?: components["schemas"]["FeatureFlagsRequest"];
         };
+        readonly PatchedTaxProfileRequest: {
+            readonly code?: string;
+            readonly name?: string;
+            readonly tax_category?: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly rate?: string;
+            readonly exemption_reason_code?: string;
+            readonly exemption_wording_en?: string;
+            readonly exemption_wording_de?: string;
+            readonly price_entry_policy?: components["schemas"]["PriceEntryPolicyEnum"];
+            readonly tax_column_policy?: components["schemas"]["TaxColumnPolicyEnum"];
+            readonly required_seller_identifiers?: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
+            readonly is_default?: boolean;
+        };
+        /**
+         * @description * `net` - net
+         *     * `gross` - gross
+         * @enum {string}
+         */
+        readonly PriceEntryPolicyEnum: "net" | "gross";
         readonly Probe: {
             readonly status: string;
             readonly checks: readonly string[];
         };
+        /**
+         * @description * `tax_number` - tax_number
+         *     * `vat_identifier` - vat_identifier
+         * @enum {string}
+         */
+        readonly RequiredSellerIdentifiersEnum: "tax_number" | "vat_identifier";
         /**
          * @description * `admin` - admin
          *     * `company_member` - company_member
@@ -205,6 +295,50 @@ export interface components {
          * @enum {string}
          */
         readonly RoleEnum: "admin" | "company_member" | "read_only";
+        /**
+         * @description * `S` - S
+         *     * `E` - E
+         * @enum {string}
+         */
+        readonly TaxCategoryEnum: "S" | "E";
+        /**
+         * @description * `show` - show
+         *     * `hide` - hide
+         * @enum {string}
+         */
+        readonly TaxColumnPolicyEnum: "show" | "hide";
+        readonly TaxProfile: {
+            readonly id: number;
+            readonly code: string;
+            readonly version: number;
+            readonly name: string;
+            readonly tax_category: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly rate: string;
+            readonly exemption_reason_code: string;
+            readonly exemption_wording_en: string;
+            readonly exemption_wording_de: string;
+            readonly price_entry_policy: components["schemas"]["PriceEntryPolicyEnum"];
+            readonly tax_column_policy: components["schemas"]["TaxColumnPolicyEnum"];
+            readonly required_seller_identifiers: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
+            readonly is_default: boolean;
+            readonly is_current: boolean;
+            readonly translation_complete: boolean;
+        };
+        readonly TaxProfileRequest: {
+            readonly code: string;
+            readonly name: string;
+            readonly tax_category: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly rate: string;
+            readonly exemption_reason_code: string;
+            readonly exemption_wording_en: string;
+            readonly exemption_wording_de: string;
+            readonly price_entry_policy: components["schemas"]["PriceEntryPolicyEnum"];
+            readonly tax_column_policy: components["schemas"]["TaxColumnPolicyEnum"];
+            readonly required_seller_identifiers: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
+            readonly is_default: boolean;
+        };
     };
     responses: never;
     parameters: never;
@@ -305,9 +439,9 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": components["schemas"]["CompanyProfile"];
-                readonly "application/x-www-form-urlencoded": components["schemas"]["CompanyProfile"];
-                readonly "multipart/form-data": components["schemas"]["CompanyProfile"];
+                readonly "application/json": components["schemas"]["CompanyProfileRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CompanyProfileRequest"];
+                readonly "multipart/form-data": components["schemas"]["CompanyProfileRequest"];
             };
         };
         readonly responses: {
@@ -354,9 +488,9 @@ export interface operations {
         };
         readonly requestBody?: {
             readonly content: {
-                readonly "application/json": components["schemas"]["PatchedCompanyProfile"];
-                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCompanyProfile"];
-                readonly "multipart/form-data": components["schemas"]["PatchedCompanyProfile"];
+                readonly "application/json": components["schemas"]["PatchedCompanyProfileRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCompanyProfileRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedCompanyProfileRequest"];
             };
         };
         readonly responses: {
@@ -377,6 +511,170 @@ export interface operations {
                 };
             };
             readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly tax_profile_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["TaxProfile"][];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly tax_profile_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TaxProfileRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["TaxProfileRequest"];
+                readonly "multipart/form-data": components["schemas"]["TaxProfileRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxProfile"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly tax_profile_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly profile_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxProfile"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly tax_profile_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly profile_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedTaxProfileRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedTaxProfileRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedTaxProfileRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxProfile"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxProfile"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
