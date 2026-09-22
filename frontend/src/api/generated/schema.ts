@@ -38,6 +38,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/catalog/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["catalog_item_list"];
+        readonly put?: never;
+        readonly post: operations["catalog_item_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/catalog/{item_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["catalog_item_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete: operations["catalog_item_archive"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["catalog_item_update"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/configuration/company/": {
         readonly parameters: {
             readonly query?: never;
@@ -219,6 +251,43 @@ export interface components {
                 readonly [key: string]: boolean;
             };
         };
+        readonly CatalogItem: {
+            readonly id: number;
+            readonly code: string;
+            readonly description_en: string;
+            readonly description_de: string;
+            readonly unit: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly default_price: string;
+            /** Format: decimal */
+            readonly minimum_price?: string | null;
+            /** Format: decimal */
+            readonly maximum_price?: string | null;
+            readonly default_tax_profile: components["schemas"]["CatalogTaxProfileSummary"];
+            readonly is_archived: boolean;
+        };
+        readonly CatalogItemRequest: {
+            readonly code: string;
+            readonly description_en: string;
+            readonly description_de: string;
+            readonly unit: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly default_price: string;
+            /** Format: decimal */
+            readonly minimum_price?: string | null;
+            /** Format: decimal */
+            readonly maximum_price?: string | null;
+            readonly default_tax_profile_id: number;
+        };
+        readonly CatalogTaxProfileSummary: {
+            readonly id: number;
+            readonly code: string;
+            readonly version: number;
+            readonly name: string;
+            /** Format: decimal */
+            readonly rate: string;
+            readonly tax_category: string;
+        };
         readonly CompanyProfile: {
             readonly legal_name: string;
             readonly address_line_1: string;
@@ -366,6 +435,21 @@ export interface components {
          * @enum {string}
          */
         readonly InvoiceNumberResetEnum: "never" | "annual";
+        readonly PaginatedCatalogItemList: {
+            /** @example 123 */
+            readonly count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            readonly next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            readonly previous?: string | null;
+            readonly results: readonly components["schemas"]["CatalogItem"][];
+        };
         readonly PaginatedCustomerList: {
             /** @example 123 */
             readonly count: number;
@@ -400,6 +484,19 @@ export interface components {
             readonly postal_code?: string;
             readonly city?: string;
             readonly country_code?: string;
+        };
+        readonly PatchedCatalogItemRequest: {
+            readonly code?: string;
+            readonly description_en?: string;
+            readonly description_de?: string;
+            readonly unit?: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly default_price?: string;
+            /** Format: decimal */
+            readonly minimum_price?: string | null;
+            /** Format: decimal */
+            readonly maximum_price?: string | null;
+            readonly default_tax_profile_id?: number;
         };
         readonly PatchedCompanyProfileRequest: {
             readonly legal_name?: string;
@@ -521,6 +618,13 @@ export interface components {
             readonly required_seller_identifiers: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
             readonly is_default: boolean;
         };
+        /**
+         * @description * `C62` - C62
+         *     * `HUR` - HUR
+         *     * `DAY` - DAY
+         * @enum {string}
+         */
+        readonly UnitEnum: "C62" | "HUR" | "DAY";
     };
     responses: never;
     parameters: never;
@@ -573,6 +677,213 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["Capabilities"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_list: {
+        readonly parameters: {
+            readonly query?: {
+                readonly archived?: boolean;
+                /** @description Which field to use when ordering the results. */
+                readonly ordering?: string;
+                readonly page?: number;
+                readonly page_size?: number;
+                readonly search?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PaginatedCatalogItemList"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CatalogItemRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CatalogItemRequest"];
+                readonly "multipart/form-data": components["schemas"]["CatalogItemRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CatalogItem"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly item_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CatalogItem"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_archive: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly item_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Catalog item archived. */
+            readonly 204: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly item_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedCatalogItemRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCatalogItemRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedCatalogItemRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CatalogItem"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
