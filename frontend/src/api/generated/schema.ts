@@ -70,6 +70,22 @@ export interface paths {
         readonly patch: operations["catalog_item_update"];
         readonly trace?: never;
     };
+    readonly "/api/v1/catalog/{item_id}/sensitive-fields/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["catalog_item_sensitive_fields"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/configuration/company/": {
         readonly parameters: {
             readonly query?: never;
@@ -116,6 +132,38 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         readonly patch: operations["tax_profile_update"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/custom-fields/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["custom_field_definition_list"];
+        readonly put?: never;
+        readonly post: operations["custom_field_definition_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/custom-fields/{field_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["custom_field_definition_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete: operations["custom_field_definition_retire"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["custom_field_definition_update"];
         readonly trace?: never;
     };
     readonly "/api/v1/customers/": {
@@ -180,6 +228,22 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         readonly patch: operations["billing_recipient_update"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/customers/{customer_id}/sensitive-fields/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["customer_sensitive_fields"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
         readonly trace?: never;
     };
     readonly "/api/v1/probe/": {
@@ -265,6 +329,7 @@ export interface components {
             readonly maximum_price?: string | null;
             readonly default_tax_profile: components["schemas"]["CatalogTaxProfileSummary"];
             readonly is_archived: boolean;
+            readonly custom_data?: unknown;
         };
         readonly CatalogItemRequest: {
             readonly code: string;
@@ -278,6 +343,7 @@ export interface components {
             /** Format: decimal */
             readonly maximum_price?: string | null;
             readonly default_tax_profile_id: number;
+            readonly custom_data?: unknown;
         };
         readonly CatalogTaxProfileSummary: {
             readonly id: number;
@@ -342,6 +408,40 @@ export interface components {
             readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features: components["schemas"]["FeatureFlagsRequest"];
         };
+        readonly CustomFieldDefinition: {
+            readonly id: number;
+            readonly key: string;
+            readonly target: components["schemas"]["TargetEnum"];
+            readonly data_type: components["schemas"]["DataTypeEnum"];
+            readonly label_en: string;
+            readonly label_de: string;
+            readonly help_en?: string;
+            readonly help_de?: string;
+            readonly required?: boolean;
+            readonly default_value?: unknown;
+            readonly choices?: unknown;
+            readonly display_order?: number;
+            readonly visibility?: components["schemas"]["VisibilityEnum"];
+            readonly search_mode?: components["schemas"]["SearchModeEnum"];
+            readonly is_sensitive?: boolean;
+            readonly is_retired: boolean;
+        };
+        readonly CustomFieldDefinitionRequest: {
+            readonly key: string;
+            readonly target: components["schemas"]["TargetEnum"];
+            readonly data_type: components["schemas"]["DataTypeEnum"];
+            readonly label_en: string;
+            readonly label_de: string;
+            readonly help_en?: string;
+            readonly help_de?: string;
+            readonly required?: boolean;
+            readonly default_value?: unknown;
+            readonly choices?: unknown;
+            readonly display_order?: number;
+            readonly visibility?: components["schemas"]["VisibilityEnum"];
+            readonly search_mode?: components["schemas"]["SearchModeEnum"];
+            readonly is_sensitive?: boolean;
+        };
         readonly Customer: {
             readonly id: number;
             readonly customer_number: string;
@@ -356,6 +456,7 @@ export interface components {
             readonly preferred_language: components["schemas"]["DocumentLanguage"];
             readonly is_archived: boolean;
             readonly addresses: readonly components["schemas"]["CustomerAddress"][];
+            readonly custom_data?: unknown;
         };
         readonly CustomerAddress: {
             readonly id: number;
@@ -387,7 +488,19 @@ export interface components {
             readonly phone: string;
             readonly preferred_language: components["schemas"]["DocumentLanguage"];
             readonly addresses: readonly components["schemas"]["CustomerAddressRequest"][];
+            readonly custom_data?: unknown;
         };
+        /**
+         * @description * `text` - text
+         *     * `long_text` - long_text
+         *     * `integer` - integer
+         *     * `decimal` - decimal
+         *     * `boolean` - boolean
+         *     * `date` - date
+         *     * `choice` - choice
+         * @enum {string}
+         */
+        readonly DataTypeEnum: "text" | "long_text" | "integer" | "decimal" | "boolean" | "date" | "choice";
         /**
          * @description * `EUR` - EUR
          * @enum {string}
@@ -497,6 +610,7 @@ export interface components {
             /** Format: decimal */
             readonly maximum_price?: string | null;
             readonly default_tax_profile_id?: number;
+            readonly custom_data?: unknown;
         };
         readonly PatchedCompanyProfileRequest: {
             readonly legal_name?: string;
@@ -525,6 +639,22 @@ export interface components {
             readonly invoice_number_reset?: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features?: components["schemas"]["FeatureFlagsRequest"];
         };
+        readonly PatchedCustomFieldDefinitionRequest: {
+            readonly key?: string;
+            readonly target?: components["schemas"]["TargetEnum"];
+            readonly data_type?: components["schemas"]["DataTypeEnum"];
+            readonly label_en?: string;
+            readonly label_de?: string;
+            readonly help_en?: string;
+            readonly help_de?: string;
+            readonly required?: boolean;
+            readonly default_value?: unknown;
+            readonly choices?: unknown;
+            readonly display_order?: number;
+            readonly visibility?: components["schemas"]["VisibilityEnum"];
+            readonly search_mode?: components["schemas"]["SearchModeEnum"];
+            readonly is_sensitive?: boolean;
+        };
         readonly PatchedCustomerRequest: {
             readonly customer_number?: string;
             readonly party_type?: components["schemas"]["PartyTypeEnum"];
@@ -536,6 +666,7 @@ export interface components {
             readonly phone?: string;
             readonly preferred_language?: components["schemas"]["DocumentLanguage"];
             readonly addresses?: readonly components["schemas"]["CustomerAddressRequest"][];
+            readonly custom_data?: unknown;
         };
         readonly PatchedTaxProfileRequest: {
             readonly code?: string;
@@ -574,6 +705,20 @@ export interface components {
          * @enum {string}
          */
         readonly RoleEnum: "admin" | "company_member" | "read_only";
+        /**
+         * @description * `none` - none
+         *     * `exact` - exact
+         *     * `range` - range
+         *     * `text` - text
+         * @enum {string}
+         */
+        readonly SearchModeEnum: "none" | "exact" | "range" | "text";
+        /**
+         * @description * `customer` - customer
+         *     * `catalog_item` - catalog_item
+         * @enum {string}
+         */
+        readonly TargetEnum: "customer" | "catalog_item";
         /**
          * @description * `S` - S
          *     * `E` - E
@@ -625,6 +770,12 @@ export interface components {
          * @enum {string}
          */
         readonly UnitEnum: "C62" | "HUR" | "DAY";
+        /**
+         * @description * `internal` - internal
+         *     * `document` - document
+         * @enum {string}
+         */
+        readonly VisibilityEnum: "internal" | "document";
     };
     responses: never;
     parameters: never;
@@ -685,6 +836,9 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 readonly archived?: boolean;
+                readonly custom_field?: string;
+                readonly custom_operator?: string;
+                readonly custom_value?: string;
                 /** @description Which field to use when ordering the results. */
                 readonly ordering?: string;
                 readonly page?: number;
@@ -879,6 +1033,37 @@ export interface operations {
                 };
             };
             readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly catalog_item_sensitive_fields: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly item_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 403: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
@@ -1177,10 +1362,159 @@ export interface operations {
             };
         };
     };
+    readonly custom_field_definition_list: {
+        readonly parameters: {
+            readonly query?: {
+                readonly target?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["CustomFieldDefinition"][];
+                };
+            };
+        };
+    };
+    readonly custom_field_definition_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CustomFieldDefinitionRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CustomFieldDefinitionRequest"];
+                readonly "multipart/form-data": components["schemas"]["CustomFieldDefinitionRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CustomFieldDefinition"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly custom_field_definition_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly field_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CustomFieldDefinition"];
+                };
+            };
+        };
+    };
+    readonly custom_field_definition_retire: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly field_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Definition retired. */
+            readonly 204: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly custom_field_definition_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly field_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedCustomFieldDefinitionRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedCustomFieldDefinitionRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedCustomFieldDefinitionRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CustomFieldDefinition"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     readonly customer_list: {
         readonly parameters: {
             readonly query?: {
                 readonly archived?: boolean;
+                readonly custom_field?: string;
+                readonly custom_operator?: string;
+                readonly custom_value?: string;
                 /** @description Which field to use when ordering the results. */
                 readonly ordering?: string;
                 readonly page?: number;
@@ -1545,6 +1879,37 @@ export interface operations {
                 };
             };
             readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly customer_sensitive_fields: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly customer_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 403: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

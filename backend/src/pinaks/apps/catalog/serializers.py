@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from pinaks.apps.catalog.models import CatalogItem
 from pinaks.apps.configuration.models import TaxProfile
+from pinaks.apps.custom_fields.services import redact_custom_data
 
 
 class CatalogTaxProfileSummarySerializer(serializers.Serializer[TaxProfile]):
@@ -29,6 +30,7 @@ class CatalogItemSerializer(serializers.Serializer[CatalogItem]):
     default_tax_profile_id = serializers.IntegerField(min_value=1, write_only=True)
     default_tax_profile = CatalogTaxProfileSummarySerializer(read_only=True)
     is_archived = serializers.BooleanField(read_only=True)
+    custom_data = serializers.JSONField(required=False)
 
     def to_internal_value(self, data: object) -> dict[str, object]:
         if isinstance(data, dict):
@@ -69,4 +71,5 @@ class CatalogItemSerializer(serializers.Serializer[CatalogItem]):
                 "tax_category": instance.default_tax_profile.tax_category,
             },
             "is_archived": instance.is_archived,
+            "custom_data": redact_custom_data(target="catalog_item", values=instance.custom_data),
         }

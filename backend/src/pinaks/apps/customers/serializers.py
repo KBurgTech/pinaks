@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from pinaks.apps.custom_fields.services import redact_custom_data
 from pinaks.apps.customers.models import BillingRecipient, Customer, CustomerAddress
 
 
@@ -57,6 +58,7 @@ class CustomerSerializer(StrictSerializer[Customer]):
     preferred_language = serializers.ChoiceField(choices=("en", "de"))
     is_archived = serializers.BooleanField(read_only=True)
     addresses = CustomerAddressSerializer(many=True, allow_empty=False)
+    custom_data = serializers.JSONField(required=False)
 
     def to_representation(self, instance: Customer) -> dict[str, object]:
         return {
@@ -71,6 +73,7 @@ class CustomerSerializer(StrictSerializer[Customer]):
             "phone": instance.phone,
             "preferred_language": instance.preferred_language,
             "is_archived": instance.is_archived,
+            "custom_data": redact_custom_data(target="customer", values=instance.custom_data),
             "addresses": CustomerAddressSerializer(instance.addresses.all(), many=True).data,  # type: ignore[arg-type]
         }
 

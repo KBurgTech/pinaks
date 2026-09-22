@@ -11,8 +11,9 @@ from rest_framework.views import APIView
 from pinaks.api.exceptions import BusinessRuleViolation
 from pinaks.api.serializers import ErrorEnvelopeSerializer
 from pinaks.apps.accounts.models import User
-from pinaks.apps.accounts.permissions import CanMutateDrafts, CanRead
+from pinaks.apps.accounts.permissions import CanAdminister, CanMutateDrafts, CanRead
 from pinaks.apps.audit.services import request_correlation_id
+from pinaks.apps.custom_fields.services import filter_custom_data, sensitive_custom_data
 from pinaks.apps.customers.models import BillingRecipient, Customer
 from pinaks.apps.customers.serializers import BillingRecipientSerializer, CustomerSerializer
 from pinaks.apps.customers.services import (
@@ -57,6 +58,9 @@ class CustomerListView(ReadOrMutatePermissionMixin, GenericAPIView[Customer]):
             OpenApiParameter("archived", bool),
             OpenApiParameter("page", int),
             OpenApiParameter("page_size", int),
+            OpenApiParameter("custom_field", str),
+            OpenApiParameter("custom_operator", str),
+            OpenApiParameter("custom_value", str),
         ],
         responses={200: CustomerSerializer(many=True), 403: ErrorEnvelopeSerializer},
     )
@@ -65,6 +69,18 @@ class CustomerListView(ReadOrMutatePermissionMixin, GenericAPIView[Customer]):
         customers = search_customers(
             search=request.query_params.get("search", ""), archived=archived
         )
+        custom_field = request.query_params.get("custom_field")
+        if custom_field:
+            try:
+                customers = filter_custom_data(
+                    customers,
+                    target="customer",
+                    key=custom_field,
+                    operator=request.query_params.get("custom_operator", "exact"),
+                    value=request.query_params.get("custom_value", ""),
+                )
+            except DjangoValidationError as error:
+                raise _validation_error(error) from error
         page = self.paginate_queryset(customers)
         serializer = CustomerSerializer(page, many=True)  # type: ignore[arg-type]
         return self.get_paginated_response(serializer.data)
@@ -241,3 +257,25 @@ class BillingRecipientDetailView(ReadOrMutatePermissionMixin, APIView):
         except DjangoValidationError as error:
             raise _validation_error(error) from error
         return Response(BillingRecipientSerializer(recipient).data)
+
+
+class SensitiveCustomerFieldsView(APIView):
+    permission_classes = (CanAdminister,)
+
+    @extend_schema(
+        operation_id="customer_sensitive_fields",
+        responses={200: dict, 403: ErrorEnvelopeSerializer},
+    )
+    def get(self, request: Request, customer_id: int) -> Response:
+        try:
+            instance = Customer.objects.get(pk=customer_id)
+        except Customer.DoesNotExist as error:
+            raise NotFound("Record was not found.") from error
+        return Response(
+            sensitive_custom_data(
+                target="customer",
+                instance=instance,
+                actor=_actor(request),
+                correlation_id=request_correlation_id(request),
+            )
+        )

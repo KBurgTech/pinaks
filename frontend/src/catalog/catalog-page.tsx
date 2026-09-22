@@ -4,6 +4,7 @@ import { useForm, type FieldPath } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CustomFields } from "@/custom-fields/custom-fields";
 import { isTaxProfile } from "@/catalog/validators";
 import { DataTable, DestructiveConfirmation, Field, PageHeader, Status } from "@/ui/primitives";
 
@@ -147,6 +148,14 @@ function CatalogForm({
   onSaved: (item: CatalogItem) => void;
 }) {
   const { t } = useTranslation("shell");
+  const [customData, setCustomData] = useState<Record<string, unknown>>(
+    item &&
+      typeof item.custom_data === "object" &&
+      item.custom_data !== null &&
+      !Array.isArray(item.custom_data)
+      ? (item.custom_data as Record<string, unknown>)
+      : {},
+  );
   const {
     formState: { errors },
     handleSubmit,
@@ -155,7 +164,11 @@ function CatalogForm({
     setValue,
   } = useForm<CatalogItemRequest>({ defaultValues: item ? editableItem(item) : EMPTY_ITEM });
   const mutation = useMutation({
-    mutationFn: (values: CatalogItemRequest) => saveItem(item?.id ?? null, values),
+    mutationFn: (values: CatalogItemRequest) =>
+      saveItem(item?.id ?? null, {
+        ...values,
+        ...(Object.keys(customData).length ? { custom_data: customData } : {}),
+      }),
     onSuccess: onSaved,
     onError(error) {
       if (!(error instanceof SubmissionError)) return;
@@ -275,6 +288,8 @@ function CatalogForm({
           </select>
         </Field>
       </fieldset>
+      <CustomFields target="catalog_item" values={customData} onChange={setCustomData} />
+      {errors.custom_data?.message && <p role="alert">{errors.custom_data.message}</p>}
       {mutation.isError && !(mutation.error instanceof SubmissionError) && (
         <p role="alert">{t("catalogPage.saveError")}</p>
       )}

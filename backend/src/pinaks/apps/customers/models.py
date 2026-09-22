@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -63,12 +64,18 @@ class Customer(PartyFields):
     preferred_language: models.CharField[str, str] = models.CharField(
         max_length=2, choices=DocumentLanguage, default=DocumentLanguage.GERMAN
     )
+    custom_data: models.JSONField[dict[str, object], dict[str, object]] = models.JSONField(
+        default=dict, blank=True
+    )
     is_archived: models.BooleanField[bool, bool] = models.BooleanField(default=False)
     created_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now_add=True)
     modified_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ("customer_number",)
+        indexes: ClassVar[list[models.Index]] = [
+            GinIndex(fields=("custom_data",), name="customer_custom_data_gin"),
+        ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
                 condition=(

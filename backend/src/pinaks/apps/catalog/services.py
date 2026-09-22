@@ -8,6 +8,7 @@ from pinaks.apps.accounts.models import User
 from pinaks.apps.audit.services import record_event
 from pinaks.apps.catalog.models import CatalogItem
 from pinaks.apps.configuration.models import TaxProfile
+from pinaks.apps.custom_fields.services import validate_custom_data
 
 _CATALOG_FIELDS = (
     "code",
@@ -47,6 +48,9 @@ def create_catalog_item(
     item = CatalogItem()
     _assign_values(item, values)
     _validate_current_tax_profile(item)
+    item.custom_data = validate_custom_data(
+        target="catalog_item", values=values.get("custom_data", {}), existing=item.custom_data
+    )
     item.full_clean()
     item.save(force_insert=True)
     record_event(
@@ -69,6 +73,9 @@ def update_catalog_item(
         raise CatalogCodeImmutableError("The catalog code cannot be changed.")
     _assign_values(item, values)
     _validate_current_tax_profile(item)
+    item.custom_data = validate_custom_data(
+        target="catalog_item", values=values.get("custom_data", {}), existing=item.custom_data
+    )
     item.full_clean()
     item.save()
     record_event(
