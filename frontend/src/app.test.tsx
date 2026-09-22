@@ -6,9 +6,10 @@ import { i18n } from "@/i18n";
 
 import { App } from "./app";
 
-vi.mock("@/api/client", () => ({ apiClient: { GET: vi.fn(), PUT: vi.fn() } }));
+vi.mock("@/api/client", () => ({ apiClient: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn() } }));
 
 const get = vi.mocked(apiClient.GET);
+const post = vi.mocked(apiClient.POST);
 const put = vi.mocked(apiClient.PUT);
 
 beforeEach(async () => {
@@ -249,5 +250,100 @@ describe("application shell", () => {
 
     expect(await screen.findByText("Enter a legal name.")).toBeInTheDocument();
     expect(legalName).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("creates a German tax profile with bilingual completeness feedback", async () => {
+    window.history.pushState({}, "", "/app/settings/");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/capabilities/") {
+        return {
+          data: {
+            role: "admin",
+            capabilities: {
+              read: true,
+              draft_mutation: true,
+              invoice_issuance: true,
+              payment_management: true,
+              administration: true,
+            },
+            features: { payment_requests: false, reminders: false, time_tracking: false },
+          },
+          response: new Response(null, { status: 200 }),
+        };
+      }
+      if (path === "/api/v1/configuration/tax-profiles/") {
+        return { data: [], response: new Response(null, { status: 200 }) };
+      }
+      return {
+        error: {
+          error: {
+            code: "not_found",
+            message: "Company configuration has not been created.",
+            fields: {},
+          },
+        },
+        response: new Response(null, { status: 404 }),
+      };
+    });
+    post.mockResolvedValue({
+      data: {
+        id: 1,
+        code: "medical-exempt",
+        version: 1,
+        name: "Medical care",
+        tax_category: "E",
+        rate: "0.00",
+        exemption_reason_code: "VATEX-EU-132",
+        exemption_wording_en: "Tax exempt medical care",
+        exemption_wording_de: "Steuerfreie Heilbehandlung",
+        price_entry_policy: "net",
+        tax_column_policy: "hide",
+        required_seller_identifiers: ["tax_number"],
+        is_default: true,
+        is_current: true,
+        translation_complete: true,
+      },
+      response: new Response(null, { status: 201 }),
+    });
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Tax profiles" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Tax category"), { target: { value: "E" } });
+    expect(screen.getByRole("status", { name: "Translation status" })).toHaveTextContent(
+      "Add both English and German exemption wording.",
+    );
+    fireEvent.change(screen.getByLabelText("Profile code"), {
+      target: { value: "medical-exempt" },
+    });
+    fireEvent.change(screen.getByLabelText("Profile name"), {
+      target: { value: "Medical care" },
+    });
+    fireEvent.change(screen.getByLabelText("Exemption reason code"), {
+      target: { value: "VATEX-EU-132" },
+    });
+    fireEvent.change(screen.getByLabelText("English exemption wording"), {
+      target: { value: "Tax exempt medical care" },
+    });
+    fireEvent.change(screen.getByLabelText("German exemption wording"), {
+      target: { value: "Steuerfreie Heilbehandlung" },
+    });
+    expect(screen.getByRole("status", { name: "Translation status" })).toHaveTextContent(
+      "English and German wording complete.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save tax profile" }));
+
+    await waitFor(() => expect(post).toHaveBeenCalledOnce());
+    expect(post.mock.calls[0]?.[0]).toBe("/api/v1/configuration/tax-profiles/");
+    expect(post.mock.calls[0]?.[1]?.body).toMatchObject({
+      code: "medical-exempt",
+      tax_category: "E",
+      rate: "0.00",
+      exemption_wording_de: "Steuerfreie Heilbehandlung",
+    });
+    expect(await screen.findByText("Tax profile saved.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Deutsch" }));
+    expect(await screen.findByRole("heading", { name: "Steuerprofile" })).toBeInTheDocument();
   });
 });

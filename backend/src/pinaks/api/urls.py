@@ -1,7 +1,14 @@
 from django.urls import URLPattern, path
 from drf_spectacular.views import SpectacularJSONAPIView
 
-from pinaks.api.views import CompanyProfileView, api_root, capabilities, probe
+from pinaks.api.views import (
+    CompanyProfileView,
+    TaxProfileDetailView,
+    TaxProfileListView,
+    api_root,
+    capabilities,
+    probe,
+)
 
 app_name = "api-v1"
 
@@ -9,6 +16,16 @@ urlpatterns: list[URLPattern] = [
     path("", api_root, name="root"),
     path("capabilities/", capabilities, name="capabilities"),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),
+    path(
+        "configuration/tax-profiles/",
+        TaxProfileListView.as_view(),
+        name="tax-profile-list",
+    ),
+    path(
+        "configuration/tax-profiles/<int:profile_id>/",
+        TaxProfileDetailView.as_view(),
+        name="tax-profile-detail",
+    ),
     path("probe/", probe, name="probe"),
     path("schema/", SpectacularJSONAPIView.as_view(), name="schema"),
 ]

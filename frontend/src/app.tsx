@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
 import { CompanyProfileForm } from "@/configuration/company-profile-form";
+import { TaxProfileForm } from "@/configuration/tax-profile-form";
 import { setUiLanguage } from "@/i18n";
 
 import type { components } from "@/api/generated/schema";
@@ -131,7 +132,10 @@ function Shell() {
         </nav>
         <main>
           {canAdminister && window.location.pathname === "/app/settings/" ? (
-            <CompanyProfileForm />
+            <>
+              <CompanyProfileForm />
+              <TaxProfileForm />
+            </>
           ) : (
             <>
               <h1 className="text-3xl font-semibold tracking-tight">{t("workspaceHeading")}</h1>
