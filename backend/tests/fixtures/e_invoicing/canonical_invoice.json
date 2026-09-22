@@ -1,0 +1,51 @@
+{
+  "invoice_number": "INV-2026-0001",
+  "issue_date": "2026-09-15",
+  "due_date": "2026-09-29",
+  "delivery_date": "2026-09-15",
+  "currency": "EUR",
+  "language": "de",
+  "seller": {
+    "name": "Beispiel Dienstleistungen GmbH",
+    "address_line": "Musterweg 12",
+    "city": "Berlin",
+    "postal_code": "10115",
+    "country_code": "DE",
+    "vat_identifier": "DE123456789"
+  },
+  "buyer": {
+    "name": "Beispiel Kunde GmbH",
+    "address_line": "Testallee 7",
+    "city": "Hamburg",
+    "postal_code": "20095",
+    "country_code": "DE",
+    "vat_identifier": "DE987654321"
+  },
+  "payment_terms": "Zahlbar innerhalb von 14 Tagen ohne Abzug.",
+  "lines": [
+    {
+      "identifier": "1",
+      "name": "Beratungsleistung",
+      "description": "Fachliche Beratung im September 2026",
+      "quantity": "2.00",
+      "unit_code": "HUR",
+      "unit_price": "100.00",
+      "net_amount": "200.00",
+      "tax_category": "S",
+      "tax_rate": "19.00"
+    }
+  ],
+  "tax_breakdowns": [
+    {
+      "tax_category": "S",
+      "tax_rate": "19.00",
+      "tax_basis": "200.00",
+      "tax_amount": "38.00"
+    }
+  ],
+  "line_total": "200.00",
+  "tax_basis_total": "200.00",
+  "tax_total": "38.00",
+  "grand_total": "238.00",
+  "due_payable": "238.00"
+}
