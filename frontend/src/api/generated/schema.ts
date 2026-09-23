@@ -246,6 +246,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/document-previews/{preview_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["document_preview_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/document-templates/": {
         readonly parameters: {
             readonly query?: never;
@@ -288,6 +304,22 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post: operations["document_template_asset_upload"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/preview/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["document_template_preview"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -799,6 +831,12 @@ export interface components {
             readonly reminders: boolean;
             readonly time_tracking: boolean;
         };
+        /**
+         * @description * `html` - html
+         *     * `pdf` - pdf
+         * @enum {string}
+         */
+        readonly FormatEnum: "html" | "pdf";
         readonly Invoice: {
             readonly id: number;
             readonly customer_id: number;
@@ -1147,6 +1185,19 @@ export interface components {
             readonly service_date?: string | null;
             /** Format: date */
             readonly service_period_end?: string | null;
+        };
+        readonly PreviewRequestRequest: {
+            readonly language: components["schemas"]["DocumentLanguage"];
+            readonly invoice_id?: number;
+            /** @default pdf */
+            readonly format: components["schemas"]["FormatEnum"];
+        };
+        readonly PreviewResponse: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly url: string;
+            /** Format: date-time */
+            readonly expires_at: string;
         };
         /**
          * @description * `net` - net
@@ -2450,6 +2501,27 @@ export interface operations {
             };
         };
     };
+    readonly document_preview_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly preview_id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": string;
+                };
+            };
+        };
+    };
     readonly document_template_list: {
         readonly parameters: {
             readonly query?: {
@@ -2550,6 +2622,41 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["DocumentAsset"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_preview: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PreviewRequestRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PreviewRequestRequest"];
+                readonly "multipart/form-data": components["schemas"]["PreviewRequestRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreviewResponse"];
                 };
             };
             readonly 400: {

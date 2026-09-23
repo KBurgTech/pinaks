@@ -1,4 +1,5 @@
 from typing import Any, ClassVar
+from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -112,3 +113,21 @@ class DocumentAsset(models.Model):
 
     def __str__(self) -> str:
         return self.key
+
+
+class PreviewArtifact(models.Model):
+    """Short-lived, isolated output of a non-authoritative preview."""
+
+    id: models.UUIDField[Any, Any] = models.UUIDField(
+        primary_key=True, default=uuid4, editable=False
+    )
+    created_by: models.ForeignKey[Any, Any] = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="document_previews"
+    )
+    storage_key: models.CharField[str, str] = models.CharField(max_length=255, unique=True)
+    content_type: models.CharField[str, str] = models.CharField(max_length=40)
+    expires_at: models.DateTimeField[Any, Any] = models.DateTimeField()
+    created_at: models.DateTimeField[Any, Any] = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return str(self.pk)
