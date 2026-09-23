@@ -11,9 +11,11 @@ from pinaks.api.views import (
 )
 from pinaks.apps.billing.preset_views import PresetArchiveView, PresetDetailView, PresetListView
 from pinaks.apps.documents.views import (
+    PreviewDetailView,
     TemplateAssetView,
     TemplateDetailView,
     TemplateListView,
+    TemplatePreviewView,
     TemplatePublishView,
     TemplateVersionDetailView,
     TemplateVersionListView,
@@ -59,6 +61,16 @@ urlpatterns: list[URLPattern | URLResolver] = [
         "document-templates/<int:template_id>/assets/",
         TemplateAssetView.as_view(),
         name="document-template-asset",
+    ),
+    path(
+        "document-templates/<int:template_id>/preview/",
+        TemplatePreviewView.as_view(),
+        name="document-template-preview",
+    ),
+    path(
+        "document-previews/<uuid:preview_id>/",
+        PreviewDetailView.as_view(),
+        name="document-preview-detail",
     ),
     path("customers/", include("pinaks.apps.customers.urls")),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),

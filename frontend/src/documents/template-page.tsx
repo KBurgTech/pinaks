@@ -58,6 +58,10 @@ function LanguageEditor({
   const [css, setCss] = useState(version?.css ?? "");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [draftInvoiceId, setDraftInvoiceId] = useState("");
+  const [previewError, setPreviewError] = useState(false);
 
   async function save() {
     setSaving(true);
@@ -94,6 +98,28 @@ function LanguageEditor({
     }
   }
 
+  async function preview() {
+    setPreviewing(true);
+    setPreviewError(false);
+    setPreviewUrl("");
+    try {
+      const result = await apiClient.POST("/api/v1/document-templates/{template_id}/preview/", {
+        params: { path: { template_id: templateId } },
+        body: {
+          language,
+          format: "pdf",
+          ...(draftInvoiceId ? { invoice_id: Number(draftInvoiceId) } : {}),
+        },
+      });
+      if (result.data?.url) setPreviewUrl(result.data.url);
+      else setPreviewError(true);
+    } catch {
+      setPreviewError(true);
+    } finally {
+      setPreviewing(false);
+    }
+  }
+
   const prefix = language === "en" ? "english" : "german";
   return (
     <section
@@ -120,6 +146,46 @@ function LanguageEditor({
       <button className={buttonClass} disabled={saving} onClick={() => void save()} type="button">
         {t(language === "en" ? "saveEnglish" : "saveGerman")}
       </button>
+      {version && (
+        <div className="space-y-2">
+          <Field label={t("draftInvoiceId")} inputId={`${language}-preview-invoice-id`}>
+            <input
+              id={`${language}-preview-invoice-id`}
+              className={inputClass}
+              type="number"
+              min="1"
+              step="1"
+              value={draftInvoiceId}
+              onChange={(event) => setDraftInvoiceId(event.target.value)}
+            />
+          </Field>
+          <button
+            className={buttonClass}
+            disabled={
+              previewing ||
+              saving ||
+              html !== version.html ||
+              css !== version.css ||
+              (draftInvoiceId !== "" &&
+                (!Number.isInteger(Number(draftInvoiceId)) || Number(draftInvoiceId) < 1))
+            }
+            onClick={() => void preview()}
+            type="button"
+          >
+            {t(language === "en" ? "previewEnglish" : "previewGerman")}
+          </button>
+          {previewing && <p role="status">{t("previewLoading")}</p>}
+          {previewError && <p role="alert">{t("previewError")}</p>}
+          {previewUrl && (
+            <p>
+              <a className="underline" href={previewUrl} target="_blank" rel="noopener noreferrer">
+                {t(language === "en" ? "openEnglishPreview" : "openGermanPreview")}
+              </a>
+            </p>
+          )}
+          <p className="text-sm text-neutral-600">{t("previewNotice")}</p>
+        </div>
+      )}
       {message && <p role="status">{message}</p>}
     </section>
   );

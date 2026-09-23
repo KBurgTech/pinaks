@@ -1803,6 +1803,43 @@
                 }
             }
         },
+        "/api/v1/document-previews/{preview_id}/": {
+            "get": {
+                "operationId": "document_preview_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "preview_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-previews"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/document-templates/": {
             "get": {
                 "operationId": "document_template_list",
@@ -1981,6 +2018,71 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/DocumentAsset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/preview/": {
+            "post": {
+                "operationId": "document_template_preview",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreviewRequestRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreviewRequestRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreviewRequestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PreviewResponse"
                                 }
                             }
                         },
@@ -4181,6 +4283,14 @@
                     "time_tracking"
                 ]
             },
+            "FormatEnum": {
+                "enum": [
+                    "html",
+                    "pdf"
+                ],
+                "type": "string",
+                "description": "* `html` - html\n* `pdf` - pdf"
+            },
             "Invoice": {
                 "type": "object",
                 "properties": {
@@ -5258,6 +5368,53 @@
                     "tax_rate",
                     "unit",
                     "unit_price"
+                ]
+            },
+            "PreviewRequestRequest": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "invoice_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "format": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/FormatEnum"
+                            }
+                        ],
+                        "default": "pdf"
+                    }
+                },
+                "required": [
+                    "language"
+                ]
+            },
+            "PreviewResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "url": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "expires_at",
+                    "id",
+                    "url"
                 ]
             },
             "PriceEntryPolicyEnum": {

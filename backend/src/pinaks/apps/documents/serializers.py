@@ -56,3 +56,15 @@ class DocumentAssetSerializer(serializers.ModelSerializer[DocumentAsset]):
 
 class AssetUploadSerializer(serializers.Serializer[dict[str, object]]):
     file = serializers.FileField()
+
+
+class PreviewRequestSerializer(serializers.Serializer[dict[str, object]]):
+    language = serializers.ChoiceField(choices=("en", "de"))
+    invoice_id = serializers.IntegerField(min_value=1, required=False)
+    format = serializers.ChoiceField(choices=("html", "pdf"), default="pdf")
+
+
+class PreviewResponseSerializer(serializers.Serializer[dict[str, object]]):
+    id = serializers.UUIDField(read_only=True)
+    url = serializers.CharField(read_only=True)
+    expires_at = serializers.DateTimeField(read_only=True)
