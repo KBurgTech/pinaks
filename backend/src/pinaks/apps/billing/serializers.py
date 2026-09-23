@@ -4,11 +4,13 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from pinaks.apps.billing.models import Invoice, InvoiceLine, InvoicePreset
+from pinaks.apps.custom_fields.services import redact_custom_data
 from pinaks.apps.customers.serializers import StrictSerializer
 
 
 class DraftCreateSerializer(StrictSerializer[Invoice]):
     customer_id = serializers.IntegerField(min_value=1)
+    custom_data = serializers.JSONField(required=False)
     document_language = serializers.ChoiceField(choices=("en", "de"), required=False)
     issue_date = serializers.DateField(required=False)
     due_date = serializers.DateField(required=False, allow_null=True)
@@ -33,6 +35,11 @@ class InvoiceLineSerializer(serializers.Serializer[object]):
     net_total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     tax_total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     gross_total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    custom_data = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.JSONField)
+    def get_custom_data(self, obj: InvoiceLine) -> dict[str, object]:
+        return redact_custom_data(target="invoice_line", values=obj.custom_data)
 
 
 class InvoiceSerializer(serializers.Serializer[Invoice]):
@@ -48,6 +55,7 @@ class InvoiceSerializer(serializers.Serializer[Invoice]):
     issue_date = serializers.DateField(read_only=True)
     due_date = serializers.DateField(read_only=True, allow_null=True)
     recipient = serializers.DictField(read_only=True)
+    custom_data = serializers.SerializerMethodField()
     lines = serializers.SerializerMethodField()
     subtotal = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     tax_total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
@@ -55,6 +63,10 @@ class InvoiceSerializer(serializers.Serializer[Invoice]):
     version = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     modified_at = serializers.DateTimeField(read_only=True)
+
+    @extend_schema_field(serializers.JSONField)
+    def get_custom_data(self, obj: Invoice) -> dict[str, object]:
+        return redact_custom_data(target="invoice", values=obj.custom_data)
 
     @extend_schema_field(InvoiceLineSerializer(many=True))
     def get_lines(self, obj: Invoice) -> list[dict[str, object]]:
@@ -107,6 +119,7 @@ class LineOperationSerializer(StrictSerializer[dict[str, object]]):
     exemption_wording = serializers.CharField(max_length=255, required=False, allow_blank=True)
     service_date = serializers.DateField(required=False, allow_null=True)
     service_period_end = serializers.DateField(required=False, allow_null=True)
+    custom_data = serializers.JSONField(required=False)
 
     def validate(self, attrs: dict[str, object]) -> dict[str, object]:
         action = attrs["action"]
@@ -147,6 +160,7 @@ class DraftUpdateSerializer(StrictSerializer[dict[str, object]]):
     due_date = serializers.DateField(required=False, allow_null=True)
     recipient = RecipientInputSerializer(required=False)
     line_operations = LineOperationSerializer(many=True, required=False, allow_empty=False)
+    custom_data = serializers.JSONField(required=False)
 
 
 class PresetLineSerializer(StrictSerializer[dict[str, object]]):

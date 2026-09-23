@@ -6,7 +6,9 @@ from pinaks.apps.custom_fields.models import CustomFieldDefinition
 class CustomFieldDefinitionSerializer(serializers.Serializer[CustomFieldDefinition]):
     id = serializers.IntegerField(read_only=True)
     key = serializers.RegexField(r"^[a-z][a-z0-9_]*$", max_length=64)
-    target = serializers.ChoiceField(choices=("customer", "catalog_item"))
+    target = serializers.ChoiceField(
+        choices=("customer", "catalog_item", "invoice", "invoice_line")
+    )
     data_type = serializers.ChoiceField(
         choices=("text", "long_text", "integer", "decimal", "boolean", "date", "choice")
     )

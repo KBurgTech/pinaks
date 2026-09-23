@@ -9,13 +9,14 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from pinaks.api.exceptions import BusinessRuleViolation
 from pinaks.api.serializers import ErrorEnvelopeSerializer
 from pinaks.apps.accounts.models import User
-from pinaks.apps.accounts.permissions import CanMutateDrafts, CanRead
+from pinaks.apps.accounts.permissions import CanAdminister, CanMutateDrafts, CanRead
 from pinaks.apps.audit.services import request_correlation_id
-from pinaks.apps.billing.models import Invoice
+from pinaks.apps.billing.models import Invoice, InvoiceLine
 from pinaks.apps.billing.serializers import (
     DraftCreateSerializer,
     DraftUpdateSerializer,
@@ -28,6 +29,7 @@ from pinaks.apps.billing.services import (
     update_draft,
 )
 from pinaks.apps.catalog.models import CatalogItem
+from pinaks.apps.custom_fields.services import filter_custom_data, sensitive_custom_data
 from pinaks.apps.customers.models import BillingRecipient, Customer
 
 
@@ -59,6 +61,12 @@ class InvoiceListView(GenericAPIView[Invoice]):
             OpenApiParameter("due_date_before", str),
             OpenApiParameter("due_date_after", str),
             OpenApiParameter("overdue", bool),
+            OpenApiParameter("custom_field", str),
+            OpenApiParameter("custom_operator", str),
+            OpenApiParameter("custom_value", str),
+            OpenApiParameter("line_custom_field", str),
+            OpenApiParameter("line_custom_operator", str),
+            OpenApiParameter("line_custom_value", str),
             OpenApiParameter("page", int),
             OpenApiParameter("page_size", int),
         ],
@@ -97,6 +105,31 @@ class InvoiceListView(GenericAPIView[Invoice]):
             invoices = invoices.filter(
                 overdue_condition if overdue == "true" else ~overdue_condition
             )
+        custom_field = request.query_params.get("custom_field")
+        if custom_field:
+            try:
+                invoices = filter_custom_data(
+                    invoices,
+                    target="invoice",
+                    key=custom_field,
+                    operator=request.query_params.get("custom_operator", "exact"),
+                    value=request.query_params.get("custom_value", ""),
+                )
+            except DjangoValidationError as error:
+                raise ValidationError(error.message_dict) from error
+        line_custom_field = request.query_params.get("line_custom_field")
+        if line_custom_field:
+            try:
+                matching_lines = filter_custom_data(
+                    InvoiceLine.objects.all(),
+                    target="invoice_line",
+                    key=line_custom_field,
+                    operator=request.query_params.get("line_custom_operator", "exact"),
+                    value=request.query_params.get("line_custom_value", ""),
+                )
+            except DjangoValidationError as error:
+                raise ValidationError(error.message_dict) from error
+            invoices = invoices.filter(pk__in=matching_lines.values("invoice_id"))
         page = self.paginate_queryset(invoices)
         serializer = InvoiceSerializer(page, many=True)  # type: ignore[arg-type]
         return self.get_paginated_response(serializer.data)
@@ -129,6 +162,7 @@ class InvoiceListView(GenericAPIView[Invoice]):
                 document_language=values.get("document_language"),
                 issue_date=values.get("issue_date"),
                 due_date=values.get("due_date"),
+                custom_data=values.get("custom_data", {}),
             )
         except CompanyConfigurationMissingError as error:
             raise BusinessRuleViolation(
@@ -205,3 +239,51 @@ class InvoiceDetailView(GenericAPIView[Invoice]):
                 error.message_dict if hasattr(error, "message_dict") else error.messages
             ) from error
         return Response(InvoiceSerializer(invoice).data)
+
+
+class SensitiveInvoiceFieldsView(APIView):
+    permission_classes = (CanAdminister,)
+
+    @extend_schema(
+        operation_id="invoice_sensitive_fields",
+        responses={200: dict, 403: ErrorEnvelopeSerializer},
+    )
+    def get(self, request: Request, invoice_id: int) -> Response:
+        try:
+            invoice = Invoice.objects.get(pk=invoice_id)
+        except Invoice.DoesNotExist as error:
+            raise NotFound("Invoice was not found.") from error
+        actor = request.user
+        assert isinstance(actor, User)
+        return Response(
+            sensitive_custom_data(
+                target="invoice",
+                instance=invoice,
+                actor=actor,
+                correlation_id=request_correlation_id(request),
+            )
+        )
+
+
+class SensitiveInvoiceLineFieldsView(APIView):
+    permission_classes = (CanAdminister,)
+
+    @extend_schema(
+        operation_id="invoice_line_sensitive_fields",
+        responses={200: dict, 403: ErrorEnvelopeSerializer},
+    )
+    def get(self, request: Request, invoice_id: int, line_id: int) -> Response:
+        try:
+            line = InvoiceLine.objects.get(pk=line_id, invoice_id=invoice_id)
+        except InvoiceLine.DoesNotExist as error:
+            raise NotFound("Invoice line was not found.") from error
+        actor = request.user
+        assert isinstance(actor, User)
+        return Response(
+            sensitive_custom_data(
+                target="invoice_line",
+                instance=line,
+                actor=actor,
+                correlation_id=request_correlation_id(request),
+            )
+        )

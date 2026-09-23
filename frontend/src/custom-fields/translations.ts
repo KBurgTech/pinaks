@@ -1,7 +1,7 @@
 export const customFieldTranslations = {
   en: {
     heading: "Custom fields",
-    description: "Define bilingual fields for customers and catalog items.",
+    description: "Define bilingual fields for customers, catalog items, invoices, and lines.",
     formHeading: "Additional details",
     machineKey: "Machine key",
     englishLabel: "English label",
@@ -11,6 +11,8 @@ export const customFieldTranslations = {
     target: "Target",
     customer: "Customer",
     catalogItem: "Catalog item",
+    invoice: "Invoice",
+    invoiceLine: "Invoice line",
     type: "Data type",
     text: "Text",
     longText: "Long text",
@@ -44,7 +46,8 @@ export const customFieldTranslations = {
   },
   de: {
     heading: "Zusatzfelder",
-    description: "Zweisprachige Felder für Kunden und Katalogeinträge definieren.",
+    description:
+      "Zweisprachige Felder für Kunden, Katalogeinträge, Rechnungen und Positionen definieren.",
     formHeading: "Weitere Angaben",
     machineKey: "Maschinenschlüssel",
     englishLabel: "Englische Bezeichnung",
@@ -54,6 +57,8 @@ export const customFieldTranslations = {
     target: "Bereich",
     customer: "Kunde",
     catalogItem: "Katalogeintrag",
+    invoice: "Rechnung",
+    invoiceLine: "Rechnungsposition",
     type: "Datentyp",
     text: "Text",
     longText: "Langer Text",

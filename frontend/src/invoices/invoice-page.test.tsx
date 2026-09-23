@@ -33,6 +33,7 @@ const invoice = {
   issue_date: "2026-09-23",
   due_date: null,
   recipient: {},
+  custom_data: {},
   lines: [],
   subtotal: "0.00",
   tax_total: "0.00",
@@ -274,6 +275,7 @@ describe("draft invoice page", () => {
       price_entry_policy: "net",
       exemption_reason_code: "",
       exemption_wording: "",
+      custom_data: {},
     });
     const first = line(11, "First", 1);
     const second = line(12, "Second", 2);
@@ -393,6 +395,7 @@ describe("draft invoice page", () => {
           price_entry_policy: "net",
           exemption_reason_code: "",
           exemption_wording: "",
+          custom_data: {},
           service_date: null,
           service_period_end: null,
           net_total: "20.00",
@@ -436,4 +439,240 @@ describe("draft invoice page", () => {
     expect(screen.getByLabelText("Vorlage")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Vorlage anwenden" })).toBeInTheDocument();
   });
+});
+
+describe("invoice custom fields", () => {
+  const definition = {
+    id: 11,
+    key: "reference",
+    target: "invoice",
+    data_type: "text",
+    label_en: "Reference",
+    label_de: "Referenz",
+    search_mode: "exact",
+    visibility: "internal",
+    is_sensitive: false,
+    is_retired: false,
+    display_order: 0,
+    choices: [],
+  };
+
+  it("saves localized invoice fields with the draft version", async () => {
+    window.history.pushState({}, "", "/app/invoices/7/");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/custom-fields/") return Promise.resolve(response([definition]));
+      if (path === "/api/v1/invoices/{invoice_id}/")
+        return Promise.resolve(response({ ...invoice, custom_data: {} }));
+      return Promise.resolve(response([]));
+    });
+    patch.mockResolvedValue(
+      response({ ...invoice, version: 2, custom_data: { reference: "A-1" } }),
+    );
+    mount();
+    fireEvent.change(await screen.findByLabelText("Reference"), { target: { value: "A-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save draft" }));
+    await waitFor(() =>
+      expect(patch.mock.calls[0]?.[1]).toMatchObject({
+        body: { expected_version: 1, custom_data: { reference: "A-1" } },
+      }),
+    );
+  });
+
+  it("offers bilingual allowed filters without displaying sensitive values", async () => {
+    await i18n.changeLanguage("de");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/custom-fields/")
+        return Promise.resolve(
+          response([
+            definition,
+            {
+              ...definition,
+              id: 12,
+              key: "secret",
+              label_en: "Secret",
+              label_de: "Geheim",
+              search_mode: "none",
+              is_sensitive: true,
+            },
+          ]),
+        );
+      if (path === "/api/v1/invoices/")
+        return Promise.resolve(response({ count: 0, results: [], next: null, previous: null }));
+      return Promise.resolve(response([]));
+    });
+    mount();
+    expect(await screen.findByLabelText("Zusatzfeld filtern")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Referenz" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Geheim" })).not.toBeInTheDocument();
+  });
+});
+
+it("saves invoice line custom fields in the same line command", async () => {
+  window.history.pushState({}, "", "/app/invoices/7/");
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/custom-fields/")
+      return Promise.resolve(
+        response([
+          {
+            id: 31,
+            key: "kind",
+            target: "invoice_line",
+            data_type: "choice",
+            label_en: "Kind",
+            label_de: "Art",
+            choices: [{ code: "work", label_en: "Work", label_de: "Arbeit" }],
+            search_mode: "exact",
+            visibility: "document",
+            is_sensitive: false,
+            is_retired: false,
+          },
+        ]),
+      );
+    if (path === "/api/v1/custom-fields/") return Promise.resolve(response([]));
+    if (path === "/api/v1/invoices/{invoice_id}/")
+      return Promise.resolve(response({ ...invoice, custom_data: {} }));
+    return Promise.resolve(response([]));
+  });
+  patch.mockResolvedValue(response({ ...invoice, version: 2 }));
+  mount();
+  fireEvent.click(await screen.findByRole("button", { name: "Add manual line" }));
+  fireEvent.change(await screen.findByLabelText("Kind"), { target: { value: "work" } });
+  fireEvent.change(screen.getByLabelText("Description"), { target: { value: "Consulting" } });
+  fireEvent.change(screen.getByLabelText("Unit price"), { target: { value: "10.00" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save line" }));
+  await waitFor(() =>
+    expect(patch.mock.calls[0]?.[1]).toMatchObject({
+      body: { line_operations: [{ custom_data: { kind: "work" } }] },
+    }),
+  );
+});
+
+it("includes required invoice custom fields when creating a draft", async () => {
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/custom-fields/")
+      return Promise.resolve(
+        response([
+          {
+            id: 41,
+            key: "reference",
+            target: "invoice",
+            data_type: "text",
+            label_en: "Reference",
+            label_de: "Referenz",
+            required: true,
+            search_mode: "exact",
+            visibility: "internal",
+            is_sensitive: false,
+          },
+        ]),
+      );
+    if (path === "/api/v1/customers/")
+      return Promise.resolve(
+        response({ count: 1, results: [customer], next: null, previous: null }),
+      );
+    if (path === "/api/v1/invoices/")
+      return Promise.resolve(response({ count: 0, results: [], next: null, previous: null }));
+    return Promise.resolve(response([]));
+  });
+  post.mockResolvedValue(response({ ...invoice, custom_data: { reference: "A-1" } }, 201));
+  mount();
+  fireEvent.click(await screen.findByRole("button", { name: "New invoice" }));
+  fireEvent.change(await screen.findByLabelText("Customer"), { target: { value: "3" } });
+  fireEvent.change(await screen.findByLabelText("Reference"), { target: { value: "A-1" } });
+  fireEvent.click(screen.getByRole("button", { name: "Create draft" }));
+  await waitFor(() =>
+    expect(post.mock.calls[0]?.[1]).toMatchObject({
+      body: { customer_id: 3, custom_data: { reference: "A-1" } },
+    }),
+  );
+});
+
+it("submits catalog line custom fields with the selected catalog item", async () => {
+  window.history.pushState({}, "", "/app/invoices/7/");
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/custom-fields/")
+      return Promise.resolve(
+        response([
+          {
+            id: 42,
+            key: "kind",
+            target: "invoice_line",
+            data_type: "text",
+            label_en: "Kind",
+            label_de: "Art",
+            required: true,
+            search_mode: "exact",
+            visibility: "document",
+            is_sensitive: false,
+          },
+        ]),
+      );
+    if (path === "/api/v1/catalog/")
+      return Promise.resolve(
+        response({
+          count: 1,
+          results: [
+            {
+              id: 4,
+              code: "WORK",
+              description_en: "Work",
+              is_archived: false,
+            },
+          ],
+          next: null,
+          previous: null,
+        }),
+      );
+    if (path === "/api/v1/invoices/{invoice_id}/") return Promise.resolve(response(invoice));
+    return Promise.resolve(response([]));
+  });
+  patch.mockResolvedValue(response({ ...invoice, version: 2 }));
+  mount();
+  fireEvent.click(await screen.findByRole("button", { name: "Add catalog item" }));
+  fireEvent.change(await screen.findByLabelText("Kind"), { target: { value: "service" } });
+  await screen.findByRole("option", { name: "WORK — Work" });
+  fireEvent.change(screen.getByLabelText("Catalog item"), { target: { value: "4" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save line" }));
+  await waitFor(() =>
+    expect(patch.mock.calls[0]?.[1]).toMatchObject({
+      body: { line_operations: [{ catalog_item_id: 4, custom_data: { kind: "service" } }] },
+    }),
+  );
+});
+
+it("filters invoices by a searchable line field", async () => {
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/custom-fields/")
+      return Promise.resolve(
+        response([
+          {
+            id: 51,
+            key: "kind",
+            target: "invoice_line",
+            data_type: "text",
+            label_en: "Kind",
+            label_de: "Art",
+            search_mode: "exact",
+            visibility: "internal",
+            is_sensitive: false,
+          },
+        ]),
+      );
+    if (path === "/api/v1/invoices/")
+      return Promise.resolve(response({ count: 0, results: [], next: null, previous: null }));
+    return Promise.resolve(response([]));
+  });
+  mount();
+  fireEvent.change(await screen.findByLabelText("Filter custom field"), {
+    target: { value: "invoice_line:kind" },
+  });
+  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "work" } });
+  fireEvent.click(screen.getByRole("button", { name: "Apply filter" }));
+  await waitFor(() =>
+    expect(
+      get.mock.calls.filter((call) => call[0] === "/api/v1/invoices/").at(-1)?.[1],
+    ).toMatchObject({
+      params: { query: { line_custom_field: "kind", line_custom_value: "work" } },
+    }),
+  );
 });

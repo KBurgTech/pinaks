@@ -206,7 +206,7 @@ def filter_custom_data[ModelT: models.Model](
             except ValueError:
                 raise ValidationError({"value": "Enter an integer."}) from None
         normalized = _normalize_value(field, value)
-        return queryset.filter(**{f"custom_data__{key}": normalized})
+        return queryset.filter(custom_data__contains={key: normalized})
     if operator == "text" and field.search_mode == "text" and isinstance(value, str):
         return queryset.filter(**{f"custom_data__{key}__icontains": value})
     if operator in {"gte", "lte"} and field.search_mode == "range":

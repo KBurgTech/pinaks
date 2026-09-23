@@ -2057,6 +2057,27 @@
                 "parameters": [
                     {
                         "in": "query",
+                        "name": "custom_field",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_operator",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_value",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
                         "name": "customer",
                         "schema": {
                             "type": "integer"
@@ -2093,6 +2114,27 @@
                     {
                         "in": "query",
                         "name": "lifecycle_status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "line_custom_field",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "line_custom_operator",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "line_custom_value",
                         "schema": {
                             "type": "string"
                         }
@@ -2459,6 +2501,106 @@
                         "description": ""
                     },
                     "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoices/{invoice_id}/lines/{line_id}/sensitive-fields/": {
+            "get": {
+                "operationId": "invoice_line_sensitive_fields",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "line_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoices/{invoice_id}/sensitive-fields/": {
+            "get": {
+                "operationId": "invoice_sensitive_fields",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3510,6 +3652,7 @@
                         "type": "integer",
                         "minimum": 1
                     },
+                    "custom_data": {},
                     "document_language": {
                         "$ref": "#/components/schemas/DocumentLanguage"
                     },
@@ -3672,6 +3815,9 @@
                         "additionalProperties": {},
                         "readOnly": true
                     },
+                    "custom_data": {
+                        "readOnly": true
+                    },
                     "lines": {
                         "type": "array",
                         "items": {
@@ -3715,6 +3861,7 @@
                 "required": [
                     "created_at",
                     "currency",
+                    "custom_data",
                     "customer_id",
                     "document_language",
                     "due_date",
@@ -3826,9 +3973,13 @@
                         "format": "decimal",
                         "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
                         "readOnly": true
+                    },
+                    "custom_data": {
+                        "readOnly": true
                     }
                 },
                 "required": [
+                    "custom_data",
                     "description",
                     "discount_percent",
                     "exemption_reason_code",
@@ -3930,7 +4081,8 @@
                         "type": "string",
                         "format": "date",
                         "nullable": true
-                    }
+                    },
+                    "custom_data": {}
                 },
                 "required": [
                     "action"
@@ -4396,7 +4548,8 @@
                         "items": {
                             "$ref": "#/components/schemas/LineOperationRequest"
                         }
-                    }
+                    },
+                    "custom_data": {}
                 }
             },
             "PatchedPresetWriteRequest": {
@@ -4752,10 +4905,12 @@
             "TargetEnum": {
                 "enum": [
                     "customer",
-                    "catalog_item"
+                    "catalog_item",
+                    "invoice",
+                    "invoice_line"
                 ],
                 "type": "string",
-                "description": "* `customer` - customer\n* `catalog_item` - catalog_item"
+                "description": "* `customer` - customer\n* `catalog_item` - catalog_item\n* `invoice` - invoice\n* `invoice_line` - invoice_line"
             },
             "TaxCategoryEnum": {
                 "enum": [

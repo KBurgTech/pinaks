@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 from typing import ClassVar
 
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -49,6 +50,9 @@ class Invoice(models.Model):
     recipient: models.JSONField[dict[str, str], dict[str, str]] = models.JSONField(
         default=dict, blank=True
     )
+    custom_data: models.JSONField[dict[str, object], dict[str, object]] = models.JSONField(
+        default=dict, blank=True
+    )
     subtotal: models.DecimalField[Decimal, Decimal] = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal("0.00")
     )
@@ -64,6 +68,9 @@ class Invoice(models.Model):
 
     class Meta:
         ordering = ("-created_at", "-pk")
+        indexes: ClassVar[list[models.Index]] = [
+            GinIndex(fields=("custom_data",), name="invoice_custom_data_gin")
+        ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
                 condition=Q(lifecycle_status="DRAFT"), name="invoice_supported_lifecycle"
@@ -137,6 +144,9 @@ class InvoiceLine(models.Model):
     price_entry_policy: models.CharField[str, str] = models.CharField(max_length=5)
     exemption_reason_code: models.CharField[str, str] = models.CharField(max_length=50, blank=True)
     exemption_wording: models.CharField[str, str] = models.CharField(max_length=255, blank=True)
+    custom_data: models.JSONField[dict[str, object], dict[str, object]] = models.JSONField(
+        default=dict, blank=True
+    )
     net_total: models.DecimalField[Decimal, Decimal] = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal("0.00")
     )
@@ -149,6 +159,9 @@ class InvoiceLine(models.Model):
 
     class Meta:
         ordering = ("position", "pk")
+        indexes: ClassVar[list[models.Index]] = [
+            GinIndex(fields=("custom_data",), name="invoice_line_custom_gin")
+        ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(
                 fields=("invoice", "position"), name="unique_invoice_line_position"
