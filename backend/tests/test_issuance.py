@@ -437,3 +437,33 @@ def test_custom_field_metadata_is_frozen_with_values(
     frozen_invoice = issued.snapshot["invoice"]
     assert isinstance(frozen_invoice, dict)
     assert frozen_invoice["custom_fields"][0]["label_en"] == "Reference"
+
+
+def test_frozen_issuance_snapshot_serializes_without_live_models(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+) -> None:
+    from pathlib import Path
+
+    from pinaks.apps.e_invoicing.facturx import FacturXSerializer
+    from pinaks.apps.e_invoicing.mustang import MustangValidator
+
+    invoice, actor, template = ready_invoice
+    issued = issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="xml-snapshot",
+        actor=actor,
+        correlation_id="test",
+    )
+    assert issued.snapshot is not None
+    first = FacturXSerializer().serialize(issued.snapshot)
+    invoice.customer.given_name = "Changed"
+    invoice.customer.save()
+    CompanyProfile.objects.update(legal_name="Changed Seller")
+    assert FacturXSerializer().serialize(issued.snapshot) == first
+    validator = MustangValidator(
+        jar_path=Path("/tmp/pinaks-einvoice-tools/mustang/Mustang-CLI-2.23.0.jar")
+    )
+    report = validator.validate(first, filename="issued.xml")
+    assert report.valid, report.findings
