@@ -11,6 +11,8 @@ type Customer = components["schemas"]["Customer"];
 type CatalogItem = components["schemas"]["CatalogItem"];
 type Recipient = components["schemas"]["BillingRecipient"];
 type Line = components["schemas"]["InvoiceLine"];
+type Preset = components["schemas"]["Preset"];
+type PresetLine = components["schemas"]["PresetLineRequest"];
 type LineOperation = components["schemas"]["LineOperationRequest"];
 type Update = components["schemas"]["PatchedDraftUpdateRequest"];
 type RecipientInput = components["schemas"]["RecipientInputRequest"];
@@ -790,6 +792,13 @@ function DraftEditor({
           </button>
         )}
       </form>
+      <PresetSection
+        invoice={invoice}
+        editable={editable}
+        dirty={dirty}
+        onSaved={onSaved}
+        onConflict={() => setConflict(true)}
+      />
       <section className="mt-8">
         <h2 className="mb-4 text-xl font-semibold">{t("invoicePage.lines")}</h2>
         {invoice.lines.length === 0 ? (
@@ -1192,5 +1201,220 @@ function ManualLineForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function presetLine(line: Line): PresetLine {
+  return {
+    item_code: line.item_code,
+    description: line.description,
+    unit: line.unit === "HUR" ? "HUR" : line.unit === "DAY" ? "DAY" : "C62",
+    quantity: line.quantity,
+    unit_price: line.unit_price,
+    discount_percent: line.discount_percent,
+    tax_category: line.tax_category === "E" ? "E" : "S",
+    tax_rate: line.tax_rate,
+    price_entry_policy: line.price_entry_policy === "gross" ? "gross" : "net",
+    exemption_reason_code: line.exemption_reason_code,
+    exemption_wording: line.exemption_wording,
+    service_date: line.service_date,
+    service_period_end: line.service_period_end,
+  };
+}
+
+function PresetSection({
+  invoice,
+  editable,
+  dirty,
+  onSaved,
+  onConflict,
+}: {
+  invoice: Invoice;
+  editable: boolean;
+  dirty: boolean;
+  onSaved: (invoice: Invoice) => void;
+  onConflict: () => void;
+}) {
+  const { t } = useTranslation("shell");
+  const queryClient = useQueryClient();
+  const presets = useQuery({
+    queryKey: ["invoice-presets"],
+    queryFn: async (): Promise<readonly Preset[]> => {
+      const { data } = await apiClient.GET("/api/v1/invoice-presets/");
+      if (Array.isArray(data)) return data;
+      throw new Error("presets_unavailable");
+    },
+  });
+  const [selected, setSelected] = useState("");
+  const [mode, setMode] = useState<"append" | "replace">("append");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+  const selectedId = Number(selected);
+  const active = presets.data?.find((preset) => preset.id === selectedId);
+
+  async function run(action: "create" | "update" | "rename" | "archive" | "apply") {
+    setBusy(true);
+    setError("");
+    setSaved(false);
+    try {
+      if (action === "apply") {
+        const result = await apiClient.POST("/api/v1/invoices/{invoice_id}/apply-preset/", {
+          params: { path: { invoice_id: invoice.id } },
+          body: { preset_id: selectedId, expected_version: invoice.version, mode },
+        });
+        if (isInvoice(result.data)) {
+          onSaved(result.data);
+          setSaved(true);
+        } else if (serverError(result.error).code === "stale_invoice_version") {
+          onConflict();
+        } else {
+          setError(t("invoicePage.presetError"));
+        }
+      } else {
+        const lines = invoice.lines.map(presetLine);
+        const result =
+          action === "create"
+            ? await apiClient.POST("/api/v1/invoice-presets/", { body: { name, lines } })
+            : action === "update"
+              ? await apiClient.PATCH("/api/v1/invoice-presets/{preset_id}/", {
+                  params: { path: { preset_id: selectedId } },
+                  body: { lines },
+                })
+              : action === "rename"
+                ? await apiClient.PATCH("/api/v1/invoice-presets/{preset_id}/", {
+                    params: { path: { preset_id: selectedId } },
+                    body: { name },
+                  })
+                : await apiClient.POST("/api/v1/invoice-presets/{preset_id}/archive/", {
+                    params: { path: { preset_id: selectedId } },
+                  });
+        if (result.data) {
+          if (action === "create") setSelected(result.data.id.toString());
+          if (action === "archive") setSelected("");
+          setName("");
+          setSaved(true);
+          await queryClient.invalidateQueries({ queryKey: ["invoice-presets"] });
+        } else {
+          setError(t("invoicePage.presetError"));
+        }
+      }
+    } catch {
+      setError(t("invoicePage.presetError"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section
+      className="mt-8 rounded-md border border-neutral-200 p-4"
+      aria-label={t("invoicePage.presets")}
+    >
+      <h2 className="mb-4 text-xl font-semibold">{t("invoicePage.presets")}</h2>
+      {presets.isError && <p role="alert">{t("invoicePage.presetError")}</p>}
+      {presets.data?.length === 0 && <p>{t("invoicePage.presetsEmpty")}</p>}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field inputId="invoice-preset" label={t("invoicePage.preset")}>
+          <select
+            className={inputClass}
+            id="invoice-preset"
+            value={selected}
+            onChange={(event) => {
+              setSelected(event.target.value);
+              setName("");
+            }}
+          >
+            <option value="">{t("invoicePage.selectPreset")}</option>
+            {presets.data?.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field inputId="invoice-preset-mode" label={t("invoicePage.applyMode")}>
+          <select
+            className={inputClass}
+            id="invoice-preset-mode"
+            value={mode}
+            onChange={(event) => setMode(event.target.value === "replace" ? "replace" : "append")}
+            disabled={!editable}
+          >
+            <option value="append">{t("invoicePage.appendPreset")}</option>
+            <option value="replace">{t("invoicePage.replacePreset")}</option>
+          </select>
+        </Field>
+      </div>
+      {active && (
+        <ol className="my-3 list-decimal ps-5 text-sm">
+          {active.lines.map((line, index) => (
+            <li key={index}>
+              {line.description} — {line.quantity} × {line.unit_price}
+            </li>
+          ))}
+        </ol>
+      )}
+      {editable && (
+        <>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className={primaryClass}
+              type="button"
+              disabled={!active || busy || dirty}
+              onClick={() => void run("apply")}
+            >
+              {t("invoicePage.applyPreset")}
+            </button>
+            <button
+              className={buttonClass}
+              type="button"
+              disabled={!active || busy || dirty || invoice.lines.length === 0}
+              onClick={() => void run("update")}
+            >
+              {t("invoicePage.updatePreset")}
+            </button>
+            <button
+              className={buttonClass}
+              type="button"
+              disabled={!active || busy}
+              onClick={() => void run("archive")}
+            >
+              {t("invoicePage.archivePreset")}
+            </button>
+          </div>
+          <div className="mt-4 flex max-w-xl flex-wrap items-end gap-2">
+            <Field inputId="invoice-preset-name" label={t("invoicePage.presetName")}>
+              <input
+                className={inputClass}
+                id="invoice-preset-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={120}
+              />
+            </Field>
+            <button
+              className={buttonClass}
+              type="button"
+              disabled={!name.trim() || !invoice.lines.length || busy || dirty}
+              onClick={() => void run("create")}
+            >
+              {t("invoicePage.savePreset")}
+            </button>
+            <button
+              className={buttonClass}
+              type="button"
+              disabled={!active || !name.trim() || busy}
+              onClick={() => void run("rename")}
+            >
+              {t("invoicePage.renamePreset")}
+            </button>
+          </div>
+        </>
+      )}
+      {saved && <p role="status">{t("invoicePage.presetSaved")}</p>}
+      {error && <p role="alert">{error}</p>}
+    </section>
   );
 }

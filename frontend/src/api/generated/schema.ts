@@ -246,6 +246,54 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoice-presets/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["preset_list"];
+        readonly put?: never;
+        readonly post: operations["preset_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoice-presets/{preset_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["preset_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["preset_update"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoice-presets/{preset_id}/archive/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["preset_archive"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoices/": {
         readonly parameters: {
             readonly query?: never;
@@ -276,6 +324,22 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         readonly patch: operations["invoice_update_draft"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/apply-preset/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoice_apply_preset"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
         readonly trace?: never;
     };
     readonly "/api/v1/probe/": {
@@ -313,6 +377,11 @@ export interface components {
             readonly probe: string;
             /** Format: uri */
             readonly schema: string;
+        };
+        readonly ApplyPresetRequest: {
+            readonly preset_id: number;
+            readonly expected_version: number;
+            readonly mode: components["schemas"]["ModeEnum"];
         };
         readonly BillingRecipient: {
             readonly id: number;
@@ -679,6 +748,12 @@ export interface components {
             /** Format: date */
             readonly service_period_end?: string | null;
         };
+        /**
+         * @description * `append` - append
+         *     * `replace` - replace
+         * @enum {string}
+         */
+        readonly ModeEnum: "append" | "replace";
         readonly PaginatedCatalogItemList: {
             /** @example 123 */
             readonly count: number;
@@ -723,6 +798,21 @@ export interface components {
              */
             readonly previous?: string | null;
             readonly results: readonly components["schemas"]["Invoice"][];
+        };
+        readonly PaginatedPresetList: {
+            /** @example 123 */
+            readonly count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            readonly next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            readonly previous?: string | null;
+            readonly results: readonly components["schemas"]["Preset"][];
         };
         /**
          * @description * `person` - person
@@ -824,6 +914,10 @@ export interface components {
             readonly recipient?: components["schemas"]["RecipientInputRequest"];
             readonly line_operations?: readonly components["schemas"]["LineOperationRequest"][];
         };
+        readonly PatchedPresetWriteRequest: {
+            readonly name?: string;
+            readonly lines?: readonly components["schemas"]["PresetLineRequest"][];
+        };
         readonly PatchedTaxProfileRequest: {
             readonly code?: string;
             readonly name?: string;
@@ -837,6 +931,70 @@ export interface components {
             readonly tax_column_policy?: components["schemas"]["TaxColumnPolicyEnum"];
             readonly required_seller_identifiers?: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
             readonly is_default?: boolean;
+        };
+        readonly Preset: {
+            readonly id: number;
+            readonly name: string;
+            readonly lines: readonly components["schemas"]["PresetLine"][];
+            readonly is_archived: boolean;
+        };
+        readonly PresetCreateRequest: {
+            readonly name: string;
+            readonly lines: readonly components["schemas"]["PresetLineRequest"][];
+        };
+        readonly PresetLine: {
+            /** @default  */
+            readonly item_code: string;
+            readonly description: string;
+            readonly unit: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly quantity: string;
+            /** Format: decimal */
+            readonly unit_price: string;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            readonly discount_percent: string;
+            readonly tax_category: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly tax_rate: string;
+            readonly price_entry_policy: components["schemas"]["PriceEntryPolicyEnum"];
+            /** @default  */
+            readonly exemption_reason_code: string;
+            /** @default  */
+            readonly exemption_wording: string;
+            /** Format: date */
+            readonly service_date?: string | null;
+            /** Format: date */
+            readonly service_period_end?: string | null;
+        };
+        readonly PresetLineRequest: {
+            /** @default  */
+            readonly item_code: string;
+            readonly description: string;
+            readonly unit: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly quantity: string;
+            /** Format: decimal */
+            readonly unit_price: string;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            readonly discount_percent: string;
+            readonly tax_category: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly tax_rate: string;
+            readonly price_entry_policy: components["schemas"]["PriceEntryPolicyEnum"];
+            /** @default  */
+            readonly exemption_reason_code: string;
+            /** @default  */
+            readonly exemption_wording: string;
+            /** Format: date */
+            readonly service_date?: string | null;
+            /** Format: date */
+            readonly service_period_end?: string | null;
         };
         /**
          * @description * `net` - net
@@ -2091,6 +2249,144 @@ export interface operations {
             };
         };
     };
+    readonly preset_list: {
+        readonly parameters: {
+            readonly query?: {
+                /** @description Which field to use when ordering the results. */
+                readonly ordering?: string;
+                /** @description A page number within the paginated result set. */
+                readonly page?: number;
+                /** @description Number of results to return per page. */
+                readonly page_size?: number;
+                /** @description A search term. */
+                readonly search?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PaginatedPresetList"];
+                };
+            };
+        };
+    };
+    readonly preset_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PresetCreateRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PresetCreateRequest"];
+                readonly "multipart/form-data": components["schemas"]["PresetCreateRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Preset"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly preset_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly preset_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Preset"];
+                };
+            };
+        };
+    };
+    readonly preset_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly preset_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedPresetWriteRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedPresetWriteRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedPresetWriteRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Preset"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly preset_archive: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly preset_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Preset"];
+                };
+            };
+        };
+    };
     readonly invoice_list: {
         readonly parameters: {
             readonly query?: {
@@ -2261,6 +2557,49 @@ export interface operations {
                 };
             };
             readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_apply_preset: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ApplyPresetRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["ApplyPresetRequest"];
+                readonly "multipart/form-data": components["schemas"]["ApplyPresetRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
