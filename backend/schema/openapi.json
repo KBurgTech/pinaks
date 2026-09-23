@@ -1803,6 +1803,259 @@
                 }
             }
         },
+        "/api/v1/invoices/": {
+            "get": {
+                "operationId": "invoice_list",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "customer",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_after",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_before",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "issue_date_from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "issue_date_to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "lifecycle_status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "overdue",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "payment_status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedInvoiceList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "invoice_create",
+                "tags": [
+                    "invoices"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftCreateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftCreateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoices/{invoice_id}/": {
+            "get": {
+                "operationId": "invoice_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -2805,6 +3058,30 @@
                 "type": "string",
                 "description": "* `en` - en\n* `de` - de"
             },
+            "DraftCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "customer_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "document_language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "issue_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "customer_id"
+                ]
+            },
             "ErrorBody": {
                 "type": "object",
                 "properties": {
@@ -2894,6 +3171,110 @@
                     "time_tracking"
                 ]
             },
+            "Invoice": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "customer_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "invoice_type": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "lifecycle_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_overdue": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "invoice_number": {
+                        "type": "string",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "document_language": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "issue_date": {
+                        "type": "string",
+                        "format": "date",
+                        "readOnly": true
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "subtotal": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "tax_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "grand_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "version": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "currency",
+                    "customer_id",
+                    "document_language",
+                    "due_date",
+                    "grand_total",
+                    "id",
+                    "invoice_number",
+                    "invoice_type",
+                    "is_overdue",
+                    "issue_date",
+                    "lifecycle_status",
+                    "modified_at",
+                    "payment_status",
+                    "subtotal",
+                    "tax_total",
+                    "version"
+                ]
+            },
             "InvoiceNumberResetEnum": {
                 "enum": [
                     "never",
@@ -2960,6 +3341,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Customer"
+                        }
+                    }
+                }
+            },
+            "PaginatedInvoiceList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Invoice"
                         }
                     }
                 }
