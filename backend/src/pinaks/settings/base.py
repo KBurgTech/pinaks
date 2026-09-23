@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "pinaks.apps.configuration",
     "pinaks.apps.custom_fields",
     "pinaks.apps.customers",
+    "pinaks.apps.documents",
     "django.contrib.admin",
     "django.contrib.postgres",
     "django.contrib.auth",
@@ -76,6 +77,7 @@ USE_TZ = True
 LOCALE_PATHS = [BASE_DIR / "locale"]
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 AUTH_PASSWORD_VALIDATORS = [

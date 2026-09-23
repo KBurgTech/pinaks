@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import { apiClient } from "@/api/client";
+import { apiClient, uploadDocumentAsset } from "@/api/client";
 import type { components } from "@/api/generated/schema";
 
 describe("generated API client", () => {
@@ -18,6 +18,28 @@ describe("generated API client", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     document.cookie = "csrftoken=; Max-Age=0; Path=/";
+  });
+
+  it("uploads document assets with CSRF and rejects malformed responses", async () => {
+    document.cookie = "csrftoken=asset-csrf; Path=/";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ key: 123 }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      uploadDocumentAsset(7, new File(["image"], "logo.png", { type: "image/png" })),
+    ).rejects.toThrow("document_asset_upload_failed");
+    const path = fetchMock.mock.calls[0]?.[0] as string;
+    const options = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(path).toBe("/api/v1/document-templates/7/assets/");
+    expect(options.credentials).toBe("same-origin");
+    expect(options.headers).toBeInstanceOf(Headers);
+    if (!(options.headers instanceof Headers)) throw new Error("missing upload headers");
+    expect(options.headers.get("X-CSRFToken")).toBe("asset-csrf");
+    expect(options.body).toBeInstanceOf(FormData);
   });
 
   it("sends the Django CSRF cookie on unsafe same-origin requests", async () => {
