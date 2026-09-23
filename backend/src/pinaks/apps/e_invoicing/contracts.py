@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -61,7 +62,7 @@ class CanonicalInvoice:
 
 
 class EInvoiceSerializer(Protocol):
-    def serialize(self, invoice: CanonicalInvoice) -> bytes: ...
+    def serialize(self, snapshot: Mapping[str, object]) -> bytes: ...
 
 
 class HybridPdfPackager(Protocol):

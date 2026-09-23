@@ -1,8 +1,12 @@
+from collections.abc import Mapping
 from decimal import Decimal
+from importlib.metadata import version
 
 from facturx import generate_from_binary, generate_xml  # type: ignore[import-untyped]
 
 from pinaks.apps.e_invoicing.contracts import CanonicalInvoice
+from pinaks.apps.e_invoicing.snapshot import InvoiceMappingError as InvoiceMappingError
+from pinaks.apps.e_invoicing.snapshot import serialize_snapshot
 
 
 def _amount(value: Decimal) -> str:
@@ -12,7 +16,17 @@ def _amount(value: Decimal) -> str:
 class FacturXSerializer:
     """Map Pinaks' canonical snapshot to ZUGFeRD/Factur-X EN 16931 CII."""
 
-    def serialize(self, invoice: CanonicalInvoice) -> bytes:
+    standard = "Factur-X"
+    profile = "EN 16931"
+    specification_version = "1.09"
+    generator_version = version("factur-x")
+
+    def serialize_snapshot(self, snapshot: Mapping[str, object]) -> bytes:
+        return serialize_snapshot(snapshot)
+
+    def serialize(self, invoice: CanonicalInvoice | Mapping[str, object]) -> bytes:
+        if isinstance(invoice, Mapping):
+            return self.serialize_snapshot(invoice)
         data: dict[str, object] = {
             "BT-1": invoice.invoice_number,
             "BT-2": invoice.issue_date,
