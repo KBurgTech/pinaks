@@ -10,6 +10,7 @@ from pinaks.apps.audit.services import record_event
 from pinaks.apps.billing.calculations import LineAmounts
 from pinaks.apps.billing.models import Invoice
 from pinaks.apps.configuration.models import CompanyProfile, DocumentLanguage
+from pinaks.apps.custom_fields.services import validate_custom_data
 from pinaks.apps.customers.models import Customer
 
 
@@ -26,6 +27,7 @@ def create_draft(
     document_language: str | None = None,
     issue_date: date | str | None = None,
     due_date: date | str | None = None,
+    custom_data: object = None,
 ) -> Invoice:
     company = CompanyProfile.objects.first()
     if company is None:
@@ -44,6 +46,7 @@ def create_draft(
         or company.default_document_language,
         issue_date=issue_date or timezone.localdate(),
         due_date=due_date,
+        custom_data=validate_custom_data(target="invoice", values=custom_data or {}),
     )
     if invoice.document_language not in DocumentLanguage.values:
         raise ValidationError({"document_language": "Unsupported document language."})
@@ -114,6 +117,10 @@ def update_draft(
         raise StaleInvoiceVersionError("The invoice changed since it was loaded.")
     if invoice.lifecycle_status != "DRAFT":
         raise ValidationError({"invoice": "Only drafts can be edited."})
+    if "custom_data" in values:
+        invoice.custom_data = validate_custom_data(
+            target="invoice", values=values["custom_data"], existing=invoice.custom_data
+        )
     for field in ("document_language", "issue_date", "due_date"):
         if field in values:
             setattr(invoice, field, values[field])
@@ -171,6 +178,9 @@ def update_draft(
                 line.discount_percent = operation.get("discount_percent", Decimal("0"))
                 line.service_date = operation.get("service_date")
                 line.service_period_end = operation.get("service_period_end")
+                line.custom_data = validate_custom_data(
+                    target="invoice_line", values=operation.get("custom_data", {})
+                )
                 position = operation.get("position", len(lines) + 1)
                 if not isinstance(position, int) or not 1 <= position <= len(lines) + 1:
                     raise ValidationError({"position": "Invalid line position."})
@@ -183,6 +193,12 @@ def update_draft(
                 if action == "remove":
                     lines.remove(target)
                 elif action == "update":
+                    if "custom_data" in operation:
+                        target.custom_data = validate_custom_data(
+                            target="invoice_line",
+                            values=operation["custom_data"],
+                            existing=target.custom_data,
+                        )
                     for field in (
                         "quantity",
                         "unit_price",

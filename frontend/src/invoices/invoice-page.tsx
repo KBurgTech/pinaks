@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CustomFields } from "@/custom-fields/custom-fields";
+import { loadDefinitions } from "@/custom-fields/definitions";
 import { DataTable, Field, PageHeader, Status } from "@/ui/primitives";
 import type { components } from "@/api/generated/schema";
 
@@ -26,6 +28,12 @@ const buttonClass =
   "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50";
 const primaryClass =
   "rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50";
+
+function asCustomData(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 function isInvoice(value: unknown): value is Invoice {
   return (
@@ -63,9 +71,30 @@ function serverError(error: unknown): { code: string; fields: ErrorFields } {
   return { code: "unknown", fields: {} };
 }
 
-async function fetchInvoices(page: number): Promise<components["schemas"]["PaginatedInvoiceList"]> {
+async function fetchInvoices(
+  page: number,
+  filter: { field: string; operator: string; value: string } | null,
+): Promise<components["schemas"]["PaginatedInvoiceList"]> {
   const { data } = await apiClient.GET("/api/v1/invoices/", {
-    params: { query: { page, page_size: 25 } },
+    params: {
+      query: {
+        page,
+        page_size: 25,
+        ...(filter?.field.startsWith("invoice_line:")
+          ? {
+              line_custom_field: filter.field.slice("invoice_line:".length),
+              line_custom_operator: filter.operator,
+              line_custom_value: filter.value,
+            }
+          : filter
+            ? {
+                custom_field: filter.field,
+                custom_operator: filter.operator,
+                custom_value: filter.value,
+              }
+            : {}),
+      },
+    },
   });
   const rows: unknown = data?.results;
   if (data && Array.isArray(rows) && rows.every(isInvoice)) {
@@ -159,17 +188,47 @@ function formatTotal(amount: string, currency: string) {
   return amount + " " + currency;
 }
 
-export function InvoicePage({ canMutate }: { canMutate: boolean }) {
-  const { t } = useTranslation("shell");
+export function InvoicePage({
+  canMutate,
+  canAdminister = false,
+}: {
+  canMutate: boolean;
+  canAdminister?: boolean;
+}) {
+  const { t, i18n } = useTranslation("shell");
   const [route, setRoute] = useState(initialRoute);
   const [page, setPage] = useState(1);
+  const [filterField, setFilterField] = useState("");
+  const [filterValue, setFilterValue] = useState("");
+  const [filterOperator, setFilterOperator] = useState("exact");
+  const [appliedFilter, setAppliedFilter] = useState<{
+    field: string;
+    operator: string;
+    value: string;
+  } | null>(null);
+  const invoiceFields = useQuery({
+    queryKey: ["custom-fields", "invoice"],
+    queryFn: () => loadDefinitions("invoice"),
+  });
+  const lineFields = useQuery({
+    queryKey: ["custom-fields", "invoice_line"],
+    queryFn: () => loadDefinitions("invoice_line"),
+  });
+  const searchableFields = [
+    ...(invoiceFields.data ?? []).map((field) => ({ ...field, filterKey: field.key })),
+    ...(lineFields.data ?? []).map((field) => ({
+      ...field,
+      filterKey: `invoice_line:${field.key}`,
+    })),
+  ].filter((field) => !field.is_sensitive && field.search_mode !== "none");
   const [customerId, setCustomerId] = useState("");
+  const [newCustomData, setNewCustomData] = useState<Record<string, unknown>>({});
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
   const clients = useQueryClient();
   const invoices = useQuery({
-    queryKey: ["invoices", page],
-    queryFn: () => fetchInvoices(page),
+    queryKey: ["invoices", page, appliedFilter],
+    queryFn: () => fetchInvoices(page, appliedFilter),
     enabled: route.mode === "list",
   });
   const customers = useQuery({
@@ -204,7 +263,12 @@ export function InvoicePage({ canMutate }: { canMutate: boolean }) {
     setCreating(true);
     setCreateError("");
     try {
-      const result = await apiClient.POST("/api/v1/invoices/", { body: { customer_id: parsed } });
+      const result = await apiClient.POST("/api/v1/invoices/", {
+        body: {
+          customer_id: parsed,
+          ...(Object.keys(newCustomData).length ? { custom_data: newCustomData } : {}),
+        },
+      });
       if (isInvoice(result.data)) {
         clients.setQueryData(["invoice", result.data.id], result.data);
         await clients.invalidateQueries({ queryKey: ["invoices"] });
@@ -232,6 +296,87 @@ export function InvoicePage({ canMutate }: { canMutate: boolean }) {
             </button>
           )}
         </PageHeader>
+        {searchableFields.length > 0 && (
+          <form
+            className="mb-4 flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (filterField && filterValue) {
+                setPage(1);
+                setAppliedFilter({
+                  field: filterField,
+                  operator: filterOperator,
+                  value: filterValue,
+                });
+              }
+            }}
+          >
+            <Field inputId="invoice-custom-filter" label={t("invoicePage.customFilter")}>
+              <select
+                className={inputClass}
+                id="invoice-custom-filter"
+                value={filterField}
+                onChange={(event) => {
+                  const field = searchableFields.find(
+                    (item) => item.filterKey === event.target.value,
+                  );
+                  setFilterField(event.target.value);
+                  setFilterOperator(
+                    field?.search_mode === "range"
+                      ? "gte"
+                      : field?.search_mode === "text"
+                        ? "text"
+                        : "exact",
+                  );
+                }}
+              >
+                <option value="">—</option>
+                {searchableFields.map((field) => (
+                  <option key={field.filterKey} value={field.filterKey}>
+                    {i18n.resolvedLanguage === "de" ? field.label_de : field.label_en}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {searchableFields.find((field) => field.filterKey === filterField)?.search_mode ===
+              "range" && (
+              <Field inputId="invoice-custom-operator" label={t("invoicePage.filterOperator")}>
+                <select
+                  className={inputClass}
+                  id="invoice-custom-operator"
+                  value={filterOperator}
+                  onChange={(event) => setFilterOperator(event.target.value)}
+                >
+                  <option value="gte">≥</option>
+                  <option value="lte">≤</option>
+                </select>
+              </Field>
+            )}
+            <Field inputId="invoice-custom-value" label={t("invoicePage.filterValue")}>
+              <input
+                className={inputClass}
+                id="invoice-custom-value"
+                value={filterValue}
+                onChange={(event) => setFilterValue(event.target.value)}
+              />
+            </Field>
+            <button className={buttonClass} type="submit">
+              {t("invoicePage.filterApply")}
+            </button>
+            {appliedFilter && (
+              <button
+                className={buttonClass}
+                type="button"
+                onClick={() => {
+                  setAppliedFilter(null);
+                  setPage(1);
+                }}
+              >
+                {t("invoicePage.filterClear")}
+              </button>
+            )}
+          </form>
+        )}
         {invoices.isPending ? (
           <p role="status">{t("invoicePage.loading")}</p>
         ) : invoices.isError ? (
@@ -332,6 +477,12 @@ export function InvoicePage({ canMutate }: { canMutate: boolean }) {
                   ))}
               </select>
             </Field>
+            <CustomFields
+              target="invoice"
+              values={newCustomData}
+              showSensitive={canAdminister}
+              onChange={setNewCustomData}
+            />
             {createError && (
               <p role="alert" className="text-sm text-red-700">
                 {createError}
@@ -358,6 +509,7 @@ export function InvoicePage({ canMutate }: { canMutate: boolean }) {
     <DraftEditor
       key={detail.data.id + ":" + detail.data.version}
       canMutate={canMutate}
+      canAdminister={canAdminister}
       invoice={detail.data}
       onBack={() => navigate("list")}
       onSaved={(updated) => {
@@ -444,18 +596,23 @@ function recipientInput(values: DraftValues): RecipientInput {
 function DraftEditor({
   invoice,
   canMutate,
+  canAdminister,
   onSaved,
   onBack,
   onReload,
 }: {
   invoice: Invoice;
   canMutate: boolean;
+  canAdminister: boolean;
   onSaved: (invoice: Invoice) => void;
   onBack: () => void;
   onReload: () => void;
 }) {
   const { t } = useTranslation("shell");
   const [values, setValues] = useState(() => valuesFromInvoice(invoice));
+  const [customData, setCustomData] = useState<Record<string, unknown>>(
+    asCustomData(invoice.custom_data),
+  );
   const [dirty, setDirty] = useState(false);
   const [recipientDirty, setRecipientDirty] = useState(false);
   const [error, setError] = useState("");
@@ -553,6 +710,7 @@ function DraftEditor({
       issue_date: values.issue_date,
       due_date: values.due_date || null,
       ...(recipientDirty ? { recipient: recipientInput(values) } : {}),
+      custom_data: customData,
     };
     void submit(command);
   }
@@ -579,6 +737,7 @@ function DraftEditor({
             className={buttonClass}
             onClick={() => {
               setValues(valuesFromInvoice(invoice));
+              setCustomData(asCustomData(invoice.custom_data));
               setDirty(false);
               setRecipientDirty(false);
             }}
@@ -786,6 +945,16 @@ function DraftEditor({
             </div>
           )}
         </fieldset>
+        <CustomFields
+          target="invoice"
+          values={customData}
+          readOnly={!editable}
+          showSensitive={canAdminister}
+          onChange={(next) => {
+            setCustomData(next);
+            setDirty(true);
+          }}
+        />
         {editable && (
           <button className={primaryClass} disabled={saving || !dirty} type="submit">
             {t("invoicePage.save")}
@@ -901,6 +1070,7 @@ function DraftEditor({
         )}
         {lineMode === "catalog" && (
           <CatalogLineForm
+            showSensitive={canAdminister}
             catalog={catalog.data ?? []}
             loading={catalog.isPending}
             onCancel={() => setLineMode("none")}
@@ -912,6 +1082,7 @@ function DraftEditor({
         )}
         {(lineMode === "manual" || lineMode === "edit") && (
           <ManualLineForm
+            showSensitive={canAdminister}
             key={editingLine?.id ?? "new"}
             line={editingLine}
             onCancel={() => setLineMode("none")}
@@ -936,12 +1107,14 @@ function DraftEditor({
 
 function CatalogLineForm({
   catalog,
+  showSensitive,
   loading,
   onSave,
   onCancel,
   saving,
 }: {
   catalog: readonly CatalogItem[];
+  showSensitive: boolean;
   loading: boolean;
   onSave: (operation: LineOperation) => void;
   onCancel: () => void;
@@ -949,6 +1122,7 @@ function CatalogLineForm({
 }) {
   const { t } = useTranslation("shell");
   const [itemId, setItemId] = useState("");
+  const [customData, setCustomData] = useState<Record<string, unknown>>({});
   const [quantity, setQuantity] = useState("1");
   const [discount, setDiscount] = useState("0");
   return (
@@ -959,6 +1133,7 @@ function CatalogLineForm({
         onSave({
           action: "add",
           catalog_item_id: Number(itemId),
+          custom_data: customData,
           quantity,
           discount_percent: discount,
         });
@@ -1008,6 +1183,12 @@ function CatalogLineForm({
           value={discount}
         />
       </Field>
+      <CustomFields
+        target="invoice_line"
+        values={customData}
+        showSensitive={showSensitive}
+        onChange={setCustomData}
+      />
       <div className="flex gap-2">
         <button className={primaryClass} disabled={saving} type="submit">
           {t("invoicePage.saveLine")}
@@ -1025,14 +1206,19 @@ function ManualLineForm({
   onSave,
   onCancel,
   saving,
+  showSensitive,
 }: {
   line: Line | null;
+  showSensitive: boolean;
   onSave: (operation: LineOperation) => void;
   onCancel: () => void;
   saving: boolean;
 }) {
   const { t } = useTranslation("shell");
   const [description, setDescription] = useState(line?.description ?? "");
+  const [customData, setCustomData] = useState<Record<string, unknown>>(
+    asCustomData(line?.custom_data),
+  );
   const [itemCode, setItemCode] = useState(line?.item_code ?? "");
   const [unit, setUnit] = useState<"C62" | "HUR" | "DAY">(
     line?.unit === "HUR" ? "HUR" : line?.unit === "DAY" ? "DAY" : "C62",
@@ -1063,6 +1249,7 @@ function ManualLineForm({
       price_entry_policy: priceEntry,
       exemption_reason_code: exemptionCode,
       exemption_wording: exemptionWording,
+      custom_data: customData,
     });
   }
   return (
@@ -1192,6 +1379,12 @@ function ManualLineForm({
           </Field>
         </>
       )}
+      <CustomFields
+        target="invoice_line"
+        values={customData}
+        showSensitive={showSensitive}
+        onChange={setCustomData}
+      />
       <div className="flex gap-2 sm:col-span-2">
         <button className={primaryClass} disabled={saving} type="submit">
           {t("invoicePage.saveLine")}

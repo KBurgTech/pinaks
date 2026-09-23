@@ -3,27 +3,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { loadDefinitions, type Target } from "@/custom-fields/definitions";
 
 import type { components } from "@/api/generated/schema";
 
 type Definition = components["schemas"]["CustomFieldDefinition"];
 type DefinitionRequest = components["schemas"]["CustomFieldDefinitionRequest"];
-type Target = "customer" | "catalog_item";
 
 const inputClass = "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm";
-
-function isDefinition(value: unknown): value is Definition {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "key" in value &&
-    typeof value.key === "string" &&
-    "label_en" in value &&
-    typeof value.label_en === "string" &&
-    "label_de" in value &&
-    typeof value.label_de === "string"
-  );
-}
 
 function primitiveText(value: unknown): string {
   return typeof value === "string" || typeof value === "number" ? String(value) : "";
@@ -44,12 +31,6 @@ function choiceOptions(value: unknown): { code: string; label_en: string; label_
   );
 }
 
-async function loadDefinitions(target: Target): Promise<readonly Definition[]> {
-  const { data } = await apiClient.GET("/api/v1/custom-fields/", { params: { query: { target } } });
-  if (Array.isArray(data) && data.every(isDefinition)) return data;
-  throw new Error("definitions_unavailable");
-}
-
 function label(definition: Definition, language: string): string {
   return language === "de" ? definition.label_de : definition.label_en;
 }
@@ -62,10 +43,14 @@ export function CustomFields({
   target,
   values,
   onChange,
+  readOnly = false,
+  showSensitive = false,
 }: {
   target: Target;
   values: Record<string, unknown>;
   onChange: (values: Record<string, unknown>) => void;
+  readOnly?: boolean;
+  showSensitive?: boolean;
 }) {
   const { t, i18n } = useTranslation("shell");
   const definitions = useQuery({
@@ -74,12 +59,13 @@ export function CustomFields({
   });
   if (definitions.isPending) return null;
   if (definitions.isError) return <p role="alert">{t("customFields.loadError")}</p>;
-  if (definitions.data.length === 0) return null;
+  const visible = definitions.data.filter((field) => showSensitive || !field.is_sensitive);
+  if (visible.length === 0) return null;
   const language = i18n.resolvedLanguage === "de" ? "de" : "en";
   return (
     <fieldset className="grid gap-4 md:grid-cols-2">
       <legend className="mb-3 text-lg font-semibold">{t("customFields.formHeading")}</legend>
-      {definitions.data.map((field) => {
+      {visible.map((field) => {
         const id = `custom-${target}-${field.key}`;
         const current = values[field.key];
         const update = (value: unknown) => onChange({ ...values, [field.key]: value });
@@ -94,6 +80,7 @@ export function CustomFields({
               <input
                 id={id}
                 type="checkbox"
+                disabled={readOnly}
                 checked={current === true}
                 onChange={(event) => update(event.target.checked)}
               />
@@ -101,6 +88,7 @@ export function CustomFields({
               <select
                 id={id}
                 className={inputClass}
+                disabled={readOnly}
                 value={primitiveText(current)}
                 onChange={(event) => update(event.target.value || null)}
               >
@@ -115,6 +103,7 @@ export function CustomFields({
               <textarea
                 id={id}
                 className={inputClass}
+                disabled={readOnly}
                 value={primitiveText(current)}
                 onChange={(event) => update(event.target.value || null)}
               />
@@ -122,6 +111,7 @@ export function CustomFields({
               <input
                 id={id}
                 className={inputClass}
+                disabled={readOnly}
                 type={
                   field.is_sensitive ? "password" : field.data_type === "date" ? "date" : "text"
                 }
@@ -273,6 +263,8 @@ export function CustomFieldsAdmin() {
         >
           <option value="customer">{t("customFields.customer")}</option>
           <option value="catalog_item">{t("customFields.catalogItem")}</option>
+          <option value="invoice">{t("customFields.invoice")}</option>
+          <option value="invoice_line">{t("customFields.invoiceLine")}</option>
         </select>
       </label>
       {definitions.isError && <p role="alert">{t("customFields.loadError")}</p>}

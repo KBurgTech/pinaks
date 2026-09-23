@@ -48,7 +48,7 @@ class DefinitionListView(DefinitionPermissionMixin, APIView):
     )
     def get(self, request: Request) -> Response:
         target = request.query_params.get("target", "")
-        if target not in {"customer", "catalog_item"}:
+        if target not in {"customer", "catalog_item", "invoice", "invoice_line"}:
             raise ValidationError({"target": "Choose customer or catalog_item."})
         serializer = CustomFieldDefinitionSerializer(
             definitions_for_target(target=target),  # type: ignore[arg-type]

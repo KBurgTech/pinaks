@@ -342,6 +342,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoices/{invoice_id}/lines/{line_id}/sensitive-fields/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_line_sensitive_fields"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/sensitive-fields/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_sensitive_fields"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/probe/": {
         readonly parameters: {
             readonly query?: never;
@@ -628,6 +660,7 @@ export interface components {
         readonly DocumentLanguage: "en" | "de";
         readonly DraftCreateRequest: {
             readonly customer_id: number;
+            readonly custom_data?: unknown;
             readonly document_language?: components["schemas"]["DocumentLanguage"];
             /** Format: date */
             readonly issue_date?: string;
@@ -675,6 +708,7 @@ export interface components {
             readonly recipient: {
                 readonly [key: string]: unknown;
             };
+            readonly custom_data: unknown;
             readonly lines: readonly components["schemas"]["InvoiceLine"][];
             /** Format: decimal */
             readonly subtotal: string;
@@ -716,6 +750,7 @@ export interface components {
             readonly tax_total: string;
             /** Format: decimal */
             readonly gross_total: string;
+            readonly custom_data: unknown;
         };
         /**
          * @description * `never` - never
@@ -747,6 +782,7 @@ export interface components {
             readonly service_date?: string | null;
             /** Format: date */
             readonly service_period_end?: string | null;
+            readonly custom_data?: unknown;
         };
         /**
          * @description * `append` - append
@@ -913,6 +949,7 @@ export interface components {
             readonly due_date?: string | null;
             readonly recipient?: components["schemas"]["RecipientInputRequest"];
             readonly line_operations?: readonly components["schemas"]["LineOperationRequest"][];
+            readonly custom_data?: unknown;
         };
         readonly PatchedPresetWriteRequest: {
             readonly name?: string;
@@ -1046,9 +1083,11 @@ export interface components {
         /**
          * @description * `customer` - customer
          *     * `catalog_item` - catalog_item
+         *     * `invoice` - invoice
+         *     * `invoice_line` - invoice_line
          * @enum {string}
          */
-        readonly TargetEnum: "customer" | "catalog_item";
+        readonly TargetEnum: "customer" | "catalog_item" | "invoice" | "invoice_line";
         /**
          * @description * `S` - S
          *     * `E` - E
@@ -2390,12 +2429,18 @@ export interface operations {
     readonly invoice_list: {
         readonly parameters: {
             readonly query?: {
+                readonly custom_field?: string;
+                readonly custom_operator?: string;
+                readonly custom_value?: string;
                 readonly customer?: number;
                 readonly due_date_after?: string;
                 readonly due_date_before?: string;
                 readonly issue_date_from?: string;
                 readonly issue_date_to?: string;
                 readonly lifecycle_status?: string;
+                readonly line_custom_field?: string;
+                readonly line_custom_operator?: string;
+                readonly line_custom_value?: string;
                 /** @description Which field to use when ordering the results. */
                 readonly ordering?: string;
                 readonly overdue?: boolean;
@@ -2608,6 +2653,69 @@ export interface operations {
                 };
             };
             readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_line_sensitive_fields: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+                readonly line_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_sensitive_fields: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 403: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

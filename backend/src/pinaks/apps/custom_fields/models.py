@@ -9,6 +9,8 @@ from django.db.models import Q
 class FieldTarget(models.TextChoices):
     CUSTOMER = "customer", "Customer"
     CATALOG_ITEM = "catalog_item", "Catalog item"
+    INVOICE = "invoice", "Invoice"
+    INVOICE_LINE = "invoice_line", "Invoice line"
 
 
 class FieldType(models.TextChoices):
