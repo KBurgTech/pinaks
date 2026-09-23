@@ -1803,6 +1803,383 @@
                 }
             }
         },
+        "/api/v1/document-templates/": {
+            "get": {
+                "operationId": "document_template_list",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Template"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "document_template_create",
+                "tags": [
+                    "document-templates"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateWriteRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateWriteRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateWriteRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Template"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/": {
+            "get": {
+                "operationId": "document_template_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Template"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/assets/": {
+            "post": {
+                "operationId": "document_template_asset_upload",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetUploadRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetUploadRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DocumentAsset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/publish/": {
+            "post": {
+                "operationId": "document_template_publish",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Template"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/versions/": {
+            "post": {
+                "operationId": "document_template_version_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateVersionWriteRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateVersionWriteRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemplateVersionWriteRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateVersion"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/document-templates/{template_id}/versions/{version_id}/": {
+            "patch": {
+                "operationId": "document_template_version_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "version_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "document-templates"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTemplateVersionWriteRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTemplateVersionWriteRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTemplateVersionWriteRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateVersion"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoice-presets/": {
             "get": {
                 "operationId": "preset_list",
@@ -2693,6 +3070,18 @@
                     "expected_version",
                     "mode",
                     "preset_id"
+                ]
+            },
+            "AssetUploadRequest": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                },
+                "required": [
+                    "file"
                 ]
             },
             "BillingRecipient": {
@@ -3636,6 +4025,39 @@
                 ],
                 "type": "string",
                 "description": "* `en-DE` - en-DE\n* `de-DE` - de-DE"
+            },
+            "DocumentAsset": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "key": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "content_type": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "size": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "content_type",
+                    "created_at",
+                    "id",
+                    "key",
+                    "size"
+                ]
             },
             "DocumentLanguage": {
                 "enum": [
@@ -4619,6 +5041,28 @@
                     }
                 }
             },
+            "PatchedTemplateVersionWriteRequest": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "html": {
+                        "type": "string"
+                    },
+                    "css": {
+                        "type": "string"
+                    },
+                    "page_settings": {},
+                    "asset_keys": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            },
             "Preset": {
                 "type": "object",
                 "properties": {
@@ -4902,6 +5346,14 @@
                 "type": "string",
                 "description": "* `customer` - customer\n* `saved` - saved\n* `known_customer` - known_customer\n* `manual` - manual"
             },
+            "StatusEnum": {
+                "enum": [
+                    "draft",
+                    "published"
+                ],
+                "type": "string",
+                "description": "* `draft` - Draft\n* `published` - Published"
+            },
             "TargetEnum": {
                 "enum": [
                     "customer",
@@ -5072,6 +5524,170 @@
                     "required_seller_identifiers",
                     "tax_category",
                     "tax_column_policy"
+                ]
+            },
+            "Template": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "code": {
+                        "type": "string",
+                        "readOnly": true,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "versions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TemplateVersion"
+                        },
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "code",
+                    "created_at",
+                    "id",
+                    "name",
+                    "versions"
+                ]
+            },
+            "TemplateVersion": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "language": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TemplateVersionLanguageEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "version": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "html": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "css": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "page_settings": {
+                        "readOnly": true
+                    },
+                    "asset_keys": {
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "published_by": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "asset_keys",
+                    "created_at",
+                    "created_by",
+                    "css",
+                    "html",
+                    "id",
+                    "language",
+                    "page_settings",
+                    "published_at",
+                    "published_by",
+                    "status",
+                    "version"
+                ]
+            },
+            "TemplateVersionLanguageEnum": {
+                "enum": [
+                    "en",
+                    "de"
+                ],
+                "type": "string",
+                "description": "* `en` - English\n* `de` - German"
+            },
+            "TemplateVersionWriteRequest": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "html": {
+                        "type": "string"
+                    },
+                    "css": {
+                        "type": "string"
+                    },
+                    "page_settings": {},
+                    "asset_keys": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            },
+            "TemplateWriteRequest": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    }
+                },
+                "required": [
+                    "code",
+                    "name"
                 ]
             },
             "UnitEnum": {

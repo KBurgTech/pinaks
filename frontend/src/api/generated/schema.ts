@@ -246,6 +246,102 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/document-templates/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["document_template_list"];
+        readonly put?: never;
+        readonly post: operations["document_template_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["document_template_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/assets/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["document_template_asset_upload"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/publish/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["document_template_publish"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/versions/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["document_template_version_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/document-templates/{template_id}/versions/{version_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["document_template_version_update"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoice-presets/": {
         readonly parameters: {
             readonly query?: never;
@@ -414,6 +510,10 @@ export interface components {
             readonly preset_id: number;
             readonly expected_version: number;
             readonly mode: components["schemas"]["ModeEnum"];
+        };
+        readonly AssetUploadRequest: {
+            /** Format: binary */
+            readonly file: string;
         };
         readonly BillingRecipient: {
             readonly id: number;
@@ -652,6 +752,14 @@ export interface components {
          * @enum {string}
          */
         readonly DefaultLocaleEnum: "en-DE" | "de-DE";
+        readonly DocumentAsset: {
+            readonly id: number;
+            readonly key: string;
+            readonly content_type: string;
+            readonly size: number;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         /**
          * @description * `en` - en
          *     * `de` - de
@@ -969,6 +1077,13 @@ export interface components {
             readonly required_seller_identifiers?: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
             readonly is_default?: boolean;
         };
+        readonly PatchedTemplateVersionWriteRequest: {
+            readonly language?: components["schemas"]["DocumentLanguage"];
+            readonly html?: string;
+            readonly css?: string;
+            readonly page_settings?: unknown;
+            readonly asset_keys?: readonly string[];
+        };
         readonly Preset: {
             readonly id: number;
             readonly name: string;
@@ -1081,6 +1196,12 @@ export interface components {
          */
         readonly SourceEnum: "customer" | "saved" | "known_customer" | "manual";
         /**
+         * @description * `draft` - Draft
+         *     * `published` - Published
+         * @enum {string}
+         */
+        readonly StatusEnum: "draft" | "published";
+        /**
          * @description * `customer` - customer
          *     * `catalog_item` - catalog_item
          *     * `invoice` - invoice
@@ -1131,6 +1252,47 @@ export interface components {
             readonly tax_column_policy: components["schemas"]["TaxColumnPolicyEnum"];
             readonly required_seller_identifiers: readonly components["schemas"]["RequiredSellerIdentifiersEnum"][];
             readonly is_default: boolean;
+        };
+        readonly Template: {
+            readonly id: number;
+            readonly code: string;
+            readonly name: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly versions: readonly components["schemas"]["TemplateVersion"][];
+        };
+        readonly TemplateVersion: {
+            readonly id: number;
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly version: number;
+            readonly status: components["schemas"]["StatusEnum"];
+            readonly html: string;
+            readonly css: string;
+            readonly page_settings: unknown;
+            readonly asset_keys: unknown;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly created_by: number;
+            /** Format: date-time */
+            readonly published_at: string | null;
+            readonly published_by: number | null;
+        };
+        /**
+         * @description * `en` - English
+         *     * `de` - German
+         * @enum {string}
+         */
+        readonly TemplateVersionLanguageEnum: "en" | "de";
+        readonly TemplateVersionWriteRequest: {
+            readonly language?: components["schemas"]["DocumentLanguage"];
+            readonly html?: string;
+            readonly css?: string;
+            readonly page_settings?: unknown;
+            readonly asset_keys?: readonly string[];
+        };
+        readonly TemplateWriteRequest: {
+            readonly code: string;
+            readonly name: string;
         };
         /**
          * @description * `C62` - C62
@@ -2279,6 +2441,218 @@ export interface operations {
                 };
             };
             readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_list: {
+        readonly parameters: {
+            readonly query?: {
+                /** @description Which field to use when ordering the results. */
+                readonly ordering?: string;
+                /** @description A search term. */
+                readonly search?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["Template"][];
+                };
+            };
+        };
+    };
+    readonly document_template_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TemplateWriteRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["TemplateWriteRequest"];
+                readonly "multipart/form-data": components["schemas"]["TemplateWriteRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Template"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Template"];
+                };
+            };
+        };
+    };
+    readonly document_template_asset_upload: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "multipart/form-data": components["schemas"]["AssetUploadRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["AssetUploadRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DocumentAsset"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_publish: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Template"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_version_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TemplateVersionWriteRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["TemplateVersionWriteRequest"];
+                readonly "multipart/form-data": components["schemas"]["TemplateVersionWriteRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TemplateVersion"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly document_template_version_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+                readonly version_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedTemplateVersionWriteRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedTemplateVersionWriteRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedTemplateVersionWriteRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TemplateVersion"];
+                };
+            };
+            readonly 400: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

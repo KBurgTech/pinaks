@@ -8,6 +8,7 @@ import { CompanyProfileForm } from "@/configuration/company-profile-form";
 import { TaxProfileForm } from "@/configuration/tax-profile-form";
 import { CustomerPage } from "@/customers/customer-page";
 import { CustomFieldsAdmin } from "@/custom-fields/custom-fields";
+import { TemplatePage } from "@/documents/template-page";
 import { setUiLanguage } from "@/i18n";
 import { InvoicePage } from "@/invoices/invoice-page";
 
@@ -134,6 +135,11 @@ function Shell() {
             )}
             {canAdminister && (
               <li>
+                <a href="/app/document-templates/">{t("documentsNav")}</a>
+              </li>
+            )}
+            {canAdminister && (
+              <li>
                 <a href="/app/users/">{t("users")}</a>
               </li>
             )}
@@ -146,6 +152,8 @@ function Shell() {
             <CatalogPage canMutate={canCreateDrafts} />
           ) : window.location.pathname.startsWith("/app/invoices/") ? (
             <InvoicePage canMutate={canCreateDrafts} canAdminister={canAdminister} />
+          ) : canAdminister && window.location.pathname === "/app/document-templates/" ? (
+            <TemplatePage />
           ) : canAdminister && window.location.pathname === "/app/custom-fields/" ? (
             <CustomFieldsAdmin />
           ) : canAdminister && window.location.pathname === "/app/settings/" ? (

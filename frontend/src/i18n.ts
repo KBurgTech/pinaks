@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 import { catalogTranslations } from "@/catalog/translations";
 import { customFieldTranslations } from "@/custom-fields/translations";
+import { documentTranslations } from "@/documents/translations";
 import { invoiceTranslations } from "@/invoices/translations";
 
 export const UI_LANGUAGE_STORAGE_KEY = "pinaks.uiLanguage";
@@ -21,6 +22,7 @@ export const resources = {
       invoices: "Invoices",
       newInvoice: "New invoice",
       settings: "Settings",
+      documentsNav: "Document templates",
       paymentRequests: "Payment requests",
       reminders: "Reminders",
       timeTracking: "Time tracking",
@@ -171,6 +173,7 @@ export const resources = {
       workspaceHeading: "Workspace",
       workspaceDescription: "Choose an area from the main navigation.",
     },
+    documents: documentTranslations.en,
   },
   de: {
     shell: {
@@ -185,6 +188,7 @@ export const resources = {
       invoices: "Rechnungen",
       newInvoice: "Neue Rechnung",
       settings: "Einstellungen",
+      documentsNav: "Dokumentvorlagen",
       paymentRequests: "Zahlungsanforderungen",
       reminders: "Mahnungen",
       timeTracking: "Zeiterfassung",
@@ -335,6 +339,7 @@ export const resources = {
       workspaceHeading: "Arbeitsbereich",
       workspaceDescription: "Wählen Sie einen Bereich in der Hauptnavigation.",
     },
+    documents: documentTranslations.de,
   },
 } as const;
 
@@ -360,6 +365,7 @@ export function assertCompleteTranslations(
 }
 
 assertCompleteTranslations(resources.en.shell, resources.de.shell);
+assertCompleteTranslations(resources.en.documents, resources.de.documents);
 
 function initialLanguage(): "en" | "de" {
   const stored = localStorage.getItem(UI_LANGUAGE_STORAGE_KEY);

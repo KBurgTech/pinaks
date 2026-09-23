@@ -10,6 +10,14 @@ from pinaks.api.views import (
     probe,
 )
 from pinaks.apps.billing.preset_views import PresetArchiveView, PresetDetailView, PresetListView
+from pinaks.apps.documents.views import (
+    TemplateAssetView,
+    TemplateDetailView,
+    TemplateListView,
+    TemplatePublishView,
+    TemplateVersionDetailView,
+    TemplateVersionListView,
+)
 
 app_name = "api-v1"
 
@@ -26,6 +34,32 @@ urlpatterns: list[URLPattern | URLResolver] = [
         name="preset-archive",
     ),
     path("custom-fields/", include("pinaks.apps.custom_fields.urls")),
+    path("document-templates/", TemplateListView.as_view(), name="document-template-list"),
+    path(
+        "document-templates/<int:template_id>/",
+        TemplateDetailView.as_view(),
+        name="document-template-detail",
+    ),
+    path(
+        "document-templates/<int:template_id>/versions/",
+        TemplateVersionListView.as_view(),
+        name="document-template-version-list",
+    ),
+    path(
+        "document-templates/<int:template_id>/versions/<int:version_id>/",
+        TemplateVersionDetailView.as_view(),
+        name="document-template-version-detail",
+    ),
+    path(
+        "document-templates/<int:template_id>/publish/",
+        TemplatePublishView.as_view(),
+        name="document-template-publish",
+    ),
+    path(
+        "document-templates/<int:template_id>/assets/",
+        TemplateAssetView.as_view(),
+        name="document-template-asset",
+    ),
     path("customers/", include("pinaks.apps.customers.urls")),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),
     path(
