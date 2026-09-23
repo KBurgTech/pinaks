@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "pinaks.apps.custom_fields",
     "pinaks.apps.customers",
     "pinaks.apps.documents",
+    "pinaks.apps.workers",
     "django.contrib.admin",
     "django.contrib.postgres",
     "django.contrib.auth",
