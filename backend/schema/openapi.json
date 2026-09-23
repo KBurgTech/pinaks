@@ -2992,6 +2992,101 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/issue/": {
+            "post": {
+                "operationId": "invoice_issue",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IssueInvoiceRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IssueInvoiceRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IssueInvoiceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/{invoice_id}/lines/{line_id}/sensitive-fields/": {
             "get": {
                 "operationId": "invoice_line_sensitive_fields",
@@ -4539,6 +4634,29 @@
                 ],
                 "type": "string",
                 "description": "* `never` - never\n* `annual` - annual"
+            },
+            "IssueInvoiceRequest": {
+                "type": "object",
+                "properties": {
+                    "expected_version": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "template_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "idempotency_key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    }
+                },
+                "required": [
+                    "expected_version",
+                    "idempotency_key",
+                    "template_id"
+                ]
             },
             "LineOperationRequest": {
                 "type": "object",

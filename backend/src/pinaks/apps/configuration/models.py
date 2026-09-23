@@ -104,6 +104,9 @@ class CompanyProfile(models.Model):
         default=1,
         validators=[MinValueValidator(1)],
     )
+    invoice_number_year: models.PositiveSmallIntegerField[int | None, int | None] = (
+        models.PositiveSmallIntegerField(null=True, blank=True)
+    )
     invoice_number_padding: models.PositiveSmallIntegerField[int, int] = (
         models.PositiveSmallIntegerField(
             default=4,

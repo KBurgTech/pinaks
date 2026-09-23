@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
@@ -17,6 +17,7 @@ class InvoiceType(models.TextChoices):
 
 class LifecycleStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
+    ISSUING = "ISSUING", "Issuing"
 
 
 class PaymentStatus(models.TextChoices):
@@ -40,6 +41,10 @@ class Invoice(models.Model):
     )
     invoice_number: models.CharField[str | None, str | None] = models.CharField(
         max_length=80, null=True, blank=True, unique=True
+    )
+    issuance_key: models.CharField[str, str] = models.CharField(max_length=100, blank=True)
+    snapshot: models.JSONField[dict[str, object] | None, dict[str, object] | None] = (
+        models.JSONField(null=True, blank=True)
     )
     currency: models.CharField[str, str] = models.CharField(max_length=3, default="EUR")
     document_language: models.CharField[str, str] = models.CharField(
@@ -73,7 +78,8 @@ class Invoice(models.Model):
         ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
-                condition=Q(lifecycle_status="DRAFT"), name="invoice_supported_lifecycle"
+                condition=Q(lifecycle_status__in=("DRAFT", "ISSUING")),
+                name="invoice_supported_lifecycle",
             ),
             models.CheckConstraint(
                 condition=Q(invoice_type="STANDARD"), name="invoice_supported_type"
@@ -82,7 +88,23 @@ class Invoice(models.Model):
                 condition=Q(payment_status__in=("UNPAID", "PAID")), name="invoice_payment_state"
             ),
             models.CheckConstraint(
-                condition=Q(invoice_number__isnull=True), name="draft_has_no_number"
+                condition=(
+                    Q(
+                        lifecycle_status="DRAFT",
+                        invoice_number__isnull=True,
+                        snapshot__isnull=True,
+                        issuance_key="",
+                    )
+                    | (
+                        Q(
+                            lifecycle_status="ISSUING",
+                            invoice_number__isnull=False,
+                            snapshot__isnull=False,
+                        )
+                        & ~Q(issuance_key="")
+                    )
+                ),
+                name="invoice_number_matches_lifecycle",
             ),
             models.CheckConstraint(
                 condition=Q(subtotal__gte=0, tax_total__gte=0, grand_total__gte=0),
@@ -101,6 +123,13 @@ class Invoice(models.Model):
 
     def __str__(self) -> str:
         return self.invoice_number or f"Draft {self.pk}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if self.pk is not None and not self._state.adding:
+            stored = Invoice.objects.get(pk=self.pk)
+            if stored.lifecycle_status != LifecycleStatus.DRAFT:
+                raise ValueError("Issuing invoices are immutable.")
+        super().save(*args, **kwargs)
 
     @property
     def is_overdue(self) -> bool:
@@ -214,6 +243,20 @@ class InvoiceLine(models.Model):
 
     def __str__(self) -> str:
         return f"Invoice {self.invoice_id} line {self.position}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if self.invoice.lifecycle_status != LifecycleStatus.DRAFT:
+            from django.core.exceptions import ValidationError
+
+            raise ValidationError("Issuing invoice lines are immutable.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        if self.invoice.lifecycle_status != LifecycleStatus.DRAFT:
+            from django.core.exceptions import ValidationError
+
+            raise ValidationError("Issuing invoice lines are immutable.")
+        return super().delete(*args, **kwargs)
 
 
 class InvoicePreset(models.Model):

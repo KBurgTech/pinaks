@@ -21,6 +21,7 @@ from pinaks.apps.billing.serializers import (
     DraftCreateSerializer,
     DraftUpdateSerializer,
     InvoiceSerializer,
+    IssueInvoiceSerializer,
 )
 from pinaks.apps.billing.services import (
     CompanyConfigurationMissingError,
@@ -287,3 +288,52 @@ class SensitiveInvoiceLineFieldsView(APIView):
                 correlation_id=request_correlation_id(request),
             )
         )
+
+
+class IssueInvoiceView(APIView):
+    permission_classes = (CanMutateDrafts,)
+
+    @extend_schema(
+        operation_id="invoice_issue",
+        request=IssueInvoiceSerializer,
+        responses={
+            202: InvoiceSerializer,
+            400: ErrorEnvelopeSerializer,
+            403: ErrorEnvelopeSerializer,
+            404: ErrorEnvelopeSerializer,
+            409: ErrorEnvelopeSerializer,
+        },
+    )
+    def post(self, request: Request, invoice_id: int) -> Response:
+        from pinaks.apps.billing.issuance import (
+            IssueIdentityConflictError,
+            StaleIssueVersionError,
+            issue_invoice,
+        )
+
+        serializer = IssueInvoiceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        actor = request.user
+        assert isinstance(actor, User)
+        try:
+            invoice = issue_invoice(
+                invoice_id=invoice_id,
+                expected_version=serializer.validated_data["expected_version"],
+                template_id=serializer.validated_data["template_id"],
+                idempotency_key=serializer.validated_data["idempotency_key"],
+                actor=actor,
+                correlation_id=request_correlation_id(request),
+            )
+        except Invoice.DoesNotExist as error:
+            raise NotFound("Invoice was not found.") from error
+        except StaleIssueVersionError as error:
+            raise BusinessRuleViolation(code="stale_invoice_version", message=str(error)) from error
+        except IssueIdentityConflictError as error:
+            raise BusinessRuleViolation(
+                code="issue_identity_conflict", message=str(error)
+            ) from error
+        except DjangoValidationError as error:
+            raise ValidationError(
+                error.message_dict if hasattr(error, "message_dict") else error.messages
+            ) from error
+        return Response(InvoiceSerializer(invoice).data, status=status.HTTP_202_ACCEPTED)
