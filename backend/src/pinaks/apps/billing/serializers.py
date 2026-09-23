@@ -211,3 +211,9 @@ class ApplyPresetSerializer(StrictSerializer[dict[str, object]]):
     preset_id = serializers.IntegerField(min_value=1)
     expected_version = serializers.IntegerField(min_value=1)
     mode = serializers.ChoiceField(choices=("append", "replace"))
+
+
+class IssueInvoiceSerializer(StrictSerializer[dict[str, object]]):
+    expected_version = serializers.IntegerField(min_value=1)
+    template_id = serializers.IntegerField(min_value=1)
+    idempotency_key = serializers.CharField(max_length=100, allow_blank=False)
