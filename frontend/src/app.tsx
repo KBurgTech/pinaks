@@ -9,6 +9,7 @@ import { TaxProfileForm } from "@/configuration/tax-profile-form";
 import { CustomerPage } from "@/customers/customer-page";
 import { CustomFieldsAdmin } from "@/custom-fields/custom-fields";
 import { setUiLanguage } from "@/i18n";
+import { InvoicePage } from "@/invoices/invoice-page";
 
 import type { components } from "@/api/generated/schema";
 
@@ -143,6 +144,8 @@ function Shell() {
             <CustomerPage canMutate={canCreateDrafts} />
           ) : window.location.pathname === "/app/catalog/" ? (
             <CatalogPage canMutate={canCreateDrafts} />
+          ) : window.location.pathname.startsWith("/app/invoices/") ? (
+            <InvoicePage canMutate={canCreateDrafts} />
           ) : canAdminister && window.location.pathname === "/app/custom-fields/" ? (
             <CustomFieldsAdmin />
           ) : canAdminister && window.location.pathname === "/app/settings/" ? (
