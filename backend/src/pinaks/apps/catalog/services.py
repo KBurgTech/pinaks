@@ -115,3 +115,26 @@ def search_catalog_items(*, search: str = "", archived: bool = False) -> QuerySe
             | Q(description_de__icontains=search)
         )
     return items.order_by("code")
+
+
+def draft_line_defaults(*, item_id: int, language: str) -> dict[str, object]:
+    """Return copied catalog and tax values for a new invoice line."""
+    item = CatalogItem.objects.select_related("default_tax_profile").get(
+        pk=item_id, is_archived=False
+    )
+    profile = item.default_tax_profile
+    if not profile.is_current:
+        raise ValidationError({"catalog_item_id": "Select an item with a current tax profile."})
+    return {
+        "item_code": item.code,
+        "description": item.description_de if language == "de" else item.description_en,
+        "unit": item.unit,
+        "unit_price": item.default_price,
+        "tax_category": profile.tax_category,
+        "tax_rate": profile.rate,
+        "price_entry_policy": profile.price_entry_policy,
+        "exemption_reason_code": profile.exemption_reason_code,
+        "exemption_wording": profile.exemption_wording_de
+        if language == "de"
+        else profile.exemption_wording_en,
+    }

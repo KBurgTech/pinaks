@@ -46,6 +46,9 @@ class Invoice(models.Model):
     )
     issue_date: models.DateField[date, date] = models.DateField()
     due_date: models.DateField[date | None, date | None] = models.DateField(null=True, blank=True)
+    recipient: models.JSONField[dict[str, str], dict[str, str]] = models.JSONField(
+        default=dict, blank=True
+    )
     subtotal: models.DecimalField[Decimal, Decimal] = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal("0.00")
     )
