@@ -1,7 +1,9 @@
+from decimal import Decimal
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from pinaks.apps.billing.models import Invoice, InvoiceLine
+from pinaks.apps.billing.models import Invoice, InvoiceLine, InvoicePreset
 from pinaks.apps.customers.serializers import StrictSerializer
 
 
@@ -145,3 +147,53 @@ class DraftUpdateSerializer(StrictSerializer[dict[str, object]]):
     due_date = serializers.DateField(required=False, allow_null=True)
     recipient = RecipientInputSerializer(required=False)
     line_operations = LineOperationSerializer(many=True, required=False, allow_empty=False)
+
+
+class PresetLineSerializer(StrictSerializer[dict[str, object]]):
+    item_code = serializers.CharField(max_length=50, allow_blank=True, required=False, default="")
+    description = serializers.CharField(max_length=255)
+    unit = serializers.ChoiceField(choices=("C62", "HUR", "DAY"))
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=4, min_value=0)
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0)
+    discount_percent = serializers.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        min_value=0,
+        max_value=100,
+        required=False,
+        default=Decimal("0.00"),
+    )
+    tax_category = serializers.ChoiceField(choices=("S", "E"))
+    tax_rate = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=0, max_value=100)
+    price_entry_policy = serializers.ChoiceField(choices=("net", "gross"))
+    exemption_reason_code = serializers.CharField(
+        max_length=50, allow_blank=True, required=False, default=""
+    )
+    exemption_wording = serializers.CharField(
+        max_length=255, allow_blank=True, required=False, default=""
+    )
+    service_date = serializers.DateField(required=False, allow_null=True)
+    service_period_end = serializers.DateField(required=False, allow_null=True)
+
+
+class PresetWriteSerializer(StrictSerializer[dict[str, object]]):
+    name = serializers.CharField(max_length=120, required=False)
+    lines = PresetLineSerializer(many=True, allow_empty=False, required=False)
+
+
+class PresetCreateSerializer(PresetWriteSerializer):
+    name = serializers.CharField(max_length=120)
+    lines = PresetLineSerializer(many=True, allow_empty=False)
+
+
+class PresetSerializer(serializers.Serializer[InvoicePreset]):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    lines = PresetLineSerializer(many=True, read_only=True)
+    is_archived = serializers.BooleanField(read_only=True)
+
+
+class ApplyPresetSerializer(StrictSerializer[dict[str, object]]):
+    preset_id = serializers.IntegerField(min_value=1)
+    expected_version = serializers.IntegerField(min_value=1)
+    mode = serializers.ChoiceField(choices=("append", "replace"))

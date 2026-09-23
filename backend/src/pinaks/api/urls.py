@@ -9,6 +9,7 @@ from pinaks.api.views import (
     capabilities,
     probe,
 )
+from pinaks.apps.billing.preset_views import PresetArchiveView, PresetDetailView, PresetListView
 
 app_name = "api-v1"
 
@@ -17,6 +18,13 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("capabilities/", capabilities, name="capabilities"),
     path("catalog/", include("pinaks.apps.catalog.urls")),
     path("invoices/", include("pinaks.apps.billing.urls")),
+    path("invoice-presets/", PresetListView.as_view(), name="preset-list"),
+    path("invoice-presets/<int:preset_id>/", PresetDetailView.as_view(), name="preset-detail"),
+    path(
+        "invoice-presets/<int:preset_id>/archive/",
+        PresetArchiveView.as_view(),
+        name="preset-archive",
+    ),
     path("custom-fields/", include("pinaks.apps.custom_fields.urls")),
     path("customers/", include("pinaks.apps.customers.urls")),
     path("configuration/company/", CompanyProfileView.as_view(), name="company-profile"),

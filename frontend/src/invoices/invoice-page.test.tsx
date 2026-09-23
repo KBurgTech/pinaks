@@ -374,4 +374,66 @@ describe("draft invoice page", () => {
       "Rechnungen konnten nicht geladen werden.",
     );
   });
+  it("saves and applies a preset in both languages", async () => {
+    window.history.pushState({}, "", "/app/invoices/7/");
+    const existing = {
+      ...invoice,
+      lines: [
+        {
+          id: 11,
+          position: 1,
+          description: "Consulting",
+          item_code: "WORK",
+          unit: "HUR",
+          quantity: "2.0000",
+          unit_price: "10.00",
+          discount_percent: "0.00",
+          tax_category: "S",
+          tax_rate: "19.00",
+          price_entry_policy: "net",
+          exemption_reason_code: "",
+          exemption_wording: "",
+          service_date: null,
+          service_period_end: null,
+          net_total: "20.00",
+          tax_total: "3.80",
+          gross_total: "23.80",
+        },
+      ],
+    };
+    const preset = { id: 5, name: "Routine", lines: existing.lines, is_archived: false };
+    get.mockImplementation((path) =>
+      Promise.resolve(
+        response(
+          path === "/api/v1/invoices/{invoice_id}/"
+            ? existing
+            : path === "/api/v1/invoice-presets/"
+              ? [preset]
+              : [],
+        ),
+      ),
+    );
+    post.mockImplementation((path) =>
+      Promise.resolve(
+        response(
+          path === "/api/v1/invoice-presets/" ? preset : { ...existing, version: 2 },
+          path === "/api/v1/invoice-presets/" ? 201 : 200,
+        ),
+      ),
+    );
+    mount();
+    expect(await screen.findByRole("option", { name: "Routine" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Preset"), { target: { value: "5" } });
+    fireEvent.change(screen.getByLabelText("Apply mode"), { target: { value: "replace" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply preset" }));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith("/api/v1/invoices/{invoice_id}/apply-preset/", {
+        params: { path: { invoice_id: 7 } },
+        body: { preset_id: 5, expected_version: 1, mode: "replace" },
+      }),
+    );
+    await i18n.changeLanguage("de");
+    expect(screen.getByLabelText("Vorlage")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Vorlage anwenden" })).toBeInTheDocument();
+  });
 });

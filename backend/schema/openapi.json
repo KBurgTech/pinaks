@@ -1803,6 +1803,254 @@
                 }
             }
         },
+        "/api/v1/invoice-presets/": {
+            "get": {
+                "operationId": "preset_list",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "invoice-presets"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPresetList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "preset_create",
+                "tags": [
+                    "invoice-presets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PresetCreateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PresetCreateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PresetCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoice-presets/{preset_id}/": {
+            "get": {
+                "operationId": "preset_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "preset_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoice-presets"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "preset_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "preset_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoice-presets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPresetWriteRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPresetWriteRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPresetWriteRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoice-presets/{preset_id}/archive/": {
+            "post": {
+                "operationId": "preset_archive",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "preset_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoice-presets"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preset"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/": {
             "get": {
                 "operationId": "invoice_list",
@@ -2148,6 +2396,81 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/apply-preset/": {
+            "post": {
+                "operationId": "invoice_apply_preset",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApplyPresetRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApplyPresetRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApplyPresetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/probe/": {
             "get": {
                 "operationId": "probe",
@@ -2207,6 +2530,27 @@
                     "capabilities",
                     "probe",
                     "schema"
+                ]
+            },
+            "ApplyPresetRequest": {
+                "type": "object",
+                "properties": {
+                    "preset_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "expected_version": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "mode": {
+                        "$ref": "#/components/schemas/ModeEnum"
+                    }
+                },
+                "required": [
+                    "expected_version",
+                    "mode",
+                    "preset_id"
                 ]
             },
             "BillingRecipient": {
@@ -3592,6 +3936,14 @@
                     "action"
                 ]
             },
+            "ModeEnum": {
+                "enum": [
+                    "append",
+                    "replace"
+                ],
+                "type": "string",
+                "description": "* `append` - append\n* `replace` - replace"
+            },
             "PaginatedCatalogItemList": {
                 "type": "object",
                 "required": [
@@ -3681,6 +4033,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Invoice"
+                        }
+                    }
+                }
+            },
+            "PaginatedPresetList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Preset"
                         }
                     }
                 }
@@ -4016,6 +4399,22 @@
                     }
                 }
             },
+            "PatchedPresetWriteRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PresetLineRequest"
+                        }
+                    }
+                }
+            },
             "PatchedTaxProfileRequest": {
                 "type": "object",
                 "properties": {
@@ -4066,6 +4465,203 @@
                         "type": "boolean"
                     }
                 }
+            },
+            "Preset": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PresetLine"
+                        },
+                        "readOnly": true
+                    },
+                    "is_archived": {
+                        "type": "boolean",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "is_archived",
+                    "lines",
+                    "name"
+                ]
+            },
+            "PresetCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PresetLineRequest"
+                        }
+                    }
+                },
+                "required": [
+                    "lines",
+                    "name"
+                ]
+            },
+            "PresetLine": {
+                "type": "object",
+                "properties": {
+                    "item_code": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 50
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "unit": {
+                        "$ref": "#/components/schemas/UnitEnum"
+                    },
+                    "quantity": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,4})?$"
+                    },
+                    "unit_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$"
+                    },
+                    "discount_percent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+                        "default": "0.00"
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "tax_rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 50
+                    },
+                    "exemption_wording": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 255
+                    },
+                    "service_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "service_period_end": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "description",
+                    "price_entry_policy",
+                    "quantity",
+                    "tax_category",
+                    "tax_rate",
+                    "unit",
+                    "unit_price"
+                ]
+            },
+            "PresetLineRequest": {
+                "type": "object",
+                "properties": {
+                    "item_code": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 50
+                    },
+                    "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "unit": {
+                        "$ref": "#/components/schemas/UnitEnum"
+                    },
+                    "quantity": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,4})?$"
+                    },
+                    "unit_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$"
+                    },
+                    "discount_percent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+                        "default": "0.00"
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "tax_rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 50
+                    },
+                    "exemption_wording": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 255
+                    },
+                    "service_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "service_period_end": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "description",
+                    "price_entry_policy",
+                    "quantity",
+                    "tax_category",
+                    "tax_rate",
+                    "unit",
+                    "unit_price"
+                ]
             },
             "PriceEntryPolicyEnum": {
                 "enum": [

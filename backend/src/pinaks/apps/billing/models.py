@@ -201,3 +201,21 @@ class InvoiceLine(models.Model):
 
     def __str__(self) -> str:
         return f"Invoice {self.invoice_id} line {self.position}"
+
+
+class InvoicePreset(models.Model):
+    """Reusable, ordered draft defaults independent of catalog and document templates."""
+
+    name: models.CharField[str, str] = models.CharField(max_length=120, unique=True)
+    lines: models.JSONField[list[dict[str, str]], list[dict[str, str]]] = models.JSONField(
+        default=list
+    )
+    is_archived: models.BooleanField[bool, bool] = models.BooleanField(default=False)
+    created_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now_add=True)
+    modified_at: models.DateTimeField[object, object] = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("name", "pk")
+
+    def __str__(self) -> str:
+        return self.name
