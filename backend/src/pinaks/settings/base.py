@@ -11,6 +11,7 @@ ALLOWED_HOSTS: list[str] = []
 INSTALLED_APPS = [
     "pinaks.apps.accounts",
     "pinaks.apps.audit",
+    "pinaks.apps.billing",
     "pinaks.apps.catalog",
     "pinaks.apps.configuration",
     "pinaks.apps.custom_fields",
