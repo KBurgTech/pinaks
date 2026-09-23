@@ -275,7 +275,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        readonly patch?: never;
+        readonly patch: operations["invoice_update_draft"];
         readonly trace?: never;
     };
     readonly "/api/v1/probe/": {
@@ -299,6 +299,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description * `add` - add
+         *     * `update` - update
+         *     * `remove` - remove
+         * @enum {string}
+         */
+        readonly ActionEnum: "add" | "update" | "remove";
         readonly ApiRoot: {
             /** Format: uri */
             readonly capabilities: string;
@@ -596,6 +603,10 @@ export interface components {
             readonly issue_date: string;
             /** Format: date */
             readonly due_date: string | null;
+            readonly recipient: {
+                readonly [key: string]: unknown;
+            };
+            readonly lines: readonly components["schemas"]["InvoiceLine"][];
             /** Format: decimal */
             readonly subtotal: string;
             /** Format: decimal */
@@ -608,12 +619,66 @@ export interface components {
             /** Format: date-time */
             readonly modified_at: string;
         };
+        readonly InvoiceLine: {
+            readonly id: number;
+            readonly position: number;
+            /** Format: date */
+            readonly service_date: string | null;
+            /** Format: date */
+            readonly service_period_end: string | null;
+            readonly item_code: string;
+            readonly description: string;
+            readonly unit: string;
+            /** Format: decimal */
+            readonly quantity: string;
+            /** Format: decimal */
+            readonly unit_price: string;
+            /** Format: decimal */
+            readonly discount_percent: string;
+            readonly tax_category: string;
+            /** Format: decimal */
+            readonly tax_rate: string;
+            readonly price_entry_policy: string;
+            readonly exemption_reason_code: string;
+            readonly exemption_wording: string;
+            /** Format: decimal */
+            readonly net_total: string;
+            /** Format: decimal */
+            readonly tax_total: string;
+            /** Format: decimal */
+            readonly gross_total: string;
+        };
         /**
          * @description * `never` - never
          *     * `annual` - annual
          * @enum {string}
          */
         readonly InvoiceNumberResetEnum: "never" | "annual";
+        readonly LineOperationRequest: {
+            readonly action: components["schemas"]["ActionEnum"];
+            readonly line_id?: number;
+            readonly catalog_item_id?: number;
+            readonly position?: number;
+            readonly item_code?: string;
+            readonly description?: string;
+            readonly unit?: components["schemas"]["UnitEnum"];
+            /** Format: decimal */
+            readonly quantity?: string;
+            /** Format: decimal */
+            readonly unit_price?: string;
+            /** Format: decimal */
+            readonly discount_percent?: string;
+            readonly tax_category?: components["schemas"]["TaxCategoryEnum"];
+            /** Format: decimal */
+            readonly tax_rate?: string;
+            readonly price_entry_policy?: components["schemas"]["PriceEntryPolicyEnum"];
+            readonly exemption_reason_code?: string;
+            readonly exemption_wording?: string;
+            /** Format: date */
+            readonly service_date?: string | null;
+            /** Format: date */
+            readonly service_period_end?: string | null;
+        };
         readonly PaginatedCatalogItemList: {
             /** @example 123 */
             readonly count: number;
@@ -749,6 +814,16 @@ export interface components {
             readonly addresses?: readonly components["schemas"]["CustomerAddressRequest"][];
             readonly custom_data?: unknown;
         };
+        readonly PatchedDraftUpdateRequest: {
+            readonly expected_version?: number;
+            readonly document_language?: components["schemas"]["DocumentLanguage"];
+            /** Format: date */
+            readonly issue_date?: string;
+            /** Format: date */
+            readonly due_date?: string | null;
+            readonly recipient?: components["schemas"]["RecipientInputRequest"];
+            readonly line_operations?: readonly components["schemas"]["LineOperationRequest"][];
+        };
         readonly PatchedTaxProfileRequest: {
             readonly code?: string;
             readonly name?: string;
@@ -773,6 +848,14 @@ export interface components {
             readonly status: string;
             readonly checks: readonly string[];
         };
+        readonly RecipientInputRequest: {
+            readonly source: components["schemas"]["SourceEnum"];
+            readonly recipient_id?: number;
+            readonly customer_id?: number;
+            readonly values?: {
+                readonly [key: string]: unknown;
+            };
+        };
         /**
          * @description * `tax_number` - tax_number
          *     * `vat_identifier` - vat_identifier
@@ -794,6 +877,14 @@ export interface components {
          * @enum {string}
          */
         readonly SearchModeEnum: "none" | "exact" | "range" | "text";
+        /**
+         * @description * `customer` - customer
+         *     * `saved` - saved
+         *     * `known_customer` - known_customer
+         *     * `manual` - manual
+         * @enum {string}
+         */
+        readonly SourceEnum: "customer" | "saved" | "known_customer" | "manual";
         /**
          * @description * `customer` - customer
          *     * `catalog_item` - catalog_item
@@ -2119,6 +2210,65 @@ export interface operations {
                 };
             };
             readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_update_draft: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedDraftUpdateRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedDraftUpdateRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedDraftUpdateRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

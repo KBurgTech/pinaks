@@ -16,9 +16,19 @@ from pinaks.apps.accounts.models import User
 from pinaks.apps.accounts.permissions import CanMutateDrafts, CanRead
 from pinaks.apps.audit.services import request_correlation_id
 from pinaks.apps.billing.models import Invoice
-from pinaks.apps.billing.serializers import DraftCreateSerializer, InvoiceSerializer
-from pinaks.apps.billing.services import CompanyConfigurationMissingError, create_draft
-from pinaks.apps.customers.models import Customer
+from pinaks.apps.billing.serializers import (
+    DraftCreateSerializer,
+    DraftUpdateSerializer,
+    InvoiceSerializer,
+)
+from pinaks.apps.billing.services import (
+    CompanyConfigurationMissingError,
+    StaleInvoiceVersionError,
+    create_draft,
+    update_draft,
+)
+from pinaks.apps.catalog.models import CatalogItem
+from pinaks.apps.customers.models import BillingRecipient, Customer
 
 
 def _filter_date(raw: str | None, field: str) -> date | None:
@@ -132,7 +142,11 @@ class InvoiceListView(GenericAPIView[Invoice]):
 
 
 class InvoiceDetailView(GenericAPIView[Invoice]):
-    permission_classes = (CanRead,)
+    def get_permissions(self) -> list[CanRead | CanMutateDrafts]:
+        return [
+            CanRead() if self.request.method in {"GET", "HEAD", "OPTIONS"} else CanMutateDrafts()
+        ]
+
     serializer_class = InvoiceSerializer
 
     @extend_schema(
@@ -148,4 +162,46 @@ class InvoiceDetailView(GenericAPIView[Invoice]):
             invoice = Invoice.objects.get(pk=invoice_id)
         except Invoice.DoesNotExist as error:
             raise NotFound("Invoice was not found.") from error
+        return Response(InvoiceSerializer(invoice).data)
+
+    @extend_schema(
+        operation_id="invoice_update_draft",
+        request=DraftUpdateSerializer,
+        responses={
+            200: InvoiceSerializer,
+            400: ErrorEnvelopeSerializer,
+            403: ErrorEnvelopeSerializer,
+            404: ErrorEnvelopeSerializer,
+            409: ErrorEnvelopeSerializer,
+        },
+    )
+    def patch(self, request: Request, invoice_id: int) -> Response:
+        serializer = DraftUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        values = dict(serializer.validated_data)
+        expected_version = values.pop("expected_version")
+        actor = request.user
+        assert isinstance(actor, User)
+        try:
+            invoice = update_draft(
+                invoice_id=invoice_id,
+                expected_version=expected_version,
+                values=values,
+                actor=actor,
+                correlation_id=request_correlation_id(request),
+            )
+        except Invoice.DoesNotExist as error:
+            raise NotFound("Invoice was not found.") from error
+        except (
+            Customer.DoesNotExist,
+            BillingRecipient.DoesNotExist,
+            CatalogItem.DoesNotExist,
+        ) as error:
+            raise NotFound("Selected draft source was not found.") from error
+        except StaleInvoiceVersionError as error:
+            raise BusinessRuleViolation(code="stale_invoice_version", message=str(error)) from error
+        except DjangoValidationError as error:
+            raise ValidationError(
+                error.message_dict if hasattr(error, "message_dict") else error.messages
+            ) from error
         return Response(InvoiceSerializer(invoice).data)

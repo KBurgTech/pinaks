@@ -2054,6 +2054,98 @@
                         "description": ""
                     }
                 }
+            },
+            "patch": {
+                "operationId": "invoice_update_draft",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftUpdateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftUpdateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
             }
         },
         "/api/v1/probe/": {
@@ -2086,6 +2178,15 @@
     },
     "components": {
         "schemas": {
+            "ActionEnum": {
+                "enum": [
+                    "add",
+                    "update",
+                    "remove"
+                ],
+                "type": "string",
+                "description": "* `add` - add\n* `update` - update\n* `remove` - remove"
+            },
             "ApiRoot": {
                 "type": "object",
                 "properties": {
@@ -3222,6 +3323,18 @@
                         "readOnly": true,
                         "nullable": true
                     },
+                    "recipient": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "readOnly": true
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InvoiceLine"
+                        },
+                        "readOnly": true
+                    },
                     "subtotal": {
                         "type": "string",
                         "format": "decimal",
@@ -3268,11 +3381,128 @@
                     "is_overdue",
                     "issue_date",
                     "lifecycle_status",
+                    "lines",
                     "modified_at",
                     "payment_status",
+                    "recipient",
                     "subtotal",
                     "tax_total",
                     "version"
+                ]
+            },
+            "InvoiceLine": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "position": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "service_date": {
+                        "type": "string",
+                        "format": "date",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "service_period_end": {
+                        "type": "string",
+                        "format": "date",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "item_code": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "unit": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "quantity": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,4})?$",
+                        "readOnly": true
+                    },
+                    "unit_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "discount_percent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "tax_category": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "tax_rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "price_entry_policy": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "exemption_wording": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "net_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "tax_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    },
+                    "gross_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "description",
+                    "discount_percent",
+                    "exemption_reason_code",
+                    "exemption_wording",
+                    "gross_total",
+                    "id",
+                    "item_code",
+                    "net_total",
+                    "position",
+                    "price_entry_policy",
+                    "quantity",
+                    "service_date",
+                    "service_period_end",
+                    "tax_category",
+                    "tax_rate",
+                    "tax_total",
+                    "unit",
+                    "unit_price"
                 ]
             },
             "InvoiceNumberResetEnum": {
@@ -3282,6 +3512,85 @@
                 ],
                 "type": "string",
                 "description": "* `never` - never\n* `annual` - annual"
+            },
+            "LineOperationRequest": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "$ref": "#/components/schemas/ActionEnum"
+                    },
+                    "line_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "catalog_item_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "position": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "item_code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "unit": {
+                        "$ref": "#/components/schemas/UnitEnum"
+                    },
+                    "quantity": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,4})?$"
+                    },
+                    "unit_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$"
+                    },
+                    "discount_percent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "tax_category": {
+                        "$ref": "#/components/schemas/TaxCategoryEnum"
+                    },
+                    "tax_rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$"
+                    },
+                    "price_entry_policy": {
+                        "$ref": "#/components/schemas/PriceEntryPolicyEnum"
+                    },
+                    "exemption_reason_code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "exemption_wording": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "service_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "service_period_end": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "action"
+                ]
             },
             "PaginatedCatalogItemList": {
                 "type": "object",
@@ -3677,6 +3986,36 @@
                     "custom_data": {}
                 }
             },
+            "PatchedDraftUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "expected_version": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "document_language": {
+                        "$ref": "#/components/schemas/DocumentLanguage"
+                    },
+                    "issue_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "recipient": {
+                        "$ref": "#/components/schemas/RecipientInputRequest"
+                    },
+                    "line_operations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LineOperationRequest"
+                        }
+                    }
+                }
+            },
             "PatchedTaxProfileRequest": {
                 "type": "object",
                 "properties": {
@@ -3754,6 +4093,29 @@
                     "status"
                 ]
             },
+            "RecipientInputRequest": {
+                "type": "object",
+                "properties": {
+                    "source": {
+                        "$ref": "#/components/schemas/SourceEnum"
+                    },
+                    "recipient_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "customer_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "values": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    }
+                },
+                "required": [
+                    "source"
+                ]
+            },
             "RequiredSellerIdentifiersEnum": {
                 "enum": [
                     "tax_number",
@@ -3780,6 +4142,16 @@
                 ],
                 "type": "string",
                 "description": "* `none` - none\n* `exact` - exact\n* `range` - range\n* `text` - text"
+            },
+            "SourceEnum": {
+                "enum": [
+                    "customer",
+                    "saved",
+                    "known_customer",
+                    "manual"
+                ],
+                "type": "string",
+                "description": "* `customer` - customer\n* `saved` - saved\n* `known_customer` - known_customer\n* `manual` - manual"
             },
             "TargetEnum": {
                 "enum": [

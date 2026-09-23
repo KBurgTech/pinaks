@@ -34,6 +34,36 @@ _RECIPIENT_FIELDS = (
 )
 
 
+def recipient_snapshot(
+    *,
+    source: str,
+    customer: Customer,
+    recipient_id: int | None = None,
+    source_customer_id: int | None = None,
+    values: Mapping[str, object] | None = None,
+) -> dict[str, str]:
+    """Copy current recipient data into a draft without a mutable source link."""
+    if source in ("customer", "known_customer"):
+        selected = customer if source == "customer" else Customer.objects.get(pk=source_customer_id)
+        address = selected.addresses.filter(is_primary=True).first()
+        if address is None:
+            raise ValidationError({"recipient": "The selected customer needs a primary address."})
+        data = {field: str(getattr(selected, field)) for field in _RECIPIENT_FIELDS[:6]}
+        data.update({field: str(getattr(address, field)) for field in _RECIPIENT_FIELDS[6:]})
+    elif source == "saved":
+        selected_recipient = BillingRecipient.objects.get(pk=recipient_id, customer=customer)
+        data = {field: str(getattr(selected_recipient, field)) for field in _RECIPIENT_FIELDS}
+    elif source == "manual" and values is not None:
+        if set(values) - set(_RECIPIENT_FIELDS):
+            raise ValidationError({"recipient": "Unsupported recipient field."})
+        candidate = BillingRecipient(customer=customer, **values)
+        candidate.full_clean(exclude=("customer",))
+        data = {field: str(getattr(candidate, field)) for field in _RECIPIENT_FIELDS}
+    else:
+        raise ValidationError({"recipient": "Unsupported recipient source."})
+    return data
+
+
 class CustomerNumberImmutableError(ValueError):
     pass
 
