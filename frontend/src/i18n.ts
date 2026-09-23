@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 import { catalogTranslations } from "@/catalog/translations";
 import { customFieldTranslations } from "@/custom-fields/translations";
+import { invoiceTranslations } from "@/invoices/translations";
 
 export const UI_LANGUAGE_STORAGE_KEY = "pinaks.uiLanguage";
 
@@ -162,6 +163,7 @@ export const resources = {
         recipientSaveError: "The billing recipient could not be saved.",
       },
       catalogPage: catalogTranslations.en,
+      invoicePage: invoiceTranslations.en,
       customFields: customFieldTranslations.en,
       users: "Users",
       switchToGerman: "Deutsch",
@@ -325,6 +327,7 @@ export const resources = {
         recipientSaveError: "Der Rechnungsempfänger konnte nicht gespeichert werden.",
       },
       catalogPage: catalogTranslations.de,
+      invoicePage: invoiceTranslations.de,
       customFields: customFieldTranslations.de,
       users: "Benutzer",
       switchToGerman: "Deutsch",
