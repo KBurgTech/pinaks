@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -6,6 +7,7 @@ from django.utils import timezone
 
 from pinaks.apps.accounts.models import User
 from pinaks.apps.audit.services import record_event
+from pinaks.apps.billing.calculations import LineAmounts
 from pinaks.apps.billing.models import Invoice
 from pinaks.apps.configuration.models import CompanyProfile, DocumentLanguage
 from pinaks.apps.customers.models import Customer
@@ -55,4 +57,34 @@ def create_draft(
         correlation_id=correlation_id,
         metadata={"customer_id": customer.pk},
     )
+    return invoice
+
+
+@transaction.atomic
+def recalculate_draft(*, invoice_id: int) -> Invoice:
+    """Recalculate persisted draft lines and totals under the aggregate lock."""
+    from pinaks.apps.billing.calculations import calculate_line, calculate_totals
+    from pinaks.apps.billing.models import InvoiceLine
+
+    invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
+    rows: list[tuple[str, Decimal, LineAmounts]] = []
+    for line in InvoiceLine.objects.filter(invoice=invoice).order_by("position", "pk"):
+        amounts = calculate_line(
+            quantity=line.quantity,
+            unit_price=line.unit_price,
+            discount_percent=line.discount_percent,
+            tax_rate=line.tax_rate,
+            price_entry_policy=line.price_entry_policy,
+        )
+        line.net_total, line.tax_total, line.gross_total = amounts.net, amounts.tax, amounts.gross
+        line.full_clean()
+        line.save(update_fields=("net_total", "tax_total", "gross_total"))
+        rows.append((line.tax_category, line.tax_rate, amounts))
+    totals = calculate_totals(rows)
+    invoice.subtotal = totals.subtotal
+    invoice.tax_total = totals.tax_total
+    invoice.grand_total = totals.grand_total
+    invoice.version += 1
+    invoice.full_clean()
+    invoice.save(update_fields=("subtotal", "tax_total", "grand_total", "version", "modified_at"))
     return invoice
