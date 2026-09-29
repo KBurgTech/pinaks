@@ -442,6 +442,7 @@ def test_custom_field_metadata_is_frozen_with_values(
 def test_frozen_issuance_snapshot_serializes_without_live_models(
     ready_invoice: tuple[Invoice, User, DocumentTemplate],
 ) -> None:
+    import os
     from pathlib import Path
 
     from pinaks.apps.e_invoicing.facturx import FacturXSerializer
@@ -463,7 +464,11 @@ def test_frozen_issuance_snapshot_serializes_without_live_models(
     CompanyProfile.objects.update(legal_name="Changed Seller")
     assert FacturXSerializer().serialize(issued.snapshot) == first
     validator = MustangValidator(
-        jar_path=Path("/tmp/pinaks-einvoice-tools/mustang/Mustang-CLI-2.23.0.jar")
+        jar_path=Path(
+            os.environ.get(
+                "MUSTANG_CLI_JAR", "/tmp/pinaks-einvoice-tools/mustang/Mustang-CLI-2.23.0.jar"
+            )
+        )
     )
     report = validator.validate(first, filename="issued.xml")
     assert report.valid, report.findings

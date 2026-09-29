@@ -1,5 +1,6 @@
 """The issued snapshot is the sole input to structured invoice generation."""
 
+import os
 from copy import deepcopy
 from pathlib import Path
 from xml.etree import ElementTree
@@ -9,7 +10,9 @@ import pytest
 from pinaks.apps.e_invoicing.facturx import FacturXSerializer, InvoiceMappingError
 from pinaks.apps.e_invoicing.mustang import MustangValidator
 
-MUSTANG_JAR = Path("/tmp/pinaks-einvoice-tools/mustang/Mustang-CLI-2.23.0.jar")
+MUSTANG_JAR = Path(
+    os.environ.get("MUSTANG_CLI_JAR", "/tmp/pinaks-einvoice-tools/mustang/Mustang-CLI-2.23.0.jar")
+)
 
 
 def snapshot(*, language: str = "de", exempt: bool = False) -> dict[str, object]:
