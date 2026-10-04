@@ -19,7 +19,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "django-stubs[compatible-mypy]>=5.2,<6",
+    "django-stubs[compatible-mypy]>=6.1.1,<7",
     "djangorestframework-stubs>=3.16,<4",
     "mypy>=1.18,<2",
     "pytest>=8.4,<9",
