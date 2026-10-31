@@ -2992,6 +2992,111 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/cancel/": {
+            "post": {
+                "operationId": "invoices_cancel_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelInvoiceRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelInvoiceRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelInvoiceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/{invoice_id}/documents/": {
             "get": {
                 "operationId": "invoice_documents",
@@ -3721,6 +3826,25 @@
                     "party_type",
                     "phone",
                     "postal_code"
+                ]
+            },
+            "CancelInvoiceRequest": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                    },
+                    "idempotency_key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    }
+                },
+                "required": [
+                    "idempotency_key",
+                    "reason"
                 ]
             },
             "Capabilities": {
@@ -4730,6 +4854,27 @@
                         "type": "integer",
                         "readOnly": true
                     },
+                    "original_invoice_id": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "correction_reason": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "related_invoice_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "readOnly": true
+                    },
+                    "cancellation_template_id": {
+                        "type": "integer",
+                        "nullable": true,
+                        "readOnly": true
+                    },
                     "invoice_type": {
                         "type": "string",
                         "readOnly": true
@@ -4830,6 +4975,8 @@
                     }
                 },
                 "required": [
+                    "cancellation_template_id",
+                    "correction_reason",
                     "created_at",
                     "currency",
                     "custom_data",
@@ -4845,10 +4992,12 @@
                     "lifecycle_status",
                     "lines",
                     "modified_at",
+                    "original_invoice_id",
                     "payment_changed_at",
                     "payment_changed_by_id",
                     "payment_status",
                     "recipient",
+                    "related_invoice_ids",
                     "subtotal",
                     "tax_total",
                     "version"

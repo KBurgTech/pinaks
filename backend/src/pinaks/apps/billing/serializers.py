@@ -45,6 +45,10 @@ class InvoiceLineSerializer(serializers.Serializer[object]):
 class InvoiceSerializer(serializers.Serializer[Invoice]):
     id = serializers.IntegerField(read_only=True)
     customer_id = serializers.IntegerField(read_only=True)
+    original_invoice_id = serializers.IntegerField(read_only=True, allow_null=True)
+    correction_reason = serializers.CharField(read_only=True)
+    related_invoice_ids = serializers.SerializerMethodField()
+    cancellation_template_id = serializers.SerializerMethodField()
     invoice_type = serializers.CharField(read_only=True)
     lifecycle_status = serializers.CharField(read_only=True)
     payment_status = serializers.CharField(read_only=True)
@@ -65,6 +69,21 @@ class InvoiceSerializer(serializers.Serializer[Invoice]):
     version = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     modified_at = serializers.DateTimeField(read_only=True)
+
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
+    def get_cancellation_template_id(self, obj: Invoice) -> int | None:
+        if obj.invoice_type != "CANCELLATION" or obj.original_invoice is None:
+            return None
+        snapshot = obj.original_invoice.snapshot
+        template = snapshot.get("template") if snapshot else None
+        template_id = template.get("id") if isinstance(template, dict) else None
+        return template_id if isinstance(template_id, int) else None
+
+    @extend_schema_field(serializers.ListField(child=serializers.IntegerField()))
+    def get_related_invoice_ids(self, obj: Invoice) -> list[int]:
+        return list(
+            Invoice.objects.filter(original_invoice=obj).order_by("pk").values_list("pk", flat=True)
+        )
 
     @extend_schema_field(serializers.JSONField)
     def get_custom_data(self, obj: Invoice) -> dict[str, object]:

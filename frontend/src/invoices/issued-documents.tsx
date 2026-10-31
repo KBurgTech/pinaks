@@ -41,7 +41,8 @@ export function IssuedDocuments({ invoiceId }: { invoiceId: number }) {
   const state = documents.data;
   useEffect(() => {
     if (state?.lifecycle_status === "ISSUED") {
-      void clients.invalidateQueries({ queryKey: ["invoice", invoiceId] });
+      void clients.invalidateQueries({ queryKey: ["invoice"] });
+      void clients.invalidateQueries({ queryKey: ["invoices"] });
     }
   }, [state?.lifecycle_status, clients, invoiceId]);
   if (documents.isPending) return <p role="status">{t("invoicePage.documentsLoading")}</p>;
@@ -60,12 +61,16 @@ export function IssuedDocuments({ invoiceId }: { invoiceId: number }) {
     <section className="mb-6 grid gap-3" aria-label={t("invoicePage.documents")}>
       <p
         role={
-          failed || (state.lifecycle_status === "ISSUED" && !state.healthy) ? "alert" : "status"
+          failed ||
+          ((state.lifecycle_status === "ISSUED" || state.lifecycle_status === "CANCELLED") &&
+            !state.healthy)
+            ? "alert"
+            : "status"
         }
       >
         {t(
           `invoicePage.${
-            state.lifecycle_status === "ISSUED"
+            state.lifecycle_status === "ISSUED" || state.lifecycle_status === "CANCELLED"
               ? state.healthy
                 ? "documentsIssued"
                 : "documentsUnhealthy"

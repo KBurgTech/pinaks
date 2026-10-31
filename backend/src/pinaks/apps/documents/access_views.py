@@ -60,7 +60,8 @@ class InvoiceDocumentsView(APIView):
                 "lifecycle_status": invoice.lifecycle_status,
                 "operation_state": operation.state if operation else None,
                 "failure_code": operation.failure_code if operation else "",
-                "healthy": invoice.lifecycle_status == LifecycleStatus.ISSUED
+                "healthy": invoice.lifecycle_status
+                in (LifecycleStatus.ISSUED, LifecycleStatus.CANCELLED)
                 and artifacts_healthy(artifacts),
                 "artifacts": ArtifactMetadataSerializer(artifacts, many=True).data,
             },
@@ -85,7 +86,7 @@ class InvoiceArtifactView(APIView):
             IssuedArtifact,
             invoice_id=invoice_id,
             kind=kind,
-            invoice__lifecycle_status=LifecycleStatus.ISSUED,
+            invoice__lifecycle_status__in=(LifecycleStatus.ISSUED, LifecycleStatus.CANCELLED),
         )
         try:
             data = read_artifact(artifact)

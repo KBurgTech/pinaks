@@ -1,5 +1,21 @@
 export const invoiceTranslations = {
   en: {
+    cancellation: "Cancellation",
+    cancelInvoice: "Cancel invoice",
+    cancellationReason: "Cancellation reason",
+    createCancellation: "Create cancellation draft",
+    closeCancellation: "Close",
+    cancellationError:
+      "Cancellation could not be completed. Retry the same command or reload the invoice.",
+    cancelPreview:
+      "Create a full credit for invoice {{number}} ({{amount}}). Review the linked draft before issuing. The original documents remain available.",
+    cancellationDraftPreview:
+      "Full cancellation credit: {{amount}}. Issuing this document cancels the original invoice after validation. This draft cannot be edited.",
+    issueCancellation: "Issue cancellation invoice",
+    originalInvoice: "Original invoice #{{id}}",
+    relatedCancellation: "Cancellation invoice #{{id}}",
+    cancelled: "Cancelled",
+
     paid: "Paid",
     unpaid: "Unpaid",
     overdue: "Overdue",
@@ -127,6 +143,22 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    cancellation: "Stornierung",
+    cancelInvoice: "Rechnung stornieren",
+    cancellationReason: "Stornogrund",
+    createCancellation: "Stornoentwurf erstellen",
+    closeCancellation: "Schließen",
+    cancellationError:
+      "Die Stornierung konnte nicht abgeschlossen werden. Wiederholen Sie denselben Vorgang oder laden Sie die Rechnung neu.",
+    cancelPreview:
+      "Vollständige Gutschrift für Rechnung {{number}} ({{amount}}) erstellen. Prüfen Sie den verknüpften Entwurf vor der Ausstellung. Die Originaldokumente bleiben verfügbar.",
+    cancellationDraftPreview:
+      "Vollständiger Stornobetrag: {{amount}}. Die Ausstellung storniert die ursprüngliche Rechnung nach erfolgreicher Validierung. Dieser Entwurf kann nicht bearbeitet werden.",
+    issueCancellation: "Stornorechnung ausstellen",
+    originalInvoice: "Ursprüngliche Rechnung #{{id}}",
+    relatedCancellation: "Stornorechnung #{{id}}",
+    cancelled: "Storniert",
+
     paid: "Bezahlt",
     unpaid: "Unbezahlt",
     overdue: "Überfällig",

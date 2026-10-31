@@ -79,7 +79,11 @@ def issue_invoice(
     if not idempotency_key or len(idempotency_key) > 100:
         raise ValidationError({"idempotency_key": "Provide an identity of at most 100 characters."})
     invoice = Invoice.objects.select_for_update().select_related("customer").get(pk=invoice_id)
-    if invoice.lifecycle_status in (LifecycleStatus.ISSUING, LifecycleStatus.ISSUED):
+    if invoice.lifecycle_status in (
+        LifecycleStatus.ISSUING,
+        LifecycleStatus.ISSUED,
+        LifecycleStatus.CANCELLED,
+    ):
         frozen_template = invoice.snapshot.get("template") if invoice.snapshot else None
         if (
             invoice.issuance_key != idempotency_key
@@ -92,6 +96,16 @@ def issue_invoice(
         raise ValidationError({"invoice": "Only drafts can be issued."})
     if invoice.version != expected_version:
         raise StaleIssueVersionError("The invoice changed since it was loaded.")
+    if invoice.invoice_type == "CANCELLATION":
+        from pinaks.apps.billing.cancellations import freeze_cancellation
+
+        return freeze_cancellation(
+            invoice=invoice,
+            template_id=template_id,
+            idempotency_key=idempotency_key,
+            actor=actor,
+            correlation_id=correlation_id,
+        )
     company = CompanyProfile.objects.select_for_update().first()
     if company is None:
         raise ValidationError({"company": "Company profile is missing."})
@@ -343,3 +357,17 @@ def finalize_issuance(*, invoice_id: int) -> None:
         target_type="billing.invoice",
         target_identifier=str(invoice.pk),
     )
+
+    if invoice.invoice_type == "CANCELLATION":
+        original = Invoice.objects.select_for_update().get(pk=invoice.original_invoice_id)
+        if original.lifecycle_status != LifecycleStatus.ISSUED:
+            raise ValueError("original_not_issued")
+        Invoice.objects.filter(pk=original.pk).update(
+            lifecycle_status=LifecycleStatus.CANCELLED, modified_at=timezone.now()
+        )
+        record_event(
+            action_code="billing.invoice_cancelled",
+            target_type="billing.invoice",
+            target_identifier=str(original.pk),
+            metadata={"cancellation_invoice_id": invoice.pk},
+        )

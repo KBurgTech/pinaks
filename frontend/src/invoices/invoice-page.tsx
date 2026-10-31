@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { Cancellation } from "./cancellation";
 import { PaymentStatus } from "./payment-status";
 import { IssuedDocuments } from "./issued-documents";
 import { CustomFields } from "@/custom-fields/custom-fields";
@@ -556,6 +557,7 @@ export function InvoicePage({
       canAdminister={canAdminister}
       invoice={detail.data}
       onBack={() => navigate("list")}
+      onOpen={(id) => navigate("detail", id)}
       onSaved={(updated) => {
         clients.setQueryData(["invoice", updated.id], updated);
         void clients.invalidateQueries({ queryKey: ["invoices"] });
@@ -644,6 +646,7 @@ function DraftEditor({
   canManagePayments,
   onSaved,
   onBack,
+  onOpen,
   onReload,
 }: {
   invoice: Invoice;
@@ -652,6 +655,7 @@ function DraftEditor({
   canManagePayments: boolean;
   onSaved: (invoice: Invoice) => void;
   onBack: () => void;
+  onOpen: (id: number) => void;
   onReload: () => void;
 }) {
   const { t } = useTranslation("shell");
@@ -766,7 +770,8 @@ function DraftEditor({
     onBack();
   }
 
-  const editable = canMutate && invoice.lifecycle_status === "DRAFT";
+  const editable =
+    canMutate && invoice.lifecycle_status === "DRAFT" && invoice.invoice_type !== "CANCELLATION";
   const fieldError = (name: string) => fields[name]?.[0]?.message;
   return (
     <>
@@ -775,6 +780,7 @@ function DraftEditor({
           {t("invoicePage.back")}
         </button>
       </PageHeader>
+      <Cancellation invoice={invoice} canManage={canMutate} onOpen={onOpen} />
       <PaymentStatus invoice={invoice} canManage={canManagePayments} />
       {invoice.lifecycle_status !== "DRAFT" && <IssuedDocuments invoiceId={invoice.id} />}
       {!editable && <p className="mb-4 text-sm text-neutral-600">{t("invoicePage.readOnly")}</p>}
