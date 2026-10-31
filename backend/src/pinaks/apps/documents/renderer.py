@@ -1,6 +1,7 @@
 """Constrained visual template rendering; no application objects enter the template context."""
 
 import base64
+import logging
 import re
 from datetime import date
 from decimal import Decimal
@@ -92,6 +93,7 @@ def render_preview_html(
     language: str,
     context: dict[str, object],
     assets: dict[str, tuple[str, bytes]] | None = None,
+    preview: bool = True,
 ) -> str:
     if language not in {"en", "de"} or len(source) + len(css) > MAX_SOURCE:
         raise PreviewRenderError("Invalid or oversized template.")
@@ -130,19 +132,18 @@ def render_preview_html(
     if len(body) > MAX_EMBEDDED_OUTPUT:
         raise PreviewRenderError("Embedded preview is too large.")
     watermark = "PREVIEW — NOT AN INVOICE" if language == "en" else "VORSCHAU — KEINE RECHNUNG"
+    notice = (
+        '<aside style="border:2px solid #a00;padding:8px">' + escape(watermark) + "</aside>"
+        if preview
+        else ""
+    )
     return (
         '<!doctype html><html lang="' + language + '"><head><meta charset="utf-8">'
-        "<style>"
-        + css
-        + '</style></head><body><aside style="border:2px solid #a00;padding:8px">'
-        + escape(watermark)
-        + "</aside>"
-        + body
-        + "</body></html>"
+        "<style>" + css + "</style></head><body>" + notice + body + "</body></html>"
     )
 
 
-def _pdf_worker(html: str, result: Queue[bytes | str]) -> None:
+def _pdf_worker(html: str, result: Queue[bytes | str], strict: bool = False) -> None:
     from weasyprint import HTML  # type: ignore[import-untyped]
 
     def blocked_fetcher(url: str) -> dict[str, object]:
@@ -154,16 +155,28 @@ def _pdf_worker(html: str, result: Queue[bytes | str]) -> None:
             raise ValueError("Image asset is too large.")
         return {"string": payload, "mime_type": match.group(1)}
 
+    failures: list[bool] = []
+
+    class RenderErrors(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            if record.levelno >= logging.ERROR:
+                failures.append(True)
+
+    if strict:
+        logger = logging.getLogger("weasyprint")
+        logger.handlers = [RenderErrors()]
+        logger.propagate = False
+
     try:
         pdf = HTML(string=html, url_fetcher=blocked_fetcher).write_pdf()
-        result.put(pdf if len(pdf) <= MAX_PDF else "too_large")
+        result.put(pdf if len(pdf) <= MAX_PDF and not failures else "render_failed")
     except Exception:
         result.put("render_failed")
 
 
-def render_preview_pdf(html: str) -> bytes:
+def render_preview_pdf(html: str, *, strict: bool = False) -> bytes:
     queue: Queue[bytes | str] = Queue(maxsize=1)
-    process = Process(target=_pdf_worker, args=(html, queue))
+    process = Process(target=_pdf_worker, args=(html, queue, strict))
     process.start()
     try:
         result = queue.get(timeout=PDF_TIMEOUT)
