@@ -1,5 +1,19 @@
 export const invoiceTranslations = {
   en: {
+    creditNote: "Credit note",
+    createCredit: "Create partial credit",
+    creditReason: "Credit reason",
+    creditQuantity: "Credit quantity: {{description}}",
+    creditPrice: "Credit unit price: {{description}}",
+    createCreditDraft: "Create credit draft",
+    creditPreview:
+      "Select quantities and unit prices to credit for invoice {{number}}. Zero quantities are omitted. The backend checks remaining quantities and amounts, including reserved drafts. Review the exact total in the linked draft before issuing.",
+    creditError:
+      "Credit could not be created. Retry the same command or reload to start a new one. Existing credits or cancellation may reserve the available amount.",
+    creditDraftPreview:
+      "Credit amount: {{amount}}. This reserved draft cannot be edited. Issuance preserves the original invoice and its documents.",
+    issueCredit: "Issue credit note",
+    relatedCorrection: "Related document #{{id}}",
     cancellation: "Cancellation",
     cancelInvoice: "Cancel invoice",
     cancellationReason: "Cancellation reason",
@@ -143,6 +157,20 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    creditNote: "Gutschrift",
+    createCredit: "Teilweise Gutschrift erstellen",
+    creditReason: "Gutschriftgrund",
+    creditQuantity: "Gutgeschriebene Menge: {{description}}",
+    creditPrice: "Gutschriftstückpreis: {{description}}",
+    createCreditDraft: "Gutschriftentwurf erstellen",
+    creditPreview:
+      "Mengen und Stückpreise für die Gutschrift zu Rechnung {{number}} auswählen. Mengen von null werden ausgelassen. Der Server prüft die verbleibenden Mengen und Beträge einschließlich reservierter Entwürfe. Den genauen Betrag vor Ausstellung im verknüpften Entwurf prüfen.",
+    creditError:
+      "Die Gutschrift konnte nicht erstellt werden. Denselben Vorgang erneut versuchen oder für einen neuen Vorgang neu laden. Vorhandene Gutschriften oder Stornierungen können den verfügbaren Betrag reservieren.",
+    creditDraftPreview:
+      "Gutschriftbetrag: {{amount}}. Dieser reservierte Entwurf kann nicht bearbeitet werden. Die Ausstellung erhält die ursprüngliche Rechnung und ihre Dokumente.",
+    issueCredit: "Gutschrift ausstellen",
+    relatedCorrection: "Verknüpftes Dokument #{{id}}",
     cancellation: "Stornierung",
     cancelInvoice: "Rechnung stornieren",
     cancellationReason: "Stornogrund",

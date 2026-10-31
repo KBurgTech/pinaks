@@ -16,6 +16,7 @@ from pinaks.apps.customers.models import Customer
 class InvoiceType(models.TextChoices):
     STANDARD = "STANDARD", "Standard"
     CANCELLATION = "CANCELLATION", "Cancellation"
+    CREDIT_NOTE = "CREDIT_NOTE", "Credit note"
 
 
 class LifecycleStatus(models.TextChoices):
@@ -37,6 +38,9 @@ class Invoice(models.Model):
     )
     correction_reason: models.CharField[str, str] = models.CharField(max_length=500, blank=True)
     correction_key: models.CharField[str, str] = models.CharField(max_length=100, blank=True)
+    credit_allocations: models.JSONField[list[dict[str, str | int]], list[dict[str, str | int]]] = (
+        models.JSONField(default=list, blank=True)
+    )
     customer_id: int
     customer: models.ForeignKey[Customer, Customer] = models.ForeignKey(
         Customer, on_delete=models.PROTECT, related_name="invoices"
@@ -104,7 +108,7 @@ class Invoice(models.Model):
                 name="invoice_supported_lifecycle",
             ),
             models.CheckConstraint(
-                condition=Q(invoice_type__in=("STANDARD", "CANCELLATION")),
+                condition=Q(invoice_type__in=("STANDARD", "CANCELLATION", "CREDIT_NOTE")),
                 name="invoice_supported_type",
             ),
             models.UniqueConstraint(
@@ -121,12 +125,20 @@ class Invoice(models.Model):
                         correction_key="",
                     )
                     | (
-                        Q(invoice_type="CANCELLATION", original_invoice__isnull=False)
+                        Q(
+                            invoice_type__in=("CANCELLATION", "CREDIT_NOTE"),
+                            original_invoice__isnull=False,
+                        )
                         & ~Q(correction_reason="")
                         & ~Q(correction_key="")
                     )
                 ),
                 name="invoice_correction_identity",
+            ),
+            models.UniqueConstraint(
+                fields=("original_invoice", "correction_key"),
+                condition=~Q(invoice_type="STANDARD"),
+                name="unique_correction_command",
             ),
             models.CheckConstraint(
                 condition=~Q(original_invoice=models.F("pk")),
@@ -177,7 +189,7 @@ class Invoice(models.Model):
             stored = Invoice.objects.get(pk=self.pk)
             if (
                 stored.lifecycle_status != LifecycleStatus.DRAFT
-                or stored.invoice_type == InvoiceType.CANCELLATION
+                or stored.invoice_type != InvoiceType.STANDARD
             ):
                 raise ValueError("Issuing invoices are immutable.")
         super().save(*args, **kwargs)

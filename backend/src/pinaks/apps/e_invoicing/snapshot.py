@@ -65,7 +65,9 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     profile = obj(snapshot.get("tax_profile"))
     lines = rows(snapshot.get("lines"))
     groups = rows(snapshot.get("tax_breakdowns"))
-    if invoice.get("type") not in {"STANDARD", "CANCELLATION"} or invoice.get("language") not in {
+    if invoice.get("type") not in {"STANDARD", "CANCELLATION", "CREDIT_NOTE"} or invoice.get(
+        "language"
+    ) not in {
         "en",
         "de",
     }:
@@ -83,7 +85,7 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     data: dict[str, object] = {
         "BT-1": string(invoice.get("number")),
         "BT-2": issue_date,
-        "BT-3": "381" if invoice["type"] == "CANCELLATION" else "380",
+        "BT-3": "381" if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE") else "380",
         "BT-5": "EUR",
         "BT-27": string(seller.get("legal_name")),
         "BT-35": string(seller.get("address_line_1")),
@@ -96,7 +98,7 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         "BT-53": string(recipient.get("postal_code")),
         "BT-55": string(recipient.get("country_code")),
     }
-    if invoice["type"] == "CANCELLATION":
+    if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE"):
         reference = obj(invoice.get("original_reference"))
         original_date = date_value(reference.get("issue_date"))
         if original_date > issue_date:
@@ -153,7 +155,9 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         if line.get("price_entry_policy") == "gross":
             price = price / (1 + rate / 100)
         net_price = net / quantity
-        if net_price > price:
+        # Canonical line amounts are rounded to cents before deriving the XML
+        # effective unit price. Fractional quantities may round that price up.
+        if net_price > price and net - price * quantity > Decimal("0.005"):
             raise InvoiceMappingError("inconsistent_totals")
         service_date = date_value(line.get("service_date"))
         end = (
@@ -179,8 +183,9 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         if item_code:
             xml_line["BT-155"] = item_code
         if discount:
-            xml_line["BT-148"] = amount(price)
-            xml_line["BT-147"] = amount(price - net_price)
+            gross_price = max(price, net_price)
+            xml_line["BT-148"] = amount(gross_price)
+            xml_line["BT-147"] = amount(gross_price - net_price)
         xml_lines.append(xml_line)
         net_total += net
     data["BG-25"] = xml_lines

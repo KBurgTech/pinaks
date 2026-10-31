@@ -96,10 +96,10 @@ def issue_invoice(
         raise ValidationError({"invoice": "Only drafts can be issued."})
     if invoice.version != expected_version:
         raise StaleIssueVersionError("The invoice changed since it was loaded.")
-    if invoice.invoice_type == "CANCELLATION":
-        from pinaks.apps.billing.cancellations import freeze_cancellation
+    if invoice.invoice_type in ("CANCELLATION", "CREDIT_NOTE"):
+        from pinaks.apps.billing.cancellations import freeze_correction
 
-        return freeze_cancellation(
+        return freeze_correction(
             invoice=invoice,
             template_id=template_id,
             idempotency_key=idempotency_key,

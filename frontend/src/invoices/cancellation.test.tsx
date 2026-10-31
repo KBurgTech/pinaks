@@ -94,7 +94,7 @@ it("shows relationship navigation to readers without mutation controls", async (
     </QueryClientProvider>,
   );
   expect(screen.queryByRole("button", { name: "Cancel invoice" })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Cancellation invoice #8" }));
+  fireEvent.click(screen.getByRole("button", { name: "Related document #8" }));
   expect(onOpen).toHaveBeenCalledWith(8);
 });
 
@@ -134,4 +134,41 @@ it("issues the unchanged cancellation draft using the original template", async 
   await waitFor(() =>
     expect(client.getQueryData(["invoice", 7])).toMatchObject({ lifecycle_status: "ISSUING" }),
   );
+});
+
+it.each([
+  ["en", "Issue credit note"],
+  ["de", "Gutschrift ausstellen"],
+])("reviews and issues a server-calculated credit draft in %s", async (language, action) => {
+  await i18n.changeLanguage(language);
+  post.mockResolvedValue({
+    data: { ...invoice, lifecycle_status: "ISSUING" },
+    response: new Response(),
+  });
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <Cancellation
+        invoice={{
+          ...invoice,
+          invoice_type: "CREDIT_NOTE",
+          lifecycle_status: "DRAFT",
+          original_invoice_id: 6,
+          correction_reason: "Partial refund",
+          cancellation_template_id: 2,
+          grand_total: "59.50",
+        }}
+        canManage
+        onOpen={vi.fn()}
+      />
+    </QueryClientProvider>,
+  );
+  expect(screen.getByText("Partial refund")).toBeInTheDocument();
+  expect(
+    screen.getByRole("region", { name: language === "de" ? "Gutschrift" : "Credit note" }),
+  ).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Cancel invoice" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: action }));
+  await waitFor(() => expect(post).toHaveBeenCalled());
+  expect(post.mock.calls[0]?.[0]).toBe("/api/v1/invoices/{invoice_id}/issue/");
+  expect(post.mock.calls[0]?.[1]).toMatchObject({ body: { expected_version: 3, template_id: 2 } });
 });
