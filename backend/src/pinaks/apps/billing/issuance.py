@@ -79,7 +79,7 @@ def issue_invoice(
     if not idempotency_key or len(idempotency_key) > 100:
         raise ValidationError({"idempotency_key": "Provide an identity of at most 100 characters."})
     invoice = Invoice.objects.select_for_update().select_related("customer").get(pk=invoice_id)
-    if invoice.lifecycle_status == LifecycleStatus.ISSUING:
+    if invoice.lifecycle_status in (LifecycleStatus.ISSUING, LifecycleStatus.ISSUED):
         frozen_template = invoice.snapshot.get("template") if invoice.snapshot else None
         if (
             invoice.issuance_key != idempotency_key
@@ -321,3 +321,25 @@ def issue_invoice(
     )
     enqueue_work(job_type="documents.generate", identity=str(invoice.pk))
     return invoice
+
+
+@transaction.atomic
+def finalize_issuance(*, invoice_id: int) -> None:
+    """Called by documents only after all durable artifact records exist."""
+    from django.utils import timezone
+
+    from pinaks.apps.documents.services import has_issued_artifacts
+
+    invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
+    if invoice.lifecycle_status == LifecycleStatus.ISSUED:
+        return
+    if invoice.lifecycle_status != LifecycleStatus.ISSUING or not has_issued_artifacts(invoice_id):
+        raise ValueError("issuance_not_ready")
+    Invoice.objects.filter(pk=invoice.pk).update(
+        lifecycle_status=LifecycleStatus.ISSUED, modified_at=timezone.now()
+    )
+    record_event(
+        action_code="billing.invoice_issued",
+        target_type="billing.invoice",
+        target_identifier=str(invoice.pk),
+    )

@@ -1,10 +1,14 @@
-from typing import Any, ClassVar
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+
+if TYPE_CHECKING:
+    from pinaks.apps.billing.models import Invoice
 
 
 class DocumentTemplate(models.Model):
@@ -131,3 +135,37 @@ class PreviewArtifact(models.Model):
 
     def __str__(self) -> str:
         return str(self.pk)
+
+
+class IssuedArtifact(models.Model):
+    """Write-once evidence; database triggers also protect bulk/raw writes."""
+
+    invoice: models.ForeignKey[Invoice, Invoice] = models.ForeignKey(
+        "billing.Invoice", on_delete=models.PROTECT, related_name="artifacts"
+    )
+    kind: models.CharField[str, str] = models.CharField(
+        max_length=10, choices=(("pdf", "PDF"), ("xml", "XML"), ("report", "Report"))
+    )
+    storage_key: models.CharField[str, str] = models.CharField(max_length=255, unique=True)
+    sha256: models.CharField[str, str] = models.CharField(max_length=64)
+    size: models.PositiveBigIntegerField[int, int] = models.PositiveBigIntegerField()
+    standard: models.CharField[str, str] = models.CharField(max_length=40)
+    profile: models.CharField[str, str] = models.CharField(max_length=40)
+    specification_version: models.CharField[str, str] = models.CharField(max_length=40)
+    template_version: models.ForeignKey[DocumentTemplateVersion, DocumentTemplateVersion] = (
+        models.ForeignKey(DocumentTemplateVersion, on_delete=models.PROTECT)
+    )
+    generated_at: models.DateTimeField[datetime, datetime] = models.DateTimeField()
+
+    class Meta:
+        ordering = ("pk",)
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(fields=("invoice", "kind"), name="one_issued_artifact_kind"),
+            models.CheckConstraint(
+                condition=Q(kind__in=("pdf", "xml", "report")), name="issued_artifact_kind"
+            ),
+            models.CheckConstraint(condition=Q(size__gt=0), name="issued_artifact_nonempty"),
+        ]
+
+    def __str__(self) -> str:
+        return self.storage_key

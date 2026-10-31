@@ -18,6 +18,7 @@ class InvoiceType(models.TextChoices):
 class LifecycleStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     ISSUING = "ISSUING", "Issuing"
+    ISSUED = "ISSUED", "Issued"
 
 
 class PaymentStatus(models.TextChoices):
@@ -78,7 +79,7 @@ class Invoice(models.Model):
         ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
-                condition=Q(lifecycle_status__in=("DRAFT", "ISSUING")),
+                condition=Q(lifecycle_status__in=("DRAFT", "ISSUING", "ISSUED")),
                 name="invoice_supported_lifecycle",
             ),
             models.CheckConstraint(
@@ -97,7 +98,7 @@ class Invoice(models.Model):
                     )
                     | (
                         Q(
-                            lifecycle_status="ISSUING",
+                            lifecycle_status__in=("ISSUING", "ISSUED"),
                             invoice_number__isnull=False,
                             snapshot__isnull=False,
                         )
