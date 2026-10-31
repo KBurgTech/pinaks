@@ -132,3 +132,6 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+# Dedicated private persistent volume, never served through MEDIA_URL.
+ISSUED_DOCUMENT_ROOT = os.environ.get("ISSUED_DOCUMENT_ROOT", str(BASE_DIR / "issued-documents"))
