@@ -103,8 +103,10 @@ class WeasyPrintRenderer:
         if policy == "hide":
             page_css += "\n[data-tax-column] { display: none !important; }"
         source = _text(template.get("html"))
-        if invoice.get("type") == "CANCELLATION":
+        if invoice.get("type") in ("CANCELLATION", "CREDIT_NOTE"):
             labels["invoice"] = "Stornorechnung" if language == "de" else "Cancellation invoice"
+            if invoice.get("type") == "CREDIT_NOTE":
+                labels["invoice"] = "Gutschrift" if language == "de" else "Credit note"
             labels["original"] = (
                 "Ursprüngliche Rechnung" if language == "de" else "Original invoice"
             )

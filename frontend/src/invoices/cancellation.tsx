@@ -37,7 +37,8 @@ export function Cancellation({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const cancellation = invoice.invoice_type === "CANCELLATION";
+  const cancellation = invoice.invoice_type !== "STANDARD";
+  const credit = invoice.invoice_type === "CREDIT_NOTE";
   const amount = new Intl.NumberFormat(i18n.language, {
     style: "currency",
     currency: invoice.currency,
@@ -79,7 +80,10 @@ export function Cancellation({
   }
 
   return (
-    <section className="my-4 grid gap-3" aria-label={t("invoicePage.cancellation")}>
+    <section
+      className="my-4 grid gap-3"
+      aria-label={t(credit ? "invoicePage.creditNote" : "invoicePage.cancellation")}
+    >
       {invoice.lifecycle_status === "CANCELLED" && (
         <p role="status">{t("invoicePage.cancelled")}</p>
       )}
@@ -97,7 +101,7 @@ export function Cancellation({
       )}
       {(invoice.related_invoice_ids ?? []).map((id) => (
         <button key={id} type="button" className="text-start underline" onClick={() => onOpen(id)}>
-          {t("invoicePage.relatedCancellation", { id })}
+          {t("invoicePage.relatedCorrection", { id })}
         </button>
       ))}
       {canManage &&
@@ -144,7 +148,11 @@ export function Cancellation({
         )}
       {cancellation && invoice.lifecycle_status === "DRAFT" && (
         <>
-          <p>{t("invoicePage.cancellationDraftPreview", { amount })}</p>
+          <p>
+            {t(credit ? "invoicePage.creditDraftPreview" : "invoicePage.cancellationDraftPreview", {
+              amount,
+            })}
+          </p>
           {canManage && (
             <button
               type="button"
@@ -152,7 +160,7 @@ export function Cancellation({
               disabled={busy || !invoice.cancellation_template_id}
               onClick={() => void send(true)}
             >
-              {t("invoicePage.issueCancellation")}
+              {t(credit ? "invoicePage.issueCredit" : "invoicePage.issueCancellation")}
             </button>
           )}
           {failed && <p role="alert">{t("invoicePage.cancellationError")}</p>}

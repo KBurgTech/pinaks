@@ -28,11 +28,15 @@ def create_cancellation(
     if not reason or len(reason) > 500 or not idempotency_key.strip() or len(idempotency_key) > 100:
         raise ValidationError({"reason": "A reason and command identity are required."})
     original = Invoice.objects.select_for_update().get(pk=invoice_id)
-    existing = Invoice.objects.filter(original_invoice=original).first()
+    existing = Invoice.objects.filter(
+        original_invoice=original, invoice_type="CANCELLATION"
+    ).first()
     if existing is not None:
         if existing.correction_key != idempotency_key or existing.correction_reason != reason:
             raise InvalidCancellationError("A different cancellation command already exists.")
         return existing, False
+    if Invoice.objects.filter(original_invoice=original, invoice_type="CREDIT_NOTE").exists():
+        raise InvalidCancellationError("Partial credits already reserve this invoice.")
     if original.invoice_type != "STANDARD" or original.lifecycle_status != "ISSUED":
         raise InvalidCancellationError("Only issued standard invoices can be cancelled.")
     if not artifacts_healthy(list(IssuedArtifact.objects.filter(invoice=original))):
@@ -68,7 +72,7 @@ def create_cancellation(
     return draft, True
 
 
-def freeze_cancellation(
+def freeze_correction(
     *, invoice: Invoice, template_id: int, idempotency_key: str, actor: User, correlation_id: str
 ) -> Invoice:
     """Called under the issuance transaction and aggregate lock."""
@@ -81,7 +85,7 @@ def freeze_cancellation(
     if original.lifecycle_status != "ISSUED" or original.snapshot is None:
         raise ValidationError({"original_invoice": "Original invoice must still be issued."})
     if invoice.issue_date < original.issue_date:
-        raise ValidationError({"issue_date": "Cancellation cannot precede the original invoice."})
+        raise ValidationError({"issue_date": "Correction cannot precede the original invoice."})
     template = get_published_version(template_id=template_id, language=invoice.document_language)
     if template is None:
         raise ValidationError({"template": "A published bilingual template is required."})
@@ -95,7 +99,7 @@ def freeze_cancellation(
     document.update(
         id=invoice.pk,
         number=number,
-        type="CANCELLATION",
+        type=invoice.invoice_type,
         issue_date=invoice.issue_date.isoformat(),
         due_date=None,
         correction_reason=invoice.correction_reason,
@@ -104,6 +108,10 @@ def freeze_cancellation(
             "issue_date": original.issue_date.isoformat(),
         },
     )
+    if invoice.invoice_type == "CREDIT_NOTE":
+        from pinaks.apps.billing.credit_notes import credit_snapshot
+
+        credit_snapshot(invoice, snapshot)
     snapshot["template"] = {
         "id": template.template.pk,
         "version_id": template.pk,

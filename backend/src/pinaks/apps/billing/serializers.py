@@ -72,7 +72,7 @@ class InvoiceSerializer(serializers.Serializer[Invoice]):
 
     @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_cancellation_template_id(self, obj: Invoice) -> int | None:
-        if obj.invoice_type != "CANCELLATION" or obj.original_invoice is None:
+        if obj.invoice_type not in ("CANCELLATION", "CREDIT_NOTE") or obj.original_invoice is None:
             return None
         snapshot = obj.original_invoice.snapshot
         template = snapshot.get("template") if snapshot else None

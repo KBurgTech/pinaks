@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { CreditNote } from "./credit-note";
 import { Cancellation } from "./cancellation";
 import { PaymentStatus } from "./payment-status";
 import { IssuedDocuments } from "./issued-documents";
@@ -771,7 +772,7 @@ function DraftEditor({
   }
 
   const editable =
-    canMutate && invoice.lifecycle_status === "DRAFT" && invoice.invoice_type !== "CANCELLATION";
+    canMutate && invoice.lifecycle_status === "DRAFT" && invoice.invoice_type === "STANDARD";
   const fieldError = (name: string) => fields[name]?.[0]?.message;
   return (
     <>
@@ -780,6 +781,7 @@ function DraftEditor({
           {t("invoicePage.back")}
         </button>
       </PageHeader>
+      <CreditNote invoice={invoice} canManage={canMutate} onOpen={onOpen} />
       <Cancellation invoice={invoice} canManage={canMutate} onOpen={onOpen} />
       <PaymentStatus invoice={invoice} canManage={canManagePayments} />
       {invoice.lifecycle_status !== "DRAFT" && <IssuedDocuments invoiceId={invoice.id} />}
