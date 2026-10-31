@@ -470,6 +470,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoices/{invoice_id}/documents/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_documents"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/documents/{kind}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_artifact_download"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoices/{invoice_id}/issue/": {
         readonly parameters: {
             readonly query?: never;
@@ -558,6 +590,17 @@ export interface components {
             readonly preset_id: number;
             readonly expected_version: number;
             readonly mode: components["schemas"]["ModeEnum"];
+        };
+        readonly ArtifactMetadata: {
+            readonly kind: components["schemas"]["KindEnum"];
+            readonly sha256: string;
+            /** Format: int64 */
+            readonly size: number;
+            readonly standard: string;
+            readonly profile: string;
+            readonly specification_version: string;
+            /** Format: date-time */
+            readonly generated_at: string;
         };
         readonly AssetUploadRequest: {
             /** Format: binary */
@@ -814,6 +857,13 @@ export interface components {
          * @enum {string}
          */
         readonly DocumentLanguage: "en" | "de";
+        readonly DocumentState: {
+            readonly lifecycle_status: string;
+            readonly operation_state: string | null;
+            readonly failure_code: string;
+            readonly healthy: boolean;
+            readonly artifacts: readonly components["schemas"]["ArtifactMetadata"][];
+        };
         readonly DraftCreateRequest: {
             readonly customer_id: number;
             readonly custom_data?: unknown;
@@ -925,6 +975,13 @@ export interface components {
             readonly template_id: number;
             readonly idempotency_key: string;
         };
+        /**
+         * @description * `pdf` - PDF
+         *     * `xml` - XML
+         *     * `report` - Report
+         * @enum {string}
+         */
+        readonly KindEnum: "pdf" | "xml" | "report";
         readonly LineOperationRequest: {
             readonly action: components["schemas"]["ActionEnum"];
             readonly line_id?: number;
@@ -3147,6 +3204,89 @@ export interface operations {
                 };
             };
             readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_documents: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DocumentState"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_artifact_download: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+                readonly kind: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": string;
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

@@ -13,8 +13,7 @@ No additional production dependency is needed.
 Set `ISSUED_DOCUMENT_ROOT` to a dedicated local persistent volume shared by web and
 worker processes (default: `backend/issued-documents`). Do not expose it through a
 web server or include it in container images. Artifact keys are opaque SHA-256
-snapshot identities plus fixed artifact kinds. Direct download authorization and
-ongoing integrity checks are delivered by issue #33.
+snapshot identities plus fixed artifact kinds. Authorized downloads and ongoing integrity checks are described below.
 
 Directories are private (`0700`); files are private (`0600`). The local filesystem
 must support atomic directory rename and file/directory `fsync`. Generation writes
@@ -52,3 +51,30 @@ The issuance integration suite uses PostgreSQL and the pinned Mustang/veraPDF
 validator. It covers exact hashes/sizes, replay, simultaneous handlers, private
 bundle publication, interruptions on either side of rename, database failure after
 publication, storage failure, and direct database immutability violations.
+
+## Authorized retrieval and integrity
+
+Authenticated active users in all three application roles can inspect
+`GET /api/v1/invoices/{id}/documents/` and download the original evidence from
+`GET /api/v1/invoices/{id}/documents/{pdf|xml|report}/`. Responses never disclose
+storage keys or frozen sensitive fields. Downloads are attachments with explicit
+MIME types, `nosniff`, and `no-store`; every download verifies size and SHA-256
+before returning the verified bytes. Path components and symlinks are rejected.
+Missing or altered files produce `artifact_integrity_failed` without regeneration.
+
+Invoice detail polls operation state during issuance, shows automatic retry or
+terminal failure guidance, and offers downloads once all evidence is healthy.
+Read-Only users receive the same document visibility without issuance permissions.
+
+For coordinated backup/restore checks or deployment health verification, run:
+
+```bash
+uv run python backend/manage.py verify_issued_documents
+```
+
+This read-only command checks all issued invoices and exits nonzero with internal
+invoice IDs if any artifact is missing, corrupt, or unsafe. It never prints file
+paths or document contents. The public `documents.access.verify_issued_documents`
+service supplies the same unhealthy IDs for the deployment readiness integration
+in issue #41. Run this verification against the restored database and document
+volume together; no repair or regeneration occurs.

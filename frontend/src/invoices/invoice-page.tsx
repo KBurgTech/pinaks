@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { IssuedDocuments } from "./issued-documents";
 import { CustomFields } from "@/custom-fields/custom-fields";
 import { loadDefinitions } from "@/custom-fields/definitions";
 import { DataTable, Field, PageHeader, Status } from "@/ui/primitives";
@@ -729,6 +730,7 @@ function DraftEditor({
           {t("invoicePage.back")}
         </button>
       </PageHeader>
+      {invoice.lifecycle_status !== "DRAFT" && <IssuedDocuments invoiceId={invoice.id} />}
       {!editable && <p className="mb-4 text-sm text-neutral-600">{t("invoicePage.readOnly")}</p>}
       {dirty && (
         <p className="mb-4 text-sm text-amber-800" role="status">

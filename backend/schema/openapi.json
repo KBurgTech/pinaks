@@ -2992,6 +2992,135 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/documents/": {
+            "get": {
+                "operationId": "invoice_documents",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DocumentState"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoices/{invoice_id}/documents/{kind}/": {
+            "get": {
+                "operationId": "invoice_artifact_download",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "kind",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/{invoice_id}/issue/": {
             "post": {
                 "operationId": "invoice_issue",
@@ -3267,6 +3396,49 @@
                     "expected_version",
                     "mode",
                     "preset_id"
+                ]
+            },
+            "ArtifactMetadata": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "$ref": "#/components/schemas/KindEnum"
+                    },
+                    "sha256": {
+                        "type": "string",
+                        "maxLength": 64
+                    },
+                    "size": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "standard": {
+                        "type": "string",
+                        "maxLength": 40
+                    },
+                    "profile": {
+                        "type": "string",
+                        "maxLength": 40
+                    },
+                    "specification_version": {
+                        "type": "string",
+                        "maxLength": 40
+                    },
+                    "generated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "generated_at",
+                    "kind",
+                    "profile",
+                    "sha256",
+                    "size",
+                    "specification_version",
+                    "standard"
                 ]
             },
             "AssetUploadRequest": {
@@ -4264,6 +4436,37 @@
                 "type": "string",
                 "description": "* `en` - en\n* `de` - de"
             },
+            "DocumentState": {
+                "type": "object",
+                "properties": {
+                    "lifecycle_status": {
+                        "type": "string"
+                    },
+                    "operation_state": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "failure_code": {
+                        "type": "string"
+                    },
+                    "healthy": {
+                        "type": "boolean"
+                    },
+                    "artifacts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ArtifactMetadata"
+                        }
+                    }
+                },
+                "required": [
+                    "artifacts",
+                    "failure_code",
+                    "healthy",
+                    "lifecycle_status",
+                    "operation_state"
+                ]
+            },
             "DraftCreateRequest": {
                 "type": "object",
                 "properties": {
@@ -4657,6 +4860,15 @@
                     "idempotency_key",
                     "template_id"
                 ]
+            },
+            "KindEnum": {
+                "enum": [
+                    "pdf",
+                    "xml",
+                    "report"
+                ],
+                "type": "string",
+                "description": "* `pdf` - PDF\n* `xml` - XML\n* `report` - Report"
             },
             "LineOperationRequest": {
                 "type": "object",
