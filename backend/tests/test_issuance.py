@@ -472,3 +472,43 @@ def test_frozen_issuance_snapshot_serializes_without_live_models(
     )
     report = validator.validate(first, filename="issued.xml")
     assert report.valid, report.findings
+
+
+def test_frozen_published_template_renders_after_current_data_changes(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+) -> None:
+    from io import BytesIO
+
+    from pypdf import PdfReader
+
+    from pinaks.apps.documents.snapshot_renderer import WeasyPrintRenderer
+
+    invoice, actor, template = ready_invoice
+    issued = issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="visual-snapshot",
+        actor=actor,
+        correlation_id="test",
+    )
+    assert issued.snapshot is not None
+    frozen_template = issued.snapshot["template"]
+    assert isinstance(frozen_template, dict)
+    DocumentTemplateVersion.objects.create(
+        template=template,
+        language="en",
+        version=2,
+        html="<p>NEW TEMPLATE</p>",
+        page_settings={"size": "A4"},
+        created_by=actor,
+    )
+    CompanyProfile.objects.update(legal_name="New seller")
+    result = WeasyPrintRenderer().render(issued.snapshot)
+    text = PdfReader(BytesIO(result.pdf)).pages[0].extract_text()
+    assert issued.invoice_number is not None
+    assert issued.invoice_number in text
+    assert "NEW TEMPLATE" not in text
+    assert result.template_version_id == frozen_template["version_id"]
+    issued.refresh_from_db()
+    assert issued.lifecycle_status == LifecycleStatus.ISSUING
