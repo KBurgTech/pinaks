@@ -74,6 +74,14 @@ jobs:
           -jar /opt/pinaks/mustang/Mustang-CLI-2.23.0.jar
           --action validate --source /tmp/invoice.xml
           --no-notices --disable-file-logging
+      - name: Generate and validate hybrid invoice offline
+        run: >-
+          docker run --rm --network none
+          --env DJANGO_SETTINGS_MODULE=pinaks.settings.test
+          --volume "${{ github.workspace }}/scripts/check-hybrid-generation.py:/tmp/check-hybrid-generation.py:ro"
+          --volume "${{ github.workspace }}/backend/tests/fixtures/e_invoicing/frozen-snapshot.json:/tmp/frozen-snapshot.json:ro"
+          pinaks:test
+          python /tmp/check-hybrid-generation.py /tmp/frozen-snapshot.json
 
   frontend:
     name: Frontend
