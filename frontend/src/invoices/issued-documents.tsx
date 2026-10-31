@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import type { components } from "@/api/generated/schema";
 
 export function IssuedDocuments({ invoiceId }: { invoiceId: number }) {
   const { t } = useTranslation();
@@ -14,7 +15,21 @@ export function IssuedDocuments({ invoiceId }: { invoiceId: number }) {
         params: { path: { invoice_id: invoiceId } },
       });
       if (!data) throw new Error("documents_unavailable");
-      return data;
+      const artifacts: unknown = data.artifacts;
+      if (
+        !Array.isArray(artifacts) ||
+        !artifacts.every(
+          (
+            artifact: unknown,
+          ): artifact is Pick<components["schemas"]["ArtifactMetadata"], "kind"> =>
+            typeof artifact === "object" &&
+            artifact !== null &&
+            "kind" in artifact &&
+            (artifact.kind === "pdf" || artifact.kind === "xml" || artifact.kind === "report"),
+        )
+      )
+        throw new Error("documents_unavailable");
+      return { ...data, artifacts };
     },
     refetchInterval: (query) =>
       query.state.data?.lifecycle_status === "ISSUING" &&
