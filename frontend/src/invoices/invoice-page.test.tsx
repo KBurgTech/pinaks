@@ -26,6 +26,8 @@ const invoice = {
   invoice_type: "STANDARD",
   lifecycle_status: "DRAFT",
   payment_status: "UNPAID",
+  payment_changed_at: null,
+  payment_changed_by_id: null,
   is_overdue: false,
   invoice_number: null,
   currency: "EUR",
