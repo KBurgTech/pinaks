@@ -470,6 +470,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoices/{invoice_id}/cancel/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_cancel_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoices/{invoice_id}/documents/": {
         readonly parameters: {
             readonly query?: never;
@@ -668,6 +684,10 @@ export interface components {
             readonly postal_code: string;
             readonly city: string;
             readonly country_code: string;
+        };
+        readonly CancelInvoiceRequest: {
+            readonly reason: string;
+            readonly idempotency_key: string;
         };
         readonly Capabilities: {
             readonly role: components["schemas"]["RoleEnum"];
@@ -938,6 +958,10 @@ export interface components {
         readonly Invoice: {
             readonly id: number;
             readonly customer_id: number;
+            readonly original_invoice_id: number | null;
+            readonly correction_reason: string;
+            readonly related_invoice_ids: readonly number[];
+            readonly cancellation_template_id: number | null;
             readonly invoice_type: string;
             readonly lifecycle_status: string;
             readonly payment_status: string;
@@ -3239,6 +3263,73 @@ export interface operations {
                 };
             };
             readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_cancel_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CancelInvoiceRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CancelInvoiceRequest"];
+                readonly "multipart/form-data": components["schemas"]["CancelInvoiceRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

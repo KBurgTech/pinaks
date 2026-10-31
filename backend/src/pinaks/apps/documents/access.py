@@ -58,8 +58,8 @@ def verify_issued_documents() -> list[int]:
     """Return unhealthy issued invoice IDs for health and backup verification."""
     return [
         invoice.pk
-        for invoice in Invoice.objects.filter(lifecycle_status=LifecycleStatus.ISSUED).iterator(
-            chunk_size=100
-        )
+        for invoice in Invoice.objects.filter(
+            lifecycle_status__in=(LifecycleStatus.ISSUED, LifecycleStatus.CANCELLED)
+        ).iterator(chunk_size=100)
         if not artifacts_healthy(list(IssuedArtifact.objects.filter(invoice=invoice)))
     ]

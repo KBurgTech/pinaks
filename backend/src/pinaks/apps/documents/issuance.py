@@ -100,7 +100,7 @@ def generate_invoice(*, invoice_id: int) -> None:
     # Serializes handlers even after a worker lease expires. The filesystem commit
     # deliberately survives database rollback and is reused on the next attempt.
     invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
-    if invoice.lifecycle_status == LifecycleStatus.ISSUED:
+    if invoice.lifecycle_status in (LifecycleStatus.ISSUED, LifecycleStatus.CANCELLED):
         return
     if invoice.lifecycle_status != LifecycleStatus.ISSUING or invoice.snapshot is None:
         raise ValueError("invoice_not_issuing")

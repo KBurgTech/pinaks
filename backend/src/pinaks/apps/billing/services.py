@@ -115,7 +115,7 @@ def update_draft(
     invoice = Invoice.objects.select_for_update().select_related("customer").get(pk=invoice_id)
     if invoice.version != expected_version:
         raise StaleInvoiceVersionError("The invoice changed since it was loaded.")
-    if invoice.lifecycle_status != "DRAFT":
+    if invoice.lifecycle_status != "DRAFT" or invoice.invoice_type != "STANDARD":
         raise ValidationError({"invoice": "Only drafts can be edited."})
     if "custom_data" in values:
         invoice.custom_data = validate_custom_data(

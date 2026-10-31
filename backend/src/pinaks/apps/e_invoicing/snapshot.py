@@ -65,7 +65,10 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     profile = obj(snapshot.get("tax_profile"))
     lines = rows(snapshot.get("lines"))
     groups = rows(snapshot.get("tax_breakdowns"))
-    if invoice.get("type") != "STANDARD" or invoice.get("language") not in {"en", "de"}:
+    if invoice.get("type") not in {"STANDARD", "CANCELLATION"} or invoice.get("language") not in {
+        "en",
+        "de",
+    }:
         raise InvoiceMappingError("unsupported_snapshot")
     if invoice.get("currency") != "EUR":
         raise InvoiceMappingError("unsupported_snapshot")
@@ -80,7 +83,7 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     data: dict[str, object] = {
         "BT-1": string(invoice.get("number")),
         "BT-2": issue_date,
-        "BT-3": "380",
+        "BT-3": "381" if invoice["type"] == "CANCELLATION" else "380",
         "BT-5": "EUR",
         "BT-27": string(seller.get("legal_name")),
         "BT-35": string(seller.get("address_line_1")),
@@ -93,6 +96,13 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         "BT-53": string(recipient.get("postal_code")),
         "BT-55": string(recipient.get("country_code")),
     }
+    if invoice["type"] == "CANCELLATION":
+        reference = obj(invoice.get("original_reference"))
+        original_date = date_value(reference.get("issue_date"))
+        if original_date > issue_date:
+            raise InvoiceMappingError("invalid_snapshot")
+        data["BG-3"] = [{"BT-25": string(reference.get("number")), "BT-26": original_date}]
+        data["BG-1"] = [{"BT-22": string(invoice.get("correction_reason"))}]
     vat = string(seller.get("vat_identifier", ""), required=False)
     tax_number = string(seller.get("tax_number", ""), required=False)
     if not (vat or tax_number):

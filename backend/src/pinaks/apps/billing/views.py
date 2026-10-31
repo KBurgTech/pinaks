@@ -81,7 +81,7 @@ class InvoiceListView(GenericAPIView[Invoice]):
                 raise ValidationError({"customer": "Use a positive customer ID."})
             invoices = invoices.filter(customer_id=int(customer))
         for field, values in (
-            ("lifecycle_status", ("DRAFT", "ISSUING", "ISSUED")),
+            ("lifecycle_status", ("DRAFT", "ISSUING", "ISSUED", "CANCELLED")),
             ("payment_status", ("UNPAID", "PAID")),
         ):
             value = request.query_params.get(field)

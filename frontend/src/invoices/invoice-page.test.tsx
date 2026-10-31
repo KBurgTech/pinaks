@@ -23,6 +23,10 @@ const customer = {
 const invoice = {
   id: 7,
   customer_id: 3,
+  original_invoice_id: null,
+  related_invoice_ids: [],
+  correction_reason: "",
+  cancellation_template_id: null,
   invoice_type: "STANDARD",
   lifecycle_status: "DRAFT",
   payment_status: "UNPAID",

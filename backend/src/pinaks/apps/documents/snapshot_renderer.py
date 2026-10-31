@@ -102,8 +102,21 @@ class WeasyPrintRenderer:
         page_css = "\n@page { size: A4 !important; }"
         if policy == "hide":
             page_css += "\n[data-tax-column] { display: none !important; }"
+        source = _text(template.get("html"))
+        if invoice.get("type") == "CANCELLATION":
+            labels["invoice"] = "Stornorechnung" if language == "de" else "Cancellation invoice"
+            labels["original"] = (
+                "Ursprüngliche Rechnung" if language == "de" else "Original invoice"
+            )
+            labels["reason"] = "Grund" if language == "de" else "Reason"
+            source = (
+                "<h1>{{ labels.invoice }} {{ invoice.number }}</h1>"
+                "<p>{{ labels.original }}: {{ invoice.original_reference.number }} "
+                "({{ invoice.original_reference.issue_date | date }})</p>"
+                "<p>{{ labels.reason }}: {{ invoice.correction_reason }}</p>" + source
+            )
         html = render_preview_html(
-            _text(template.get("html")),
+            source,
             _text(template.get("css")) + page_css,
             language=language,
             context=context,
