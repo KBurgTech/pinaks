@@ -26,6 +26,8 @@ const invoice = {
   invoice_type: "STANDARD",
   lifecycle_status: "DRAFT",
   payment_status: "UNPAID",
+  payment_changed_at: null,
+  payment_changed_by_id: null,
   is_overdue: false,
   invoice_number: null,
   currency: "EUR",
@@ -789,4 +791,20 @@ it("shows terminal failure guidance without download actions", async () => {
     "Document generation stopped after repeated failures",
   );
   expect(screen.queryByRole("link")).not.toBeInTheDocument();
+});
+
+it("filters invoices by payment and overdue status", async () => {
+  mount();
+  fireEvent.change(await screen.findByLabelText("Payment status"), { target: { value: "PAID" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID" } },
+    }),
+  );
+  fireEvent.change(screen.getByLabelText("Due status"), { target: { value: "true" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID", overdue: true } },
+    }),
+  );
 });

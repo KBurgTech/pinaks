@@ -48,6 +48,8 @@ class InvoiceSerializer(serializers.Serializer[Invoice]):
     invoice_type = serializers.CharField(read_only=True)
     lifecycle_status = serializers.CharField(read_only=True)
     payment_status = serializers.CharField(read_only=True)
+    payment_changed_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    payment_changed_by_id = serializers.IntegerField(read_only=True, allow_null=True)
     is_overdue = serializers.BooleanField(read_only=True)
     invoice_number = serializers.CharField(read_only=True, allow_null=True)
     currency = serializers.CharField(read_only=True)
