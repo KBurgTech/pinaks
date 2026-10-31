@@ -1,5 +1,6 @@
 from django.urls import URLPattern, path
 
+from pinaks.apps.billing.payment_views import MarkPaidView, MarkUnpaidView
 from pinaks.apps.billing.preset_views import ApplyPresetView
 from pinaks.apps.billing.views import (
     InvoiceDetailView,
@@ -11,6 +12,8 @@ from pinaks.apps.billing.views import (
 from pinaks.apps.documents.access_views import InvoiceArtifactView, InvoiceDocumentsView
 
 urlpatterns: list[URLPattern] = [
+    path("<int:invoice_id>/mark-paid/", MarkPaidView.as_view(), name="invoice-mark-paid"),
+    path("<int:invoice_id>/mark-unpaid/", MarkUnpaidView.as_view(), name="invoice-mark-unpaid"),
     path("<int:invoice_id>/documents/", InvoiceDocumentsView.as_view(), name="invoice-documents"),
     path(
         "<int:invoice_id>/documents/<str:kind>/",

@@ -81,7 +81,7 @@ class InvoiceListView(GenericAPIView[Invoice]):
                 raise ValidationError({"customer": "Use a positive customer ID."})
             invoices = invoices.filter(customer_id=int(customer))
         for field, values in (
-            ("lifecycle_status", ("DRAFT",)),
+            ("lifecycle_status", ("DRAFT", "ISSUING", "ISSUED")),
             ("payment_status", ("UNPAID", "PAID")),
         ):
             value = request.query_params.get(field)
@@ -102,7 +102,11 @@ class InvoiceListView(GenericAPIView[Invoice]):
         if overdue is not None:
             if overdue not in ("true", "false"):
                 raise ValidationError({"overdue": "Use true or false."})
-            overdue_condition = Q(payment_status="UNPAID", due_date__lt=timezone.localdate())
+            overdue_condition = Q(
+                lifecycle_status="ISSUED",
+                payment_status="UNPAID",
+                due_date__lt=timezone.localdate(),
+            )
             invoices = invoices.filter(
                 overdue_condition if overdue == "true" else ~overdue_condition
             )

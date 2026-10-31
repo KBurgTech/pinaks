@@ -151,7 +151,11 @@ function Shell() {
           ) : window.location.pathname === "/app/catalog/" ? (
             <CatalogPage canMutate={canCreateDrafts} />
           ) : window.location.pathname.startsWith("/app/invoices/") ? (
-            <InvoicePage canMutate={canCreateDrafts} canAdminister={canAdminister} />
+            <InvoicePage
+              canMutate={canCreateDrafts}
+              canAdminister={canAdminister}
+              canManagePayments={capabilities.data.capabilities.payment_management}
+            />
           ) : canAdminister && window.location.pathname === "/app/document-templates/" ? (
             <TemplatePage />
           ) : canAdminister && window.location.pathname === "/app/custom-fields/" ? (

@@ -3270,6 +3270,136 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/mark-paid/": {
+            "post": {
+                "operationId": "invoices_mark_paid_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/invoices/{invoice_id}/mark-unpaid/": {
+            "post": {
+                "operationId": "invoices_mark_unpaid_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/{invoice_id}/sensitive-fields/": {
             "get": {
                 "operationId": "invoice_sensitive_fields",
@@ -4612,6 +4742,17 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "payment_changed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "payment_changed_by_id": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "nullable": true
+                    },
                     "is_overdue": {
                         "type": "boolean",
                         "readOnly": true
@@ -4704,6 +4845,8 @@
                     "lifecycle_status",
                     "lines",
                     "modified_at",
+                    "payment_changed_at",
+                    "payment_changed_by_id",
                     "payment_status",
                     "recipient",
                     "subtotal",

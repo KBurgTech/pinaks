@@ -1,12 +1,14 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, ClassVar
 
+from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from pinaks.apps.accounts.models import User
 from pinaks.apps.configuration.models import DocumentLanguage
 from pinaks.apps.customers.models import Customer
 
@@ -39,6 +41,17 @@ class Invoice(models.Model):
     )
     payment_status: models.CharField[str, str] = models.CharField(
         max_length=20, choices=PaymentStatus, default=PaymentStatus.UNPAID
+    )
+    payment_changed_at: models.DateTimeField[datetime | None, datetime | None] = (
+        models.DateTimeField(null=True, blank=True)
+    )
+    payment_changed_by_id: int | None
+    payment_changed_by: models.ForeignKey[User | None, User | None] = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="payment_changes",
     )
     invoice_number: models.CharField[str | None, str | None] = models.CharField(
         max_length=80, null=True, blank=True, unique=True
@@ -134,11 +147,9 @@ class Invoice(models.Model):
 
     @property
     def is_overdue(self) -> bool:
-        return bool(
-            self.payment_status == PaymentStatus.UNPAID
-            and self.due_date is not None
-            and self.due_date < timezone.localdate()
-        )
+        from pinaks.apps.billing.payments import is_overdue
+
+        return is_overdue(self, today=timezone.localdate())
 
 
 class InvoiceLine(models.Model):

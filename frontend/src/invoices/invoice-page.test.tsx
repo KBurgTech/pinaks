@@ -790,3 +790,19 @@ it("shows terminal failure guidance without download actions", async () => {
   );
   expect(screen.queryByRole("link")).not.toBeInTheDocument();
 });
+
+it("filters invoices by payment and overdue status", async () => {
+  mount();
+  fireEvent.change(await screen.findByLabelText("Payment status"), { target: { value: "PAID" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID" } },
+    }),
+  );
+  fireEvent.change(screen.getByLabelText("Due status"), { target: { value: "true" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID", overdue: true } },
+    }),
+  );
+});

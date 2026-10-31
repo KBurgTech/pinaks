@@ -1,5 +1,16 @@
 export const invoiceTranslations = {
   en: {
+    paid: "Paid",
+    unpaid: "Unpaid",
+    overdue: "Overdue",
+    markPaid: "Mark paid",
+    markUnpaid: "Mark unpaid",
+    paymentError: "Payment status could not be updated.",
+    paymentStatus: "Payment status",
+    dueStatus: "Due status",
+    all: "All",
+    notOverdue: "Not overdue",
+
     documents: "Issued documents",
     documentsLoading: "Loading issued documents…",
     documentsError: "Document status could not be loaded.",
@@ -116,6 +127,17 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    paid: "Bezahlt",
+    unpaid: "Unbezahlt",
+    overdue: "Überfällig",
+    markPaid: "Als bezahlt markieren",
+    markUnpaid: "Als unbezahlt markieren",
+    paymentError: "Der Zahlungsstatus konnte nicht aktualisiert werden.",
+    paymentStatus: "Zahlungsstatus",
+    dueStatus: "Fälligkeitsstatus",
+    all: "Alle",
+    notOverdue: "Nicht überfällig",
+
     documents: "Ausgestellte Dokumente",
     documentsLoading: "Ausgestellte Dokumente werden geladen…",
     documentsError: "Der Dokumentstatus konnte nicht geladen werden.",
