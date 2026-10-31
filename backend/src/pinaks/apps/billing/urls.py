@@ -8,8 +8,15 @@ from pinaks.apps.billing.views import (
     SensitiveInvoiceFieldsView,
     SensitiveInvoiceLineFieldsView,
 )
+from pinaks.apps.documents.access_views import InvoiceArtifactView, InvoiceDocumentsView
 
 urlpatterns: list[URLPattern] = [
+    path("<int:invoice_id>/documents/", InvoiceDocumentsView.as_view(), name="invoice-documents"),
+    path(
+        "<int:invoice_id>/documents/<str:kind>/",
+        InvoiceArtifactView.as_view(),
+        name="invoice-artifact",
+    ),
     path("", InvoiceListView.as_view(), name="invoice-list"),
     path("<int:invoice_id>/", InvoiceDetailView.as_view(), name="invoice-detail"),
     path("<int:invoice_id>/issue/", IssueInvoiceView.as_view(), name="invoice-issue"),

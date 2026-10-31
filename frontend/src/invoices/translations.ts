@@ -1,5 +1,17 @@
 export const invoiceTranslations = {
   en: {
+    documents: "Issued documents",
+    documentsLoading: "Loading issued documents…",
+    documentsError: "Document status could not be loaded.",
+    documentsIssued: "Invoice issued. Original documents are available.",
+    documentsUnhealthy: "Document integrity verification failed. Contact an administrator.",
+    documentsGenerating: "Generating and validating invoice documents…",
+    documentsRetrying: "Document generation failed. An automatic retry is scheduled.",
+    documentsFailed:
+      "Document generation stopped after repeated failures. Contact an administrator.",
+    download_pdf: "Download PDF",
+    download_xml: "Download XML",
+    download_report: "Download validation report",
     heading: "Invoices",
     loading: "Loading invoices…",
     loadError: "Invoices could not be loaded.",
@@ -104,6 +116,20 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    documents: "Ausgestellte Dokumente",
+    documentsLoading: "Ausgestellte Dokumente werden geladen…",
+    documentsError: "Der Dokumentstatus konnte nicht geladen werden.",
+    documentsIssued: "Rechnung ausgestellt. Die Originaldokumente sind verfügbar.",
+    documentsUnhealthy:
+      "Die Dokumentintegrität konnte nicht bestätigt werden. Wenden Sie sich an die Administration.",
+    documentsGenerating: "Rechnungsdokumente werden erstellt und validiert…",
+    documentsRetrying:
+      "Die Dokumenterstellung ist fehlgeschlagen. Ein automatischer Wiederholungsversuch ist geplant.",
+    documentsFailed:
+      "Die Dokumenterstellung wurde nach wiederholten Fehlern angehalten. Wenden Sie sich an die Administration.",
+    download_pdf: "PDF herunterladen",
+    download_xml: "XML herunterladen",
+    download_report: "Validierungsbericht herunterladen",
     heading: "Rechnungen",
     loading: "Rechnungen werden geladen…",
     loadError: "Rechnungen konnten nicht geladen werden.",
