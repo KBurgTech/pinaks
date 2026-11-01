@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.14.*"
 
 [manifest]
@@ -348,17 +348,18 @@ wheels = [
 
 [[package]]
 name = "factur-x"
-version = "6.8"
+version = "7.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "iso4217" },
     { name = "lxml" },
     { name = "pypdf" },
     { name = "python-stdnum" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/81/f00fb3ec786a23c47d96ab68f2b4d11856de17ca3c9818f57b4dbb7308b3/factur_x-6.8.tar.gz", hash = "sha256:d0071e9c7217666ead025f442765e1e2ef4a0ba8e2677bab640427eb08bbb349", size = 1112989, upload-time = "2026-08-18T09:24:57.393Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/3d/87b3bdae7563ba653f2379f4b2bb26aa31241f75953559c4364e2cb25c79/factur_x-7.8.tar.gz", hash = "sha256:c7efa5e559612a790faf97904aa5bc64300d11f7c35c9ba52467b0c5fb6d4c53", size = 1150200, upload-time = "2026-10-27T00:29:18.934Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/be/9a9020187e4805d61668b5d8c4c263731b3697f9eba2aa6a689d3e7eea4b/factur_x-6.8-py3-none-any.whl", hash = "sha256:02b57dd57f59d0cdd87f034a538bf30a4b9241a72a19cd75fe1538233163ee15", size = 906687, upload-time = "2026-08-18T09:24:55.47Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/3b/899078ebc57c0db00cb826734ffb010add1470db89fcbe020dc86b1092d0/factur_x-7.8-py3-none-any.whl", hash = "sha256:3de0ca16eb24877edc12dd17f2526a57f156248a45a651c70badf0fe20e7ab1d", size = 935098, upload-time = "2026-10-27T00:29:17.383Z" },
 ]
 
 [[package]]
@@ -427,6 +428,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24cb97f4f10/iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730", size = 20503, upload-time = "2025-10-18T21:55:43.219Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed11865bb8/iniconfig-2.3.0-py3-none-any.whl", hash = "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12", size = 7484, upload-time = "2025-10-18T21:55:41.639Z" },
+]
+
+[[package]]
+name = "iso4217"
+version = "1.16.20260101"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/98/a5f28006515c24de82c3d76f79e13dd3fbdf71431fdb158505ee45008908/iso4217-1.16.20260101.tar.gz", hash = "sha256:6a5afba6acb01cad8045f81e2b96f6adbea04f0c524ae21f317ac4ca11c3bdd6", size = 13695, upload-time = "2026-03-03T15:28:36.013Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/5b/725a6980401169ba9115f0b837d3af09134e43eaed9b2bebd8dbb50df733/iso4217-1.16.20260101-py2.py3-none-any.whl", hash = "sha256:69c591b93c7d783ec8c309ebee8df1aa28f8403d44bcce518ae8db050462084b", size = 11991, upload-time = "2026-03-03T15:28:34.523Z" },
 ]
 
 [[package]]
@@ -694,7 +704,7 @@ requires-dist = [
     { name = "django-allauth", specifier = ">=65.19.6,<66" },
     { name = "djangorestframework", specifier = ">=3.16,<4" },
     { name = "drf-spectacular", specifier = ">=0.28,<0.29" },
-    { name = "factur-x", specifier = ">=6.8,<7" },
+    { name = "factur-x", specifier = ">=7.8,<8" },
     { name = "gunicorn", specifier = ">=26.2.0,<27" },
     { name = "jinja2", specifier = ">=3.1,<4" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
