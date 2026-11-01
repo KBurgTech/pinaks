@@ -6,6 +6,7 @@ import { apiClient } from "@/api/client";
 import { Replacement } from "./replacement";
 import { CreditNote } from "./credit-note";
 import { Cancellation } from "./cancellation";
+import { InvoiceEmail } from "@/notifications/invoice-email";
 import { PaymentStatus } from "./payment-status";
 import { IssuedDocuments } from "./issued-documents";
 import { CustomFields } from "@/custom-fields/custom-fields";
@@ -792,6 +793,11 @@ function DraftEditor({
       />
       <CreditNote invoice={invoice} canManage={canMutate} onOpen={onOpen} />
       <Cancellation invoice={invoice} canManage={canMutate} onOpen={onOpen} />
+      <InvoiceEmail
+        invoiceId={invoice.id}
+        lifecycle={invoice.lifecycle_status}
+        canSend={canMutate}
+      />
       <PaymentStatus invoice={invoice} canManage={canManagePayments} />
       {invoice.lifecycle_status !== "DRAFT" && <IssuedDocuments invoiceId={invoice.id} />}
       {!editable && <p className="mb-4 text-sm text-neutral-600">{t("invoicePage.readOnly")}</p>}
