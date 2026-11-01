@@ -11,7 +11,7 @@ from django.db.models import Q
 from pinaks.apps.configuration.models import DocumentLanguage
 
 if TYPE_CHECKING:
-    from django.db.models.manager import Manager
+    from django.db.models.fields.related_descriptors import RelatedManager
 
 
 class PartyType(models.TextChoices):
@@ -58,8 +58,8 @@ class PartyFields(models.Model):
 
 
 class Customer(PartyFields):
-    addresses: Manager[CustomerAddress]
-    billing_recipients: Manager[BillingRecipient]
+    addresses: RelatedManager[CustomerAddress]
+    billing_recipients: RelatedManager[BillingRecipient]
     customer_number: models.CharField[str, str] = models.CharField(max_length=50, unique=True)
     preferred_language: models.CharField[str, str] = models.CharField(
         max_length=2, choices=DocumentLanguage, default=DocumentLanguage.GERMAN
