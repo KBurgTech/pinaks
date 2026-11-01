@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { AccountPage, UsersPage } from "@/accounts/accounts-page";
 import { apiClient } from "@/api/client";
 import { CatalogPage } from "@/catalog/catalog-page";
 import { CompanyProfileForm } from "@/configuration/company-profile-form";
@@ -89,6 +90,7 @@ function Shell() {
           <a className="text-xl font-semibold tracking-tight" href="/app/">
             {t("brand")}
           </a>
+          <a href="/app/account/">{t("accounts.heading")}</a>
           <LanguageSwitch />
         </div>
       </header>
@@ -152,7 +154,11 @@ function Shell() {
           </ul>
         </nav>
         <main>
-          {window.location.pathname === "/app/customers/" ? (
+          {window.location.pathname === "/app/account/" ? (
+            <AccountPage />
+          ) : canAdminister && window.location.pathname === "/app/users/" ? (
+            <UsersPage />
+          ) : window.location.pathname === "/app/customers/" ? (
             <CustomerPage canMutate={canCreateDrafts} />
           ) : window.location.pathname === "/app/catalog/" ? (
             <CatalogPage canMutate={canCreateDrafts} />

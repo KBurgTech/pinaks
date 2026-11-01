@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+import { accountTranslations } from "@/accounts/translations";
 import { catalogTranslations } from "@/catalog/translations";
 import { customFieldTranslations } from "@/custom-fields/translations";
 import { documentTranslations } from "@/documents/translations";
@@ -13,6 +14,7 @@ export const resources = {
   en: {
     shell: {
       brand: "Pinaks",
+      accounts: accountTranslations.en,
       email: emailTranslations.en,
       loading: "Loading application…",
       loadError: "The application could not be loaded.",
@@ -180,6 +182,7 @@ export const resources = {
   de: {
     shell: {
       brand: "Pinaks",
+      accounts: accountTranslations.de,
       email: emailTranslations.de,
       loading: "Anwendung wird geladen…",
       loadError: "Die Anwendung konnte nicht geladen werden.",
