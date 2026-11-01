@@ -181,3 +181,66 @@ it("preserves a command identity when a failed dialog is closed and reopened", a
   await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
   expect(post.mock.calls[0]).toEqual(post.mock.calls[1]);
 });
+
+it.each([
+  ["en", "Email delivery", "Sent", "Outcome unknown — check delivery before sending again."],
+  [
+    "de",
+    "E-Mail-Zustellung",
+    "Gesendet",
+    "Ergebnis unbekannt — Zustellung vor erneutem Senden prüfen.",
+  ],
+])(
+  "shows delivery history and ambiguous handoff in %s",
+  async (language, heading, sent, unknown) => {
+    await i18n.changeLanguage(language);
+    get.mockImplementation((path) =>
+      Promise.resolve({
+        data:
+          path === "/api/v1/invoices/{invoice_id}/emails/"
+            ? [
+                {
+                  id: "1",
+                  delivery_state: "sent",
+                  language: "en",
+                  created_at: "2026-11-01T10:00:00Z",
+                  next_attempt_at: null,
+                  attempts: [
+                    {
+                      id: 1,
+                      started_at: "2026-11-01T10:00:00Z",
+                      finished_at: "2026-11-01T10:00:01Z",
+                      outcome: "sent",
+                      failure_code: "",
+                      response_code: 250,
+                    },
+                  ],
+                },
+                {
+                  id: "2",
+                  delivery_state: "failed",
+                  language: "de",
+                  created_at: "2026-11-01T11:00:00Z",
+                  next_attempt_at: null,
+                  attempts: [
+                    {
+                      id: 2,
+                      started_at: "2026-11-01T11:00:00Z",
+                      finished_at: "2026-11-01T11:00:01Z",
+                      outcome: "unknown",
+                      failure_code: "delivery_unknown",
+                      response_code: null,
+                    },
+                  ],
+                },
+              ]
+            : { language: "en", recipients: [], templates: [] },
+        response: new Response(),
+      }),
+    );
+    mount(<InvoiceEmail invoiceId={7} lifecycle="ISSUED" canSend />);
+    expect(await screen.findByRole("heading", { name: heading })).toBeInTheDocument();
+    expect(await screen.findAllByText(sent)).not.toHaveLength(0);
+    expect(screen.getByText(unknown)).toBeInTheDocument();
+  },
+);

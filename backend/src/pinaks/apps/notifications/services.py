@@ -14,6 +14,7 @@ from django.utils import timezone
 from pinaks.apps.accounts.models import User, UserRole
 from pinaks.apps.audit.services import record_event
 from pinaks.apps.notifications.models import EmailTemplate, EmailTemplateVersion, OutgoingEmail
+from pinaks.apps.workers.services import enqueue_work
 
 
 class EmailConflictError(ValueError):
@@ -233,6 +234,11 @@ def queue_invoice_email(
         raise ValidationError({"subject": "The rendered subject must be a single line."})
     outgoing.full_clean()
     outgoing.save(force_insert=True)
+    enqueue_work(
+        job_type="notifications.deliver",
+        identity=str(outgoing.pk),
+        scheduled_at=outgoing.scheduled_at,
+    )
     record_event(
         actor=actor,
         action_code="notifications.email_queued",
@@ -246,3 +252,8 @@ def queue_invoice_email(
         },
     )
     return outgoing
+
+
+def delivery_history(*, invoice_id: int, actor: User) -> list[OutgoingEmail]:
+    authorize(actor)
+    return list(OutgoingEmail.objects.filter(invoice_id=invoice_id).prefetch_related("attempts"))

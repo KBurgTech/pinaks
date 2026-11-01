@@ -598,6 +598,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoices/{invoice_id}/emails/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoices_emails_list"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoices/{invoice_id}/issue/": {
         readonly parameters: {
             readonly query?: never;
@@ -1007,6 +1023,16 @@ export interface components {
          * @enum {string}
          */
         readonly DefaultLocaleEnum: "en-DE" | "de-DE";
+        readonly DeliveryAttempt: {
+            readonly id: number;
+            /** Format: date-time */
+            readonly started_at: string;
+            /** Format: date-time */
+            readonly finished_at: string | null;
+            readonly outcome: string;
+            readonly failure_code: string;
+            readonly response_code: number | null;
+        };
         /**
          * @description * `queued` - Queued
          *     * `sending` - Sending
@@ -1049,6 +1075,21 @@ export interface components {
             readonly language: components["schemas"]["DocumentLanguage"];
             readonly recipients: readonly string[];
             readonly templates: readonly components["schemas"]["SendTemplate"][];
+        };
+        /** @description Command receipt intentionally omits correspondence content and internal keys. */
+        readonly EmailDelivery: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly invoice_id: number;
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly delivery_state: components["schemas"]["DeliveryStateEnum"];
+            /** Format: date-time */
+            readonly scheduled_at: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly attempts: readonly components["schemas"]["DeliveryAttempt"][];
+            /** Format: date-time */
+            readonly next_attempt_at: string | null;
         };
         readonly EmailSendRequest: {
             readonly template_id: number;
@@ -3895,6 +3936,43 @@ export interface operations {
                 };
             };
             readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_emails_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["EmailDelivery"][];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

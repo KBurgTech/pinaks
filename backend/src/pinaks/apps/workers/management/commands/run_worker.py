@@ -4,8 +4,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from pinaks.apps.workers.registry import HANDLERS
-from pinaks.apps.workers.services import run_one
+from pinaks.apps.workers.registry import run_registered_once
 
 
 class Command(BaseCommand):
@@ -19,7 +18,7 @@ class Command(BaseCommand):
         if options["poll_seconds"] <= 0:
             raise ValueError("poll-seconds must be positive")
         if options["once"]:
-            run_one(handlers=HANDLERS)
+            run_registered_once()
             return
         stopping = False
 
@@ -30,7 +29,7 @@ class Command(BaseCommand):
         previous = signal.signal(signal.SIGTERM, stop)
         try:
             while not stopping:
-                if not run_one(handlers=HANDLERS):
+                if not run_registered_once():
                     sleep(options["poll_seconds"])
         except KeyboardInterrupt:
             pass

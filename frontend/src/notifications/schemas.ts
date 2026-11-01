@@ -27,3 +27,23 @@ export const emailTemplatesSchema = z.array(
     ),
   }),
 );
+
+export const emailDeliveriesSchema = z.array(
+  z.object({
+    id: z.string(),
+    language: z.enum(["en", "de"]),
+    delivery_state: z.enum(["queued", "sending", "sent", "failed"]),
+    created_at: z.string(),
+    next_attempt_at: z.string().nullable(),
+    attempts: z.array(
+      z.object({
+        id: z.number(),
+        started_at: z.string(),
+        finished_at: z.string().nullable(),
+        outcome: z.enum(["sending", "sent", "failed", "unknown"]),
+        failure_code: z.string(),
+        response_code: z.number().nullable(),
+      }),
+    ),
+  }),
+);

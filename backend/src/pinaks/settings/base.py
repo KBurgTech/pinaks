@@ -140,3 +140,13 @@ ISSUED_DOCUMENT_ROOT = os.environ.get("ISSUED_DOCUMENT_ROOT", str(BASE_DIR / "is
 
 # Deployment configuration key, never SMTP credentials or a browser-selected sender.
 EMAIL_SENDER_KEY = os.environ.get("EMAIL_SENDER_KEY", "default")
+
+# SMTP secrets are deployment inputs and never outbox/attempt data.
+SMTP_HOST = os.environ.get("SMTP_HOST", "localhost")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+SMTP_USE_SSL = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
+SMTP_TIMEOUT = float(os.environ.get("SMTP_TIMEOUT", "10"))
+SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", "")

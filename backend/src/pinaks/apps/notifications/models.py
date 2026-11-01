@@ -66,6 +66,10 @@ class EmailTemplateVersion(models.Model):
 
 
 class OutgoingEmail(models.Model):
+    invoice_id: int
+    if TYPE_CHECKING:
+        attempts: models.Manager[DeliveryAttempt]
+
     id: models.UUIDField[UUID, UUID] = models.UUIDField(
         primary_key=True, default=uuid4, editable=False
     )
@@ -119,3 +123,37 @@ class OutgoingEmail(models.Model):
 
     def __str__(self) -> str:
         return str(self.pk)
+
+
+class DeliveryAttempt(models.Model):
+    email_id: UUID
+
+    email: models.ForeignKey[OutgoingEmail, OutgoingEmail] = models.ForeignKey(
+        OutgoingEmail, on_delete=models.PROTECT, related_name="attempts"
+    )
+    started_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
+    finished_at: models.DateTimeField[datetime | None, datetime | None] = models.DateTimeField(
+        null=True
+    )
+    outcome: models.CharField[str, str] = models.CharField(max_length=12, default="sending")
+    failure_code: models.CharField[str, str] = models.CharField(max_length=32, blank=True)
+    response_code: models.PositiveSmallIntegerField[int | None, int | None] = (
+        models.PositiveSmallIntegerField(null=True)
+    )
+
+    class Meta:
+        ordering = ("pk",)
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(outcome__in=("sending", "sent", "failed", "unknown")),
+                name="delivery_attempt_outcome",
+            ),
+            models.CheckConstraint(
+                condition=Q(outcome="sending", finished_at__isnull=True)
+                | Q(outcome__in=("sent", "failed", "unknown"), finished_at__isnull=False),
+                name="delivery_attempt_finished",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.email_id}: {self.pk}"

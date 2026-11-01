@@ -121,3 +121,34 @@ def run_one(*, handlers: Mapping[str, Handler], now: datetime | None = None) -> 
         fail_work(item, now=now or timezone.now())
         return False
     return finish_work(item)
+
+
+def owns_claim(item: WorkItem) -> bool:
+    """Check a handler's lease before starting a new externally visible effect."""
+    return WorkItem.objects.filter(
+        pk=item.pk,
+        state=WorkState.RUNNING,
+        lease_token=item.lease_token,
+        lease_until__gt=timezone.now(),
+    ).exists()
+
+
+def terminal_work(*, job_type: str) -> list[WorkItem]:
+    """Include unrecoverable expired leases, even before the next claim sweep."""
+    return list(
+        WorkItem.objects.filter(job_type=job_type).filter(
+            Q(state=WorkState.FAILED)
+            | Q(
+                state=WorkState.RUNNING,
+                lease_until__lte=timezone.now(),
+                attempt_count__gte=F("max_attempts"),
+            )
+        )
+    )
+
+
+def next_attempt_at(*, job_type: str, identity: str) -> datetime | None:
+    item = WorkItem.objects.filter(
+        job_type=job_type, identity=identity, state=WorkState.QUEUED
+    ).first()
+    return item.scheduled_at if item else None
