@@ -3,7 +3,7 @@ name = "pinaks-backend"
 version = "0.1.0"
 description = "Backend scaffold for Pinaks"
 readme = "README.md"
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.14,<3.16"
 dependencies = [
     "dj-database-url>=3.0,<4",
     "django>=6.1,<6.2",
