@@ -226,3 +226,16 @@ def has_issued_artifacts(invoice_id: int) -> bool:
     return set(
         IssuedArtifact.objects.filter(invoice_id=invoice_id).values_list("kind", flat=True)
     ) == {"pdf", "xml", "report"}
+
+
+def email_attachment(*, invoice_id: int) -> tuple[int, str]:
+    """Verify all original evidence and return the PDF identity/hash, without paths."""
+    from pinaks.apps.documents.access import artifacts_healthy
+    from pinaks.apps.documents.issuance import ArtifactIntegrityError
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    artifacts = list(IssuedArtifact.objects.filter(invoice_id=invoice_id))
+    if not artifacts_healthy(artifacts):
+        raise ArtifactIntegrityError()
+    pdf = next(artifact for artifact in artifacts if artifact.kind == "pdf")
+    return pdf.pk, pdf.sha256
