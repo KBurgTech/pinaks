@@ -16,6 +16,7 @@ from pinaks.apps.customers.models import Customer
 class InvoiceType(models.TextChoices):
     STANDARD = "STANDARD", "Standard"
     CANCELLATION = "CANCELLATION", "Cancellation"
+    REPLACEMENT = "REPLACEMENT", "Replacement"
     CREDIT_NOTE = "CREDIT_NOTE", "Credit note"
 
 
@@ -108,7 +109,9 @@ class Invoice(models.Model):
                 name="invoice_supported_lifecycle",
             ),
             models.CheckConstraint(
-                condition=Q(invoice_type__in=("STANDARD", "CANCELLATION", "CREDIT_NOTE")),
+                condition=Q(
+                    invoice_type__in=("STANDARD", "CANCELLATION", "CREDIT_NOTE", "REPLACEMENT")
+                ),
                 name="invoice_supported_type",
             ),
             models.UniqueConstraint(
@@ -126,7 +129,7 @@ class Invoice(models.Model):
                     )
                     | (
                         Q(
-                            invoice_type__in=("CANCELLATION", "CREDIT_NOTE"),
+                            invoice_type__in=("CANCELLATION", "CREDIT_NOTE", "REPLACEMENT"),
                             original_invoice__isnull=False,
                         )
                         & ~Q(correction_reason="")
@@ -139,6 +142,11 @@ class Invoice(models.Model):
                 fields=("original_invoice", "correction_key"),
                 condition=~Q(invoice_type="STANDARD"),
                 name="unique_correction_command",
+            ),
+            models.UniqueConstraint(
+                fields=("original_invoice",),
+                condition=Q(invoice_type="REPLACEMENT"),
+                name="one_replacement_per_invoice",
             ),
             models.CheckConstraint(
                 condition=~Q(original_invoice=models.F("pk")),
@@ -187,9 +195,9 @@ class Invoice(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         if self.pk is not None and not self._state.adding:
             stored = Invoice.objects.get(pk=self.pk)
-            if (
-                stored.lifecycle_status != LifecycleStatus.DRAFT
-                or stored.invoice_type != InvoiceType.STANDARD
+            if stored.lifecycle_status != LifecycleStatus.DRAFT or stored.invoice_type not in (
+                InvoiceType.STANDARD,
+                InvoiceType.REPLACEMENT,
             ):
                 raise ValueError("Issuing invoices are immutable.")
         super().save(*args, **kwargs)

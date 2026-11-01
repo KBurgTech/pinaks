@@ -65,9 +65,12 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     profile = obj(snapshot.get("tax_profile"))
     lines = rows(snapshot.get("lines"))
     groups = rows(snapshot.get("tax_breakdowns"))
-    if invoice.get("type") not in {"STANDARD", "CANCELLATION", "CREDIT_NOTE"} or invoice.get(
-        "language"
-    ) not in {
+    if invoice.get("type") not in {
+        "STANDARD",
+        "CANCELLATION",
+        "CREDIT_NOTE",
+        "REPLACEMENT",
+    } or invoice.get("language") not in {
         "en",
         "de",
     }:
@@ -98,7 +101,7 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         "BT-53": string(recipient.get("postal_code")),
         "BT-55": string(recipient.get("country_code")),
     }
-    if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE"):
+    if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE", "REPLACEMENT"):
         reference = obj(invoice.get("original_reference"))
         original_date = date_value(reference.get("issue_date"))
         if original_date > issue_date:

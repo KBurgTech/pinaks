@@ -37,7 +37,7 @@ export function Cancellation({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const cancellation = invoice.invoice_type !== "STANDARD";
+  const cancellation = ["CANCELLATION", "CREDIT_NOTE"].includes(invoice.invoice_type);
   const credit = invoice.invoice_type === "CREDIT_NOTE";
   const amount = new Intl.NumberFormat(i18n.language, {
     style: "currency",
@@ -82,7 +82,13 @@ export function Cancellation({
   return (
     <section
       className="my-4 grid gap-3"
-      aria-label={t(credit ? "invoicePage.creditNote" : "invoicePage.cancellation")}
+      aria-label={t(
+        invoice.invoice_type === "REPLACEMENT"
+          ? "invoicePage.replacement"
+          : credit
+            ? "invoicePage.creditNote"
+            : "invoicePage.cancellation",
+      )}
     >
       {invoice.lifecycle_status === "CANCELLED" && (
         <p role="status">{t("invoicePage.cancelled")}</p>
@@ -105,7 +111,7 @@ export function Cancellation({
         </button>
       ))}
       {canManage &&
-        !cancellation &&
+        invoice.invoice_type === "STANDARD" &&
         invoice.lifecycle_status === "ISSUED" &&
         !invoice.related_invoice_ids?.length && (
           <ApplicationDialog
