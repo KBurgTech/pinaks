@@ -8,7 +8,7 @@ RUN /usr/local/bin/install-mustang-validator /opt/pinaks/mustang
 
 FROM ghcr.io/astral-sh/uv:0.13.6 AS uv
 
-FROM python:3.14-slim-trixie
+FROM python:3.15-slim-trixie
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
