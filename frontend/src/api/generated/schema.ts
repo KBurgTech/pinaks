@@ -21,6 +21,54 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/account/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["account_retrieve"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/account/connections/{connection_id}/disconnect/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["account_connections_disconnect_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/account/password/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["account_password_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/capabilities/": {
         readonly parameters: {
             readonly query?: never;
@@ -727,10 +775,65 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/users/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["users_list"];
+        readonly put?: never;
+        readonly post: operations["users_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/users/{user_id}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["users_partial_update"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/users/{user_id}/temporary-password/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["users_temporary_password_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        readonly AccountDetails: {
+            readonly username: string;
+            readonly has_password: boolean;
+            readonly must_change_password: boolean;
+            readonly connections: readonly components["schemas"]["Connection"][];
+            readonly providers: readonly components["schemas"]["IdentityProvider"][];
+        };
         /**
          * @description * `add` - add
          *     * `update` - update
@@ -802,7 +905,7 @@ export interface components {
             readonly idempotency_key: string;
         };
         readonly Capabilities: {
-            readonly role: components["schemas"]["RoleEnum"];
+            readonly role: components["schemas"]["CapabilitiesRoleEnum"];
             readonly capabilities: {
                 readonly [key: string]: boolean;
             };
@@ -810,6 +913,13 @@ export interface components {
                 readonly [key: string]: boolean;
             };
         };
+        /**
+         * @description * `admin` - admin
+         *     * `company_member` - company_member
+         *     * `read_only` - read_only
+         * @enum {string}
+         */
+        readonly CapabilitiesRoleEnum: "admin" | "company_member" | "read_only";
         readonly CatalogItem: {
             readonly id: number;
             readonly code: string;
@@ -903,9 +1013,21 @@ export interface components {
             readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features: components["schemas"]["FeatureFlagsRequest"];
         };
+        readonly Connection: {
+            readonly id: number;
+            readonly provider: string;
+        };
         readonly CorrectInvoiceRequest: {
             readonly reason: string;
             readonly idempotency_key: string;
+        };
+        readonly CreateUserRequest: {
+            readonly username: string;
+            /** Format: email */
+            readonly email: string;
+            /** @default read_only */
+            readonly role: components["schemas"]["UserRoleEnum"];
+            readonly temporary_password: string;
         };
         readonly CreditLineRequest: {
             readonly position: number;
@@ -1156,6 +1278,11 @@ export interface components {
          * @enum {string}
          */
         readonly FormatEnum: "html" | "pdf";
+        readonly IdentityProvider: {
+            readonly id: string;
+            readonly name: string;
+            readonly connect_url: string;
+        };
         readonly Invoice: {
             readonly id: number;
             readonly customer_id: number;
@@ -1268,12 +1395,38 @@ export interface components {
             readonly service_period_end?: string | null;
             readonly custom_data?: unknown;
         };
+        readonly LocalPasswordRequest: {
+            /** @default  */
+            readonly current_password: string;
+            readonly new_password: string;
+        };
+        readonly ManagedUser: {
+            readonly id: number;
+            /** @description Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
+            readonly username: string;
+            /**
+             * Email address
+             * Format: email
+             */
+            readonly email: string;
+            readonly role: components["schemas"]["UserRoleEnum"];
+            /**
+             * Active
+             * @description Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+             */
+            readonly is_active: boolean;
+            readonly is_protected: boolean;
+            readonly must_change_password: boolean;
+        };
         /**
          * @description * `append` - append
          *     * `replace` - replace
          * @enum {string}
          */
         readonly ModeEnum: "append" | "replace";
+        readonly OperationResult: {
+            readonly completed: boolean;
+        };
         /** @description Command receipt intentionally omits correspondence content and internal keys. */
         readonly OutgoingEmail: {
             /** Format: uuid */
@@ -1472,6 +1625,10 @@ export interface components {
             readonly page_settings?: unknown;
             readonly asset_keys?: readonly string[];
         };
+        readonly PatchedUserAccessRequest: {
+            readonly role?: components["schemas"]["UserRoleEnum"];
+            readonly is_active?: boolean;
+        };
         readonly Preset: {
             readonly id: number;
             readonly name: string;
@@ -1573,13 +1730,6 @@ export interface components {
          * @enum {string}
          */
         readonly RequiredSellerIdentifiersEnum: "tax_number" | "vat_identifier";
-        /**
-         * @description * `admin` - admin
-         *     * `company_member` - company_member
-         *     * `read_only` - read_only
-         * @enum {string}
-         */
-        readonly RoleEnum: "admin" | "company_member" | "read_only";
         /**
          * @description * `none` - none
          *     * `exact` - exact
@@ -1699,6 +1849,9 @@ export interface components {
             readonly code: string;
             readonly name: string;
         };
+        readonly TemporaryPasswordRequest: {
+            readonly temporary_password: string;
+        };
         /**
          * @description * `C62` - C62
          *     * `HUR` - HUR
@@ -1706,6 +1859,13 @@ export interface components {
          * @enum {string}
          */
         readonly UnitEnum: "C62" | "HUR" | "DAY";
+        /**
+         * @description * `admin` - Admin
+         *     * `company_member` - Company Member
+         *     * `read_only` - Read-Only
+         * @enum {string}
+         */
+        readonly UserRoleEnum: "admin" | "company_member" | "read_only";
         /**
          * @description * `internal` - internal
          *     * `document` - document
@@ -1745,6 +1905,71 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly account_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AccountDetails"];
+                };
+            };
+        };
+    };
+    readonly account_connections_disconnect_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly connection_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OperationResult"];
+                };
+            };
+        };
+    };
+    readonly account_password_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["LocalPasswordRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["LocalPasswordRequest"];
+                readonly "multipart/form-data": components["schemas"]["LocalPasswordRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OperationResult"];
                 };
             };
         };
@@ -4305,6 +4530,104 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["Probe"];
+                };
+            };
+        };
+    };
+    readonly users_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["ManagedUser"][];
+                };
+            };
+        };
+    };
+    readonly users_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CreateUserRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CreateUserRequest"];
+                readonly "multipart/form-data": components["schemas"]["CreateUserRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ManagedUser"];
+                };
+            };
+        };
+    };
+    readonly users_partial_update: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly user_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PatchedUserAccessRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["PatchedUserAccessRequest"];
+                readonly "multipart/form-data": components["schemas"]["PatchedUserAccessRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ManagedUser"];
+                };
+            };
+        };
+    };
+    readonly users_temporary_password_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly user_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TemporaryPasswordRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["TemporaryPasswordRequest"];
+                readonly "multipart/form-data": components["schemas"]["TemporaryPasswordRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OperationResult"];
                 };
             };
         };

@@ -3,6 +3,8 @@ from pathlib import Path
 
 import dj_database_url
 
+from pinaks.apps.accounts.oidc_configuration import oidc_configuration
+
 BASE_DIR = Path(__file__).resolve().parents[3]
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "development-only-change-me")
 DEBUG = False
@@ -28,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "rest_framework",
     "drf_spectacular",
 ]
@@ -40,6 +44,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "pinaks.apps.accounts.middleware.RequirePasswordChangeMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -128,6 +133,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Pinaks API",
     "VERSION": "0.1.0",
     "ENUM_NAME_OVERRIDES": {
+        "UserRoleEnum": [
+            ("admin", "Admin"),
+            ("company_member", "Company Member"),
+            ("read_only", "Read-Only"),
+        ],
         "DocumentLanguage": ["en", "de"],
         "TemplateVersionLanguageEnum": [("en", "English"), ("de", "German")],
     },
@@ -150,3 +160,13 @@ SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
 SMTP_USE_SSL = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
 SMTP_TIMEOUT = float(os.environ.get("SMTP_TIMEOUT", "10"))
 SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", "")
+
+
+SOCIALACCOUNT_ADAPTER = "pinaks.apps.accounts.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_STORE_TOKENS = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = False
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+# Admission is enforced by the configured provider's application/group policy.
+SOCIALACCOUNT_PROVIDERS = oidc_configuration(os.environ)

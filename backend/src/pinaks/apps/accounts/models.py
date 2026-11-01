@@ -50,6 +50,7 @@ class User(AbstractUser):
         choices=UserRole,
         default=UserRole.READ_ONLY,
     )
+    must_change_password: models.BooleanField[bool, bool] = models.BooleanField(default=False)
     is_protected: models.BooleanField[bool, bool] = models.BooleanField(default=False)
 
     objects = UserManager()

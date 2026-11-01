@@ -49,3 +49,5 @@ Copy `.env.example` to `.env` only when local overrides are needed. Never commit
 ## Status
 
 Scaffolding only. There are no customer, catalog, billing, authentication, document, migration, or other product workflows yet.
+
+Account administration and optional OIDC setup: [docs/ACCOUNTS.md](docs/ACCOUNTS.md).

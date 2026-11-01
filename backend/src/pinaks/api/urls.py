@@ -9,6 +9,14 @@ from pinaks.api.views import (
     capabilities,
     probe,
 )
+from pinaks.apps.accounts.views import (
+    AccountDetailsView,
+    DisconnectIdentityView,
+    LocalPasswordView,
+    TemporaryPasswordView,
+    UserDetailView,
+    UserListView,
+)
 from pinaks.apps.billing.preset_views import PresetArchiveView, PresetDetailView, PresetListView
 from pinaks.apps.documents.views import (
     PreviewDetailView,
@@ -29,6 +37,20 @@ from pinaks.apps.notifications.views import (
 app_name = "api-v1"
 
 urlpatterns: list[URLPattern | URLResolver] = [
+    path("account/", AccountDetailsView.as_view(), name="account-details"),
+    path(
+        "account/connections/<int:connection_id>/disconnect/",
+        DisconnectIdentityView.as_view(),
+        name="account-disconnect",
+    ),
+    path("users/", UserListView.as_view(), name="user-list"),
+    path("users/<int:user_id>/", UserDetailView.as_view(), name="user-detail"),
+    path(
+        "users/<int:user_id>/temporary-password/",
+        TemporaryPasswordView.as_view(),
+        name="user-temporary-password",
+    ),
+    path("account/password/", LocalPasswordView.as_view(), name="account-password"),
     path("email-templates/", EmailTemplateListView.as_view(), name="email-template-list"),
     path(
         "email-templates/<int:template_id>/versions/",

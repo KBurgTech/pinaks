@@ -20,7 +20,9 @@ def record_successful_login(
         target_type="accounts.user",
         target_identifier=str(user.pk),
         request=request,
-        metadata={"authentication_method": "local"},
+        metadata={
+            "authentication_method": getattr(request, "_pinaks_authentication_method", "local")
+        },
     )
 
 
@@ -36,5 +38,7 @@ def record_failed_login(
         action_code="authentication.login_failed",
         target_type="accounts.user",
         request=request,
-        metadata={"authentication_method": "local"},
+        metadata={
+            "authentication_method": getattr(request, "_pinaks_authentication_method", "local")
+        },
     )

@@ -38,6 +38,111 @@
                 }
             }
         },
+        "/api/v1/account/": {
+            "get": {
+                "operationId": "account_retrieve",
+                "tags": [
+                    "account"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetails"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/account/connections/{connection_id}/disconnect/": {
+            "post": {
+                "operationId": "account_connections_disconnect_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "connection_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "account"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OperationResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/account/password/": {
+            "post": {
+                "operationId": "account_password_create",
+                "tags": [
+                    "account"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LocalPasswordRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LocalPasswordRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LocalPasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OperationResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/capabilities/": {
             "get": {
                 "operationId": "capabilities",
@@ -4244,10 +4349,223 @@
                     }
                 }
             }
+        },
+        "/api/v1/users/": {
+            "get": {
+                "operationId": "users_list",
+                "tags": [
+                    "users"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ManagedUser"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "users_create",
+                "tags": [
+                    "users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ManagedUser"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{user_id}/": {
+            "patch": {
+                "operationId": "users_partial_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "user_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserAccessRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserAccessRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserAccessRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ManagedUser"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{user_id}/temporary-password/": {
+            "post": {
+                "operationId": "users_temporary_password_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "user_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemporaryPasswordRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemporaryPasswordRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TemporaryPasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OperationResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "AccountDetails": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "has_password": {
+                        "type": "boolean"
+                    },
+                    "must_change_password": {
+                        "type": "boolean"
+                    },
+                    "connections": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Connection"
+                        }
+                    },
+                    "providers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/IdentityProvider"
+                        }
+                    }
+                },
+                "required": [
+                    "connections",
+                    "has_password",
+                    "must_change_password",
+                    "providers",
+                    "username"
+                ]
+            },
             "ActionEnum": {
                 "enum": [
                     "add",
@@ -4518,7 +4836,7 @@
                 "type": "object",
                 "properties": {
                     "role": {
-                        "$ref": "#/components/schemas/RoleEnum"
+                        "$ref": "#/components/schemas/CapabilitiesRoleEnum"
                     },
                     "capabilities": {
                         "type": "object",
@@ -4538,6 +4856,15 @@
                     "features",
                     "role"
                 ]
+            },
+            "CapabilitiesRoleEnum": {
+                "enum": [
+                    "admin",
+                    "company_member",
+                    "read_only"
+                ],
+                "type": "string",
+                "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
             },
             "CatalogItem": {
                 "type": "object",
@@ -4944,6 +5271,21 @@
                     "vat_identifier"
                 ]
             },
+            "Connection": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "provider": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "provider"
+                ]
+            },
             "CorrectInvoiceRequest": {
                 "type": "object",
                 "properties": {
@@ -4961,6 +5303,40 @@
                 "required": [
                     "idempotency_key",
                     "reason"
+                ]
+            },
+            "CreateUserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "minLength": 1
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserRoleEnum"
+                            }
+                        ],
+                        "default": "read_only"
+                    },
+                    "temporary_password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1,
+                        "maxLength": 4096
+                    }
+                },
+                "required": [
+                    "email",
+                    "temporary_password",
+                    "username"
                 ]
             },
             "CreditLineRequest": {
@@ -5882,6 +6258,25 @@
                 "type": "string",
                 "description": "* `html` - html\n* `pdf` - pdf"
             },
+            "IdentityProvider": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "connect_url": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "connect_url",
+                    "id",
+                    "name"
+                ]
+            },
             "Invoice": {
                 "type": "object",
                 "properties": {
@@ -6281,6 +6676,77 @@
                     "action"
                 ]
             },
+            "LocalPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "current_password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "default": "",
+                        "maxLength": 4096
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1,
+                        "maxLength": 4096
+                    }
+                },
+                "required": [
+                    "new_password"
+                ]
+            },
+            "ManagedUser": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "readOnly": true,
+                        "title": "Email address"
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserRoleEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "Active",
+                        "description": "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+                    },
+                    "is_protected": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "must_change_password": {
+                        "type": "boolean",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "id",
+                    "is_active",
+                    "is_protected",
+                    "must_change_password",
+                    "role",
+                    "username"
+                ]
+            },
             "ModeEnum": {
                 "enum": [
                     "append",
@@ -6288,6 +6754,17 @@
                 ],
                 "type": "string",
                 "description": "* `append` - append\n* `replace` - replace"
+            },
+            "OperationResult": {
+                "type": "object",
+                "properties": {
+                    "completed": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "completed"
+                ]
             },
             "OutgoingEmail": {
                 "type": "object",
@@ -6883,6 +7360,17 @@
                     }
                 }
             },
+            "PatchedUserAccessRequest": {
+                "type": "object",
+                "properties": {
+                    "role": {
+                        "$ref": "#/components/schemas/UserRoleEnum"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    }
+                }
+            },
             "Preset": {
                 "type": "object",
                 "properties": {
@@ -7183,15 +7671,6 @@
                 ],
                 "type": "string",
                 "description": "* `tax_number` - tax_number\n* `vat_identifier` - vat_identifier"
-            },
-            "RoleEnum": {
-                "enum": [
-                    "admin",
-                    "company_member",
-                    "read_only"
-                ],
-                "type": "string",
-                "description": "* `admin` - admin\n* `company_member` - company_member\n* `read_only` - read_only"
             },
             "SearchModeEnum": {
                 "enum": [
@@ -7572,6 +8051,20 @@
                     "name"
                 ]
             },
+            "TemporaryPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "temporary_password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1,
+                        "maxLength": 4096
+                    }
+                },
+                "required": [
+                    "temporary_password"
+                ]
+            },
             "UnitEnum": {
                 "enum": [
                     "C62",
@@ -7580,6 +8073,15 @@
                 ],
                 "type": "string",
                 "description": "* `C62` - C62\n* `HUR` - HUR\n* `DAY` - DAY"
+            },
+            "UserRoleEnum": {
+                "enum": [
+                    "admin",
+                    "company_member",
+                    "read_only"
+                ],
+                "type": "string",
+                "description": "* `admin` - Admin\n* `company_member` - Company Member\n* `read_only` - Read-Only"
             },
             "VisibilityEnum": {
                 "enum": [
