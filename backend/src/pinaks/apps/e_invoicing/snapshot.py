@@ -85,21 +85,27 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     first = string(recipient.get("given_name", ""), required=False)
     last = string(recipient.get("family_name", ""), required=False)
     recipient_name = string(organization or f"{first} {last}".strip())
+    seller_party: dict[str, object] = {
+        "name": string(seller.get("legal_name")),
+        "addr_l1": string(seller.get("address_line_1")),
+        "city": string(seller.get("city")),
+        "postcode": string(seller.get("postal_code")),
+        "country_code": string(seller.get("country_code")),
+    }
+    recipient_party: dict[str, object] = {
+        "name": recipient_name,
+        "addr_l1": string(recipient.get("address_line_1")),
+        "city": string(recipient.get("city")),
+        "postcode": string(recipient.get("postal_code")),
+        "country_code": string(recipient.get("country_code")),
+    }
     data: dict[str, object] = {
         "BT-1": string(invoice.get("number")),
         "BT-2": issue_date,
         "BT-3": "381" if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE") else "380",
         "BT-5": "EUR",
-        "BT-27": string(seller.get("legal_name")),
-        "BT-35": string(seller.get("address_line_1")),
-        "BT-37": string(seller.get("city")),
-        "BT-38": string(seller.get("postal_code")),
-        "BT-40": string(seller.get("country_code")),
-        "BT-44": recipient_name,
-        "BT-50": string(recipient.get("address_line_1")),
-        "BT-52": string(recipient.get("city")),
-        "BT-53": string(recipient.get("postal_code")),
-        "BT-55": string(recipient.get("country_code")),
+        "BG-4": seller_party,
+        "BG-7": recipient_party,
     }
     if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE", "REPLACEMENT"):
         reference = obj(invoice.get("original_reference"))
@@ -113,11 +119,11 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     if not (vat or tax_number):
         raise InvoiceMappingError("invalid_snapshot")
     if vat:
-        data["BT-31"] = vat
+        seller_party["vat_identifier"] = vat
     if tax_number:
-        data["BT-32"] = tax_number
+        seller_party["tax_identifier"] = tax_number
         if not vat:
-            data["BT-29"] = {"": tax_number}
+            seller_party["identifiers"] = {"": tax_number}
     if due_date:
         data["BT-9"] = due_date
     payment = string(seller.get("payment_instructions", ""), required=False)

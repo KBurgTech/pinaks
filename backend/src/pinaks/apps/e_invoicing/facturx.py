@@ -1,8 +1,13 @@
 from collections.abc import Mapping
+from copy import deepcopy
 from decimal import Decimal
 from importlib.metadata import version
+from io import BytesIO
 
 from facturx import generate_from_binary, generate_xml  # type: ignore[import-untyped]
+from lxml import etree  # type: ignore[import-untyped]
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import StreamObject
 
 from pinaks.apps.e_invoicing.contracts import CanonicalInvoice
 from pinaks.apps.e_invoicing.snapshot import InvoiceMappingError as InvoiceMappingError
@@ -11,6 +16,63 @@ from pinaks.apps.e_invoicing.snapshot import serialize_snapshot
 
 def _amount(value: Decimal) -> str:
     return format(value, "f")
+
+
+def _normalise_pdfa_xmp(pdf: bytes) -> bytes:
+    reader = PdfReader(BytesIO(pdf), strict=True)
+    writer = PdfWriter()
+    writer.clone_document_from_reader(reader)
+    metadata_reference = writer.root_object.get("/Metadata")
+    if metadata_reference is None:
+        raise ValueError("Factur-X package has no XMP metadata")
+    metadata = metadata_reference.get_object()
+    if not isinstance(metadata, StreamObject):
+        raise ValueError("Factur-X package has invalid XMP metadata")
+
+    packet = metadata.get_data()
+    root_start = packet.find(b"<x:xmpmeta")
+    root_end = packet.find(b"</x:xmpmeta>", root_start)
+    if root_start < 0 or root_end < 0:
+        raise ValueError("Factur-X package has malformed XMP metadata")
+    root_end += len(b"</x:xmpmeta>")
+    source_root = etree.fromstring(packet[root_start:root_end])
+    rdf_namespace = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmp_namespace = "adobe:ns:meta/"
+    source_rdf = source_root.find(f"{{{rdf_namespace}}}RDF")
+    if source_rdf is None:
+        raise ValueError("Factur-X package XMP has no RDF data")
+
+    normalized_root = etree.Element(f"{{{xmp_namespace}}}xmpmeta", nsmap={"x": xmp_namespace})
+    normalized_rdf = etree.SubElement(
+        normalized_root, f"{{{rdf_namespace}}}RDF", nsmap={"rdf": rdf_namespace}
+    )
+    namespace_map = {
+        prefix: namespace
+        for prefix, namespace in source_root.nsmap.items()
+        if prefix not in (None, "x")
+    }
+    about_attribute = f"{{{rdf_namespace}}}about"
+    for description in source_rdf.findall(f"{{{rdf_namespace}}}Description"):
+        attributes = dict(description.attrib)
+        attributes[about_attribute] = ""
+        normalized_description = etree.SubElement(
+            normalized_rdf,
+            description.tag,
+            attributes,
+            nsmap=namespace_map,
+        )
+        for child in description:
+            normalized_description.append(deepcopy(child))
+
+    normalized_packet = (
+        packet[:root_start]
+        + etree.tostring(normalized_root, encoding="utf-8", pretty_print=True)
+        + packet[root_end:]
+    )
+    metadata.set_data(normalized_packet)
+    result = BytesIO()
+    writer.write(result)
+    return result.getvalue()
 
 
 class FacturXSerializer:
@@ -35,18 +97,22 @@ class FacturXSerializer:
             "BT-9": invoice.due_date,
             "BT-20": invoice.payment_terms,
             "BT-72": invoice.delivery_date,
-            "BT-27": invoice.seller.name,
-            "BT-31": invoice.seller.vat_identifier,
-            "BT-35": invoice.seller.address.address_line,
-            "BT-37": invoice.seller.address.city,
-            "BT-38": invoice.seller.address.postal_code,
-            "BT-40": invoice.seller.address.country_code,
-            "BT-44": invoice.buyer.name,
-            "BT-48": invoice.buyer.vat_identifier,
-            "BT-50": invoice.buyer.address.address_line,
-            "BT-52": invoice.buyer.address.city,
-            "BT-53": invoice.buyer.address.postal_code,
-            "BT-55": invoice.buyer.address.country_code,
+            "BG-4": {
+                "name": invoice.seller.name,
+                "addr_l1": invoice.seller.address.address_line,
+                "city": invoice.seller.address.city,
+                "postcode": invoice.seller.address.postal_code,
+                "country_code": invoice.seller.address.country_code,
+                "vat_identifier": invoice.seller.vat_identifier,
+            },
+            "BG-7": {
+                "name": invoice.buyer.name,
+                "addr_l1": invoice.buyer.address.address_line,
+                "city": invoice.buyer.address.city,
+                "postcode": invoice.buyer.address.postal_code,
+                "country_code": invoice.buyer.address.country_code,
+                "vat_identifier": invoice.buyer.vat_identifier,
+            },
             "BG-23": [
                 {
                     "BT-116": _amount(tax.tax_basis),
@@ -65,7 +131,7 @@ class FacturXSerializer:
             "BG-25": [
                 {
                     "BT-126": line.identifier,
-                    "BT-127": line.description,
+                    "BT-127-00": [{"BT-127": line.description}],
                     "BT-129": _amount(line.quantity),
                     "BT-130": line.unit_code,
                     "BT-131": _amount(line.net_amount),
@@ -91,12 +157,14 @@ class FacturXHybridPdfPackager:
     """Embed CII XML in an existing PDF/A document without library leakage."""
 
     def package(self, source_pdf: bytes, invoice_xml: bytes, *, language: str) -> bytes:
-        return generate_from_binary(
-            source_pdf,
-            invoice_xml,
-            flavor="factur-x",
-            level="en16931",
-            check_xsd=True,
-            check_schematron=False,
-            lang=language,
+        return _normalise_pdfa_xmp(
+            generate_from_binary(
+                source_pdf,
+                invoice_xml,
+                flavor="factur-x",
+                level="en16931",
+                check_xsd=True,
+                check_schematron=False,
+                lang=language,
+            )
         )

@@ -95,6 +95,8 @@ def test_frozen_snapshot_generates_valid_en16931(language: str, exempt: bool) ->
     assert xml == FacturXSerializer().serialize(deepcopy(issued))
     root = ElementTree.fromstring(xml)
     content = " ".join(root.itertext())
+    assert "Beispiel Dienstleistungen GmbH" in content
+    assert "Musterweg 12" in content
     assert "Beispiel Kunde GmbH" in content
     assert "Other Company GmbH" not in content
     assert ("Beratung" if language == "de" else "Consulting") in content
@@ -123,6 +125,30 @@ def test_discount_and_rounding_use_frozen_line_amounts() -> None:
     xml = FacturXSerializer().serialize(issued)
     assert b"270.00" in xml
     assert MustangValidator(jar_path=MUSTANG_JAR).validate(xml, filename="discount.xml").valid
+
+
+def test_seller_tax_number_is_preserved_alongside_vat_identifier() -> None:
+    issued = snapshot()
+    seller = issued["seller"]
+    assert isinstance(seller, dict)
+    seller["tax_number"] = "12/345/67890"
+
+    xml = FacturXSerializer().serialize(issued)
+
+    assert "12/345/67890" in " ".join(ElementTree.fromstring(xml).itertext())
+
+
+def test_seller_tax_number_without_vat_identifier_satisfies_en16931() -> None:
+    issued = snapshot()
+    seller = issued["seller"]
+    assert isinstance(seller, dict)
+    seller["vat_identifier"] = ""
+    seller["tax_number"] = "12/345/67890"
+
+    xml = FacturXSerializer().serialize(issued)
+    report = MustangValidator(jar_path=MUSTANG_JAR).validate(xml, filename="tax-number.xml")
+
+    assert report.valid, report.findings
 
 
 @pytest.mark.parametrize("change", ["schema", "total", "tax", "missing_recipient", "float"])
@@ -154,4 +180,4 @@ def test_serializer_identifies_its_standard_and_specification() -> None:
     assert serializer.standard == "Factur-X"
     assert serializer.profile == "EN 16931"
     assert serializer.specification_version == "1.09"
-    assert serializer.generator_version == "6.8"
+    assert serializer.generator_version == "7.9"
