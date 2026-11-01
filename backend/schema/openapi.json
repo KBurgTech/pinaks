@@ -3687,6 +3687,64 @@
                 }
             }
         },
+        "/api/v1/invoices/{invoice_id}/emails/": {
+            "get": {
+                "operationId": "invoices_emails_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoice_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/EmailDelivery"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/invoices/{invoice_id}/issue/": {
             "post": {
                 "operationId": "invoice_issue",
@@ -5327,6 +5385,47 @@
                 "type": "string",
                 "description": "* `en-DE` - en-DE\n* `de-DE` - de-DE"
             },
+            "DeliveryAttempt": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "finished_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "outcome": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "failure_code": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "response_code": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "failure_code",
+                    "finished_at",
+                    "id",
+                    "outcome",
+                    "response_code",
+                    "started_at"
+                ]
+            },
             "DeliveryStateEnum": {
                 "enum": [
                     "queued",
@@ -5458,6 +5557,70 @@
                     "language",
                     "recipients",
                     "templates"
+                ]
+            },
+            "EmailDelivery": {
+                "type": "object",
+                "description": "Command receipt intentionally omits correspondence content and internal keys.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "invoice_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "language": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TemplateVersionLanguageEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "delivery_state": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/DeliveryStateEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "attempts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeliveryAttempt"
+                        },
+                        "readOnly": true
+                    },
+                    "next_attempt_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "attempts",
+                    "created_at",
+                    "delivery_state",
+                    "id",
+                    "invoice_id",
+                    "language",
+                    "next_attempt_at",
+                    "scheduled_at"
                 ]
             },
             "EmailSendRequest": {

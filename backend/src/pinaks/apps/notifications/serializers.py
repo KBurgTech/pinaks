@@ -1,6 +1,14 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
-from pinaks.apps.notifications.models import EmailTemplate, EmailTemplateVersion, OutgoingEmail
+from pinaks.apps.notifications.models import (
+    DeliveryAttempt,
+    EmailTemplate,
+    EmailTemplateVersion,
+    OutgoingEmail,
+)
+from pinaks.apps.workers.services import next_attempt_at
 
 
 class EmailVersionSerializer(serializers.ModelSerializer[EmailTemplateVersion]):
@@ -41,8 +49,15 @@ class OutgoingEmailSerializer(serializers.ModelSerializer[OutgoingEmail]):
 
     class Meta:
         model = OutgoingEmail
-        fields = ("id", "invoice_id", "language", "delivery_state", "scheduled_at", "created_at")
-        read_only_fields = fields
+        fields: tuple[str, ...] = (
+            "id",
+            "invoice_id",
+            "language",
+            "delivery_state",
+            "scheduled_at",
+            "created_at",
+        )
+        read_only_fields: tuple[str, ...] = fields
 
 
 class SendTemplateSerializer(serializers.Serializer):
@@ -54,3 +69,22 @@ class EmailDefaultsSerializer(serializers.Serializer):
     language = serializers.ChoiceField(choices=("en", "de"))
     recipients = serializers.ListField(child=serializers.EmailField())
     templates = SendTemplateSerializer(many=True)
+
+
+class DeliveryAttemptSerializer(serializers.ModelSerializer[DeliveryAttempt]):
+    class Meta:
+        model = DeliveryAttempt
+        fields = ("id", "started_at", "finished_at", "outcome", "failure_code", "response_code")
+        read_only_fields: tuple[str, ...] = fields
+
+
+class EmailDeliverySerializer(OutgoingEmailSerializer):
+    attempts = DeliveryAttemptSerializer(many=True, read_only=True)
+    next_attempt_at = serializers.SerializerMethodField()
+
+    def get_next_attempt_at(self, outgoing: OutgoingEmail) -> datetime | None:
+        return next_attempt_at(job_type="notifications.deliver", identity=str(outgoing.pk))
+
+    class Meta(OutgoingEmailSerializer.Meta):
+        fields = (*OutgoingEmailSerializer.Meta.fields, "attempts", "next_attempt_at")
+        read_only_fields: tuple[str, ...] = fields

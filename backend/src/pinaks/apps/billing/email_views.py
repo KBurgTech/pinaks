@@ -14,10 +14,11 @@ from pinaks.apps.billing.models import Invoice
 from pinaks.apps.documents.issuance import ArtifactIntegrityError
 from pinaks.apps.notifications.serializers import (
     EmailDefaultsSerializer,
+    EmailDeliverySerializer,
     EmailSendSerializer,
     OutgoingEmailSerializer,
 )
-from pinaks.apps.notifications.services import published_templates
+from pinaks.apps.notifications.services import delivery_history, published_templates
 from pinaks.apps.notifications.views import email_operation
 
 
@@ -76,5 +77,27 @@ class SendInvoiceView(APIView):
         return Response(
             OutgoingEmailSerializer(outgoing).data,
             status=201,
+            headers={"Cache-Control": "no-store"},
+        )
+
+
+class InvoiceEmailHistoryView(APIView):
+    permission_classes = (CanMutateDrafts,)
+
+    @extend_schema(
+        responses={
+            200: EmailDeliverySerializer(many=True),
+            403: ErrorEnvelopeSerializer,
+            404: ErrorEnvelopeSerializer,
+        }
+    )
+    def get(self, request: Request, invoice_id: int) -> Response:
+        get_object_or_404(Invoice, pk=invoice_id)
+        actor = request.user
+        assert isinstance(actor, User)
+        return Response(
+            EmailDeliverySerializer(
+                delivery_history(invoice_id=invoice_id, actor=actor), many=True
+            ).data,
             headers={"Cache-Control": "no-store"},
         )

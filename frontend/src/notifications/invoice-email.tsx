@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "@/api/client";
 import type { components } from "@/api/generated/schema";
 import { ApplicationDialog, Field } from "@/ui/primitives";
+
+import { DeliveryHistory } from "./delivery-history";
 
 import { emailDefaultsSchema } from "./schemas";
 
@@ -56,6 +58,7 @@ function ReadyForm({
       templateId: String(command.body?.template_id ?? defaults.templates[0]?.id ?? ""),
     },
   });
+  const client = useQueryClient();
   const [state, setState] = useState<"ready" | "failed" | "queued">(
     command.queued ? "queued" : "ready",
   );
@@ -88,6 +91,7 @@ function ReadyForm({
       if (!data) throw new Error("email_send_failed");
       setCommand({ body, queued: true });
       setState("queued");
+      await client.invalidateQueries({ queryKey: ["invoice-email-history", invoiceId] });
     } catch {
       setState("failed");
     }
@@ -152,13 +156,16 @@ export function InvoiceEmail({
   const [command, setCommand] = useState<Command>({ body: null, queued: false });
   if (!canSend || !["ISSUED", "CANCELLED"].includes(lifecycle)) return null;
   return (
-    <ApplicationDialog
-      title={t("email.send")}
-      triggerLabel={t("email.send")}
-      description={t("email.description")}
-      closeLabel={t("email.close")}
-    >
-      <SendForm invoiceId={invoiceId} command={command} setCommand={setCommand} />
-    </ApplicationDialog>
+    <>
+      <DeliveryHistory invoiceId={invoiceId} />
+      <ApplicationDialog
+        title={t("email.send")}
+        triggerLabel={t("email.send")}
+        description={t("email.description")}
+        closeLabel={t("email.close")}
+      >
+        <SendForm invoiceId={invoiceId} command={command} setCommand={setCommand} />
+      </ApplicationDialog>
+    </>
   );
 }
