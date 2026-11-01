@@ -374,6 +374,54 @@ export interface paths {
         readonly patch: operations["document_template_version_update"];
         readonly trace?: never;
     };
+    readonly "/api/v1/email-templates/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["email_templates_list"];
+        readonly put?: never;
+        readonly post: operations["email_templates_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/email-templates/{template_id}/publish/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["email_templates_publish_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/email-templates/{template_id}/versions/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["email_templates_versions_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoice-presets/": {
         readonly parameters: {
             readonly query?: never;
@@ -470,6 +518,102 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/invoices/{invoice_id}/cancel/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_cancel_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/correct/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_correct_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/credit-notes/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_credit_notes_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/documents/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_documents"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/documents/{kind}/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoice_artifact_download"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/emails/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoices_emails_list"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/invoices/{invoice_id}/issue/": {
         readonly parameters: {
             readonly query?: never;
@@ -496,6 +640,54 @@ export interface paths {
         readonly get: operations["invoice_line_sensitive_fields"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/mark-paid/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_mark_paid_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/mark-unpaid/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["invoices_mark_unpaid_create"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/invoices/{invoice_id}/send/": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["invoices_send_retrieve"];
+        readonly put?: never;
+        readonly post: operations["invoices_send_create"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -559,6 +751,17 @@ export interface components {
             readonly expected_version: number;
             readonly mode: components["schemas"]["ModeEnum"];
         };
+        readonly ArtifactMetadata: {
+            readonly kind: components["schemas"]["KindEnum"];
+            readonly sha256: string;
+            /** Format: int64 */
+            readonly size: number;
+            readonly standard: string;
+            readonly profile: string;
+            readonly specification_version: string;
+            /** Format: date-time */
+            readonly generated_at: string;
+        };
         readonly AssetUploadRequest: {
             /** Format: binary */
             readonly file: string;
@@ -593,6 +796,10 @@ export interface components {
             readonly postal_code: string;
             readonly city: string;
             readonly country_code: string;
+        };
+        readonly CancelInvoiceRequest: {
+            readonly reason: string;
+            readonly idempotency_key: string;
         };
         readonly Capabilities: {
             readonly role: components["schemas"]["RoleEnum"];
@@ -695,6 +902,22 @@ export interface components {
             readonly invoice_number_padding: number;
             readonly invoice_number_reset: components["schemas"]["InvoiceNumberResetEnum"];
             readonly features: components["schemas"]["FeatureFlagsRequest"];
+        };
+        readonly CorrectInvoiceRequest: {
+            readonly reason: string;
+            readonly idempotency_key: string;
+        };
+        readonly CreditLineRequest: {
+            readonly position: number;
+            /** Format: decimal */
+            readonly quantity: string;
+            /** Format: decimal */
+            readonly unit_price: string;
+        };
+        readonly CreditNoteRequest: {
+            readonly reason: string;
+            readonly idempotency_key: string;
+            readonly lines: readonly components["schemas"]["CreditLineRequest"][];
         };
         readonly CustomFieldDefinition: {
             readonly id: number;
@@ -800,6 +1023,24 @@ export interface components {
          * @enum {string}
          */
         readonly DefaultLocaleEnum: "en-DE" | "de-DE";
+        readonly DeliveryAttempt: {
+            readonly id: number;
+            /** Format: date-time */
+            readonly started_at: string;
+            /** Format: date-time */
+            readonly finished_at: string | null;
+            readonly outcome: string;
+            readonly failure_code: string;
+            readonly response_code: number | null;
+        };
+        /**
+         * @description * `queued` - Queued
+         *     * `sending` - Sending
+         *     * `sent` - Sent
+         *     * `failed` - Failed
+         * @enum {string}
+         */
+        readonly DeliveryStateEnum: "queued" | "sending" | "sent" | "failed";
         readonly DocumentAsset: {
             readonly id: number;
             readonly key: string;
@@ -814,6 +1055,13 @@ export interface components {
          * @enum {string}
          */
         readonly DocumentLanguage: "en" | "de";
+        readonly DocumentState: {
+            readonly lifecycle_status: string;
+            readonly operation_state: string | null;
+            readonly failure_code: string;
+            readonly healthy: boolean;
+            readonly artifacts: readonly components["schemas"]["ArtifactMetadata"][];
+        };
         readonly DraftCreateRequest: {
             readonly customer_id: number;
             readonly custom_data?: unknown;
@@ -822,6 +1070,61 @@ export interface components {
             readonly issue_date?: string;
             /** Format: date */
             readonly due_date?: string | null;
+        };
+        readonly EmailDefaults: {
+            readonly language: components["schemas"]["DocumentLanguage"];
+            readonly recipients: readonly string[];
+            readonly templates: readonly components["schemas"]["SendTemplate"][];
+        };
+        /** @description Command receipt intentionally omits correspondence content and internal keys. */
+        readonly EmailDelivery: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly invoice_id: number;
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly delivery_state: components["schemas"]["DeliveryStateEnum"];
+            /** Format: date-time */
+            readonly scheduled_at: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly attempts: readonly components["schemas"]["DeliveryAttempt"][];
+            /** Format: date-time */
+            readonly next_attempt_at: string | null;
+        };
+        readonly EmailSendRequest: {
+            readonly template_id: number;
+            readonly language: components["schemas"]["DocumentLanguage"];
+            readonly recipients: readonly string[];
+            readonly idempotency_key: string;
+            /** Format: date-time */
+            readonly scheduled_at?: string;
+        };
+        readonly EmailTemplate: {
+            readonly id: number;
+            readonly code: string;
+            readonly name: string;
+            readonly versions: readonly components["schemas"]["EmailVersion"][];
+        };
+        readonly EmailTemplateRequest: {
+            readonly code: string;
+            readonly name: string;
+        };
+        readonly EmailVersion: {
+            readonly id: number;
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly version: number;
+            readonly status: components["schemas"]["StatusEnum"];
+            readonly subject: string;
+            readonly body: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly published_at: string | null;
+        };
+        readonly EmailVersionRequest: {
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly subject: string;
+            readonly body: string;
         };
         readonly ErrorBody: {
             readonly code: string;
@@ -856,9 +1159,16 @@ export interface components {
         readonly Invoice: {
             readonly id: number;
             readonly customer_id: number;
+            readonly original_invoice_id: number | null;
+            readonly correction_reason: string;
+            readonly related_invoice_ids: readonly number[];
+            readonly cancellation_template_id: number | null;
             readonly invoice_type: string;
             readonly lifecycle_status: string;
             readonly payment_status: string;
+            /** Format: date-time */
+            readonly payment_changed_at: string | null;
+            readonly payment_changed_by_id: number | null;
             readonly is_overdue: boolean;
             readonly invoice_number: string | null;
             readonly currency: string;
@@ -925,6 +1235,13 @@ export interface components {
             readonly template_id: number;
             readonly idempotency_key: string;
         };
+        /**
+         * @description * `pdf` - PDF
+         *     * `xml` - XML
+         *     * `report` - Report
+         * @enum {string}
+         */
+        readonly KindEnum: "pdf" | "xml" | "report";
         readonly LineOperationRequest: {
             readonly action: components["schemas"]["ActionEnum"];
             readonly line_id?: number;
@@ -957,6 +1274,18 @@ export interface components {
          * @enum {string}
          */
         readonly ModeEnum: "append" | "replace";
+        /** @description Command receipt intentionally omits correspondence content and internal keys. */
+        readonly OutgoingEmail: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly invoice_id: number;
+            readonly language: components["schemas"]["TemplateVersionLanguageEnum"];
+            readonly delivery_state: components["schemas"]["DeliveryStateEnum"];
+            /** Format: date-time */
+            readonly scheduled_at: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         readonly PaginatedCatalogItemList: {
             /** @example 123 */
             readonly count: number;
@@ -1259,6 +1588,10 @@ export interface components {
          * @enum {string}
          */
         readonly SearchModeEnum: "none" | "exact" | "range" | "text";
+        readonly SendTemplate: {
+            readonly id: number;
+            readonly name: string;
+        };
         /**
          * @description * `customer` - customer
          *     * `saved` - saved
@@ -2790,6 +3123,170 @@ export interface operations {
             };
         };
     };
+    readonly email_templates_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["EmailTemplate"][];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly email_templates_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["EmailTemplateRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["EmailTemplateRequest"];
+                readonly "multipart/form-data": components["schemas"]["EmailTemplateRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["EmailTemplate"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly email_templates_publish_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["EmailTemplate"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly email_templates_versions_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly template_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["EmailVersionRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["EmailVersionRequest"];
+                readonly "multipart/form-data": components["schemas"]["EmailVersionRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["EmailVersion"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     readonly preset_list: {
         readonly parameters: {
             readonly query?: {
@@ -3164,6 +3661,327 @@ export interface operations {
             };
         };
     };
+    readonly invoices_cancel_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CancelInvoiceRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CancelInvoiceRequest"];
+                readonly "multipart/form-data": components["schemas"]["CancelInvoiceRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_correct_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CorrectInvoiceRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CorrectInvoiceRequest"];
+                readonly "multipart/form-data": components["schemas"]["CorrectInvoiceRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_credit_notes_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CreditNoteRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["CreditNoteRequest"];
+                readonly "multipart/form-data": components["schemas"]["CreditNoteRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_documents: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DocumentState"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoice_artifact_download: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+                readonly kind: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": string;
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_emails_list: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["EmailDelivery"][];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     readonly invoice_issue: {
         readonly parameters: {
             readonly query?: never;
@@ -3246,6 +4064,192 @@ export interface operations {
                 };
             };
             readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_mark_paid_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_mark_unpaid_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Invoice"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_send_retrieve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["EmailDefaults"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    readonly invoices_send_create: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly invoice_id: number;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["EmailSendRequest"];
+                readonly "application/x-www-form-urlencoded": components["schemas"]["EmailSendRequest"];
+                readonly "multipart/form-data": components["schemas"]["EmailSendRequest"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OutgoingEmail"];
+                };
+            };
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 403: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            readonly 409: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

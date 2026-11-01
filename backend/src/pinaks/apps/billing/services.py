@@ -115,7 +115,10 @@ def update_draft(
     invoice = Invoice.objects.select_for_update().select_related("customer").get(pk=invoice_id)
     if invoice.version != expected_version:
         raise StaleInvoiceVersionError("The invoice changed since it was loaded.")
-    if invoice.lifecycle_status != "DRAFT":
+    if invoice.lifecycle_status != "DRAFT" or invoice.invoice_type not in (
+        "STANDARD",
+        "REPLACEMENT",
+    ):
         raise ValidationError({"invoice": "Only drafts can be edited."})
     if "custom_data" in values:
         invoice.custom_data = validate_custom_data(
@@ -126,6 +129,10 @@ def update_draft(
             setattr(invoice, field, values[field])
     if invoice.due_date is not None and invoice.due_date < invoice.issue_date:
         raise ValidationError({"due_date": "Due date must be on or after issue date."})
+    if invoice.invoice_type == "REPLACEMENT":
+        original = Invoice.objects.get(pk=invoice.original_invoice_id)
+        if invoice.issue_date < original.issue_date:
+            raise ValidationError({"issue_date": "Replacement cannot precede the original."})
     raw_recipient = values.get("recipient")
     if isinstance(raw_recipient, dict):
         source = str(raw_recipient["source"])

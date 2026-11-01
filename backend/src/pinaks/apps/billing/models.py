@@ -1,23 +1,30 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, ClassVar
 
+from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from pinaks.apps.accounts.models import User
 from pinaks.apps.configuration.models import DocumentLanguage
 from pinaks.apps.customers.models import Customer
 
 
 class InvoiceType(models.TextChoices):
     STANDARD = "STANDARD", "Standard"
+    CANCELLATION = "CANCELLATION", "Cancellation"
+    REPLACEMENT = "REPLACEMENT", "Replacement"
+    CREDIT_NOTE = "CREDIT_NOTE", "Credit note"
 
 
 class LifecycleStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     ISSUING = "ISSUING", "Issuing"
+    ISSUED = "ISSUED", "Issued"
+    CANCELLED = "CANCELLED", "Cancelled"
 
 
 class PaymentStatus(models.TextChoices):
@@ -26,6 +33,15 @@ class PaymentStatus(models.TextChoices):
 
 
 class Invoice(models.Model):
+    original_invoice_id: int | None
+    original_invoice: models.ForeignKey[Invoice | None, Invoice | None] = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True, related_name="related_invoices"
+    )
+    correction_reason: models.CharField[str, str] = models.CharField(max_length=500, blank=True)
+    correction_key: models.CharField[str, str] = models.CharField(max_length=100, blank=True)
+    credit_allocations: models.JSONField[list[dict[str, str | int]], list[dict[str, str | int]]] = (
+        models.JSONField(default=list, blank=True)
+    )
     customer_id: int
     customer: models.ForeignKey[Customer, Customer] = models.ForeignKey(
         Customer, on_delete=models.PROTECT, related_name="invoices"
@@ -38,6 +54,17 @@ class Invoice(models.Model):
     )
     payment_status: models.CharField[str, str] = models.CharField(
         max_length=20, choices=PaymentStatus, default=PaymentStatus.UNPAID
+    )
+    payment_changed_at: models.DateTimeField[datetime | None, datetime | None] = (
+        models.DateTimeField(null=True, blank=True)
+    )
+    payment_changed_by_id: int | None
+    payment_changed_by: models.ForeignKey[User | None, User | None] = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="payment_changes",
     )
     invoice_number: models.CharField[str | None, str | None] = models.CharField(
         max_length=80, null=True, blank=True, unique=True
@@ -78,11 +105,52 @@ class Invoice(models.Model):
         ]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(
-                condition=Q(lifecycle_status__in=("DRAFT", "ISSUING")),
+                condition=Q(lifecycle_status__in=("DRAFT", "ISSUING", "ISSUED", "CANCELLED")),
                 name="invoice_supported_lifecycle",
             ),
             models.CheckConstraint(
-                condition=Q(invoice_type="STANDARD"), name="invoice_supported_type"
+                condition=Q(
+                    invoice_type__in=("STANDARD", "CANCELLATION", "CREDIT_NOTE", "REPLACEMENT")
+                ),
+                name="invoice_supported_type",
+            ),
+            models.UniqueConstraint(
+                fields=("original_invoice",),
+                condition=Q(invoice_type="CANCELLATION"),
+                name="one_full_cancellation_per_invoice",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        invoice_type="STANDARD",
+                        original_invoice__isnull=True,
+                        correction_reason="",
+                        correction_key="",
+                    )
+                    | (
+                        Q(
+                            invoice_type__in=("CANCELLATION", "CREDIT_NOTE", "REPLACEMENT"),
+                            original_invoice__isnull=False,
+                        )
+                        & ~Q(correction_reason="")
+                        & ~Q(correction_key="")
+                    )
+                ),
+                name="invoice_correction_identity",
+            ),
+            models.UniqueConstraint(
+                fields=("original_invoice", "correction_key"),
+                condition=~Q(invoice_type="STANDARD"),
+                name="unique_correction_command",
+            ),
+            models.UniqueConstraint(
+                fields=("original_invoice",),
+                condition=Q(invoice_type="REPLACEMENT"),
+                name="one_replacement_per_invoice",
+            ),
+            models.CheckConstraint(
+                condition=~Q(original_invoice=models.F("pk")),
+                name="invoice_no_self_correction",
             ),
             models.CheckConstraint(
                 condition=Q(payment_status__in=("UNPAID", "PAID")), name="invoice_payment_state"
@@ -97,7 +165,7 @@ class Invoice(models.Model):
                     )
                     | (
                         Q(
-                            lifecycle_status="ISSUING",
+                            lifecycle_status__in=("ISSUING", "ISSUED", "CANCELLED"),
                             invoice_number__isnull=False,
                             snapshot__isnull=False,
                         )
@@ -127,17 +195,18 @@ class Invoice(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         if self.pk is not None and not self._state.adding:
             stored = Invoice.objects.get(pk=self.pk)
-            if stored.lifecycle_status != LifecycleStatus.DRAFT:
+            if stored.lifecycle_status != LifecycleStatus.DRAFT or stored.invoice_type not in (
+                InvoiceType.STANDARD,
+                InvoiceType.REPLACEMENT,
+            ):
                 raise ValueError("Issuing invoices are immutable.")
         super().save(*args, **kwargs)
 
     @property
     def is_overdue(self) -> bool:
-        return bool(
-            self.payment_status == PaymentStatus.UNPAID
-            and self.due_date is not None
-            and self.due_date < timezone.localdate()
-        )
+        from pinaks.apps.billing.payments import is_overdue
+
+        return is_overdue(self, today=timezone.localdate())
 
 
 class InvoiceLine(models.Model):

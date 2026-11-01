@@ -65,7 +65,15 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     profile = obj(snapshot.get("tax_profile"))
     lines = rows(snapshot.get("lines"))
     groups = rows(snapshot.get("tax_breakdowns"))
-    if invoice.get("type") != "STANDARD" or invoice.get("language") not in {"en", "de"}:
+    if invoice.get("type") not in {
+        "STANDARD",
+        "CANCELLATION",
+        "CREDIT_NOTE",
+        "REPLACEMENT",
+    } or invoice.get("language") not in {
+        "en",
+        "de",
+    }:
         raise InvoiceMappingError("unsupported_snapshot")
     if invoice.get("currency") != "EUR":
         raise InvoiceMappingError("unsupported_snapshot")
@@ -77,32 +85,45 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
     first = string(recipient.get("given_name", ""), required=False)
     last = string(recipient.get("family_name", ""), required=False)
     recipient_name = string(organization or f"{first} {last}".strip())
+    seller_party: dict[str, object] = {
+        "name": string(seller.get("legal_name")),
+        "addr_l1": string(seller.get("address_line_1")),
+        "city": string(seller.get("city")),
+        "postcode": string(seller.get("postal_code")),
+        "country_code": string(seller.get("country_code")),
+    }
+    recipient_party: dict[str, object] = {
+        "name": recipient_name,
+        "addr_l1": string(recipient.get("address_line_1")),
+        "city": string(recipient.get("city")),
+        "postcode": string(recipient.get("postal_code")),
+        "country_code": string(recipient.get("country_code")),
+    }
     data: dict[str, object] = {
         "BT-1": string(invoice.get("number")),
         "BT-2": issue_date,
-        "BT-3": "380",
+        "BT-3": "381" if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE") else "380",
         "BT-5": "EUR",
-        "BT-27": string(seller.get("legal_name")),
-        "BT-35": string(seller.get("address_line_1")),
-        "BT-37": string(seller.get("city")),
-        "BT-38": string(seller.get("postal_code")),
-        "BT-40": string(seller.get("country_code")),
-        "BT-44": recipient_name,
-        "BT-50": string(recipient.get("address_line_1")),
-        "BT-52": string(recipient.get("city")),
-        "BT-53": string(recipient.get("postal_code")),
-        "BT-55": string(recipient.get("country_code")),
+        "BG-4": seller_party,
+        "BG-7": recipient_party,
     }
+    if invoice["type"] in ("CANCELLATION", "CREDIT_NOTE", "REPLACEMENT"):
+        reference = obj(invoice.get("original_reference"))
+        original_date = date_value(reference.get("issue_date"))
+        if original_date > issue_date:
+            raise InvoiceMappingError("invalid_snapshot")
+        data["BG-3"] = [{"BT-25": string(reference.get("number")), "BT-26": original_date}]
+        data["BG-1"] = [{"BT-22": string(invoice.get("correction_reason"))}]
     vat = string(seller.get("vat_identifier", ""), required=False)
     tax_number = string(seller.get("tax_number", ""), required=False)
     if not (vat or tax_number):
         raise InvoiceMappingError("invalid_snapshot")
     if vat:
-        data["BT-31"] = vat
+        seller_party["vat_identifier"] = vat
     if tax_number:
-        data["BT-32"] = tax_number
+        seller_party["tax_identifier"] = tax_number
         if not vat:
-            data["BT-29"] = {"": tax_number}
+            seller_party["identifiers"] = {"": tax_number}
     if due_date:
         data["BT-9"] = due_date
     payment = string(seller.get("payment_instructions", ""), required=False)
@@ -143,7 +164,9 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         if line.get("price_entry_policy") == "gross":
             price = price / (1 + rate / 100)
         net_price = net / quantity
-        if net_price > price:
+        # Canonical line amounts are rounded to cents before deriving the XML
+        # effective unit price. Fractional quantities may round that price up.
+        if net_price > price and net - price * quantity > Decimal("0.005"):
             raise InvoiceMappingError("inconsistent_totals")
         service_date = date_value(line.get("service_date"))
         end = (
@@ -169,8 +192,9 @@ def serialize_snapshot(snapshot: Mapping[str, object]) -> bytes:
         if item_code:
             xml_line["BT-155"] = item_code
         if discount:
-            xml_line["BT-148"] = amount(price)
-            xml_line["BT-147"] = amount(price - net_price)
+            gross_price = max(price, net_price)
+            xml_line["BT-148"] = amount(gross_price)
+            xml_line["BT-147"] = amount(gross_price - net_price)
         xml_lines.append(xml_line)
         net_total += net
     data["BG-25"] = xml_lines

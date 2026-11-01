@@ -20,10 +20,26 @@ from pinaks.apps.documents.views import (
     TemplateVersionDetailView,
     TemplateVersionListView,
 )
+from pinaks.apps.notifications.views import (
+    EmailPublishView,
+    EmailTemplateListView,
+    EmailVersionView,
+)
 
 app_name = "api-v1"
 
 urlpatterns: list[URLPattern | URLResolver] = [
+    path("email-templates/", EmailTemplateListView.as_view(), name="email-template-list"),
+    path(
+        "email-templates/<int:template_id>/versions/",
+        EmailVersionView.as_view(),
+        name="email-version",
+    ),
+    path(
+        "email-templates/<int:template_id>/publish/",
+        EmailPublishView.as_view(),
+        name="email-publish",
+    ),
     path("", api_root, name="root"),
     path("capabilities/", capabilities, name="capabilities"),
     path("catalog/", include("pinaks.apps.catalog.urls")),

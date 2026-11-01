@@ -4,6 +4,7 @@ import { initReactI18next } from "react-i18next";
 import { catalogTranslations } from "@/catalog/translations";
 import { customFieldTranslations } from "@/custom-fields/translations";
 import { documentTranslations } from "@/documents/translations";
+import { emailTranslations } from "@/notifications/translations";
 import { invoiceTranslations } from "@/invoices/translations";
 
 export const UI_LANGUAGE_STORAGE_KEY = "pinaks.uiLanguage";
@@ -12,6 +13,7 @@ export const resources = {
   en: {
     shell: {
       brand: "Pinaks",
+      email: emailTranslations.en,
       loading: "Loading application…",
       loadError: "The application could not be loaded.",
       signInHeading: "Sign in to Pinaks",
@@ -178,6 +180,7 @@ export const resources = {
   de: {
     shell: {
       brand: "Pinaks",
+      email: emailTranslations.de,
       loading: "Anwendung wird geladen…",
       loadError: "Die Anwendung konnte nicht geladen werden.",
       signInHeading: "Bei Pinaks anmelden",

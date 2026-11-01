@@ -23,9 +23,15 @@ const customer = {
 const invoice = {
   id: 7,
   customer_id: 3,
+  original_invoice_id: null,
+  related_invoice_ids: [],
+  correction_reason: "",
+  cancellation_template_id: null,
   invoice_type: "STANDARD",
   lifecycle_status: "DRAFT",
   payment_status: "UNPAID",
+  payment_changed_at: null,
+  payment_changed_by_id: null,
   is_overdue: false,
   invoice_number: null,
   currency: "EUR",
@@ -676,3 +682,166 @@ it("filters invoices by a searchable line field", async () => {
     }),
   );
 });
+
+it.each(["en", "de"])("shows original artifact downloads in %s", async (language) => {
+  await i18n.changeLanguage(language);
+  window.history.pushState({}, "", "/app/invoices/7/");
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/invoices/{invoice_id}/documents/")
+      return Promise.resolve(
+        response({
+          lifecycle_status: "ISSUED",
+          operation_state: "succeeded",
+          failure_code: "",
+          healthy: true,
+          artifacts: [{ kind: "pdf" }, { kind: "xml" }, { kind: "report" }],
+        }),
+      );
+    if (path === "/api/v1/invoices/{invoice_id}/")
+      return Promise.resolve(response({ ...invoice, lifecycle_status: "ISSUED" }));
+    return Promise.resolve(response([]));
+  });
+  mount(false);
+  const pdf = await screen.findByRole("link", {
+    name: language === "en" ? "Download PDF" : "PDF herunterladen",
+  });
+  expect(pdf).toHaveAttribute("href", "/api/v1/invoices/7/documents/pdf/");
+  expect(screen.getAllByRole("link")).toHaveLength(3);
+});
+
+it("polls issuance through a retryable failure to issued downloads", async () => {
+  window.history.pushState({}, "", "/app/invoices/7/");
+  let calls = 0;
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/invoices/{invoice_id}/documents/") {
+      calls += 1;
+      return Promise.resolve(
+        response(
+          calls === 1
+            ? {
+                lifecycle_status: "ISSUING",
+                operation_state: "queued",
+                failure_code: "handler_error",
+                healthy: false,
+                artifacts: [],
+              }
+            : {
+                lifecycle_status: "ISSUED",
+                operation_state: "succeeded",
+                failure_code: "",
+                healthy: true,
+                artifacts: [{ kind: "pdf" }],
+              },
+        ),
+      );
+    }
+    if (path === "/api/v1/invoices/{invoice_id}/")
+      return Promise.resolve(response({ ...invoice, lifecycle_status: "ISSUING" }));
+    return Promise.resolve(response([]));
+  });
+  mount(false);
+  expect(
+    await screen.findByText("Document generation failed. An automatic retry is scheduled."),
+  ).toBeInTheDocument();
+  expect(
+    await screen.findByRole("link", { name: "Download PDF" }, { timeout: 5000 }),
+  ).toBeInTheDocument();
+});
+
+it.each(["en", "de"])("hides downloads for damaged evidence in %s", async (language) => {
+  await i18n.changeLanguage(language);
+  window.history.pushState({}, "", "/app/invoices/7/");
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/invoices/{invoice_id}/documents/")
+      return Promise.resolve(
+        response({
+          lifecycle_status: "ISSUED",
+          operation_state: "succeeded",
+          failure_code: "",
+          healthy: false,
+          artifacts: [{ kind: "pdf" }],
+        }),
+      );
+    if (path === "/api/v1/invoices/{invoice_id}/")
+      return Promise.resolve(response({ ...invoice, lifecycle_status: "ISSUED" }));
+    return Promise.resolve(response([]));
+  });
+  mount(false);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    language === "en" ? "Document integrity verification failed" : "Dokumentintegrität",
+  );
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+});
+
+it("shows terminal failure guidance without download actions", async () => {
+  window.history.pushState({}, "", "/app/invoices/7/");
+  get.mockImplementation((path) => {
+    if (path === "/api/v1/invoices/{invoice_id}/documents/")
+      return Promise.resolve(
+        response({
+          lifecycle_status: "ISSUING",
+          operation_state: "failed",
+          failure_code: "handler_error",
+          healthy: false,
+          artifacts: [],
+        }),
+      );
+    if (path === "/api/v1/invoices/{invoice_id}/")
+      return Promise.resolve(response({ ...invoice, lifecycle_status: "ISSUING" }));
+    return Promise.resolve(response([]));
+  });
+  mount(false);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Document generation stopped after repeated failures",
+  );
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+});
+
+it("filters invoices by payment and overdue status", async () => {
+  mount();
+  fireEvent.change(await screen.findByLabelText("Payment status"), { target: { value: "PAID" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID" } },
+    }),
+  );
+  fireEvent.change(screen.getByLabelText("Due status"), { target: { value: "true" } });
+  await waitFor(() =>
+    expect(get).toHaveBeenLastCalledWith("/api/v1/invoices/", {
+      params: { query: { page: 1, page_size: 25, payment_status: "PAID", overdue: true } },
+    }),
+  );
+});
+
+it.each([true, false])(
+  "allows replacement draft editing only with capability %s",
+  async (canMutate) => {
+    window.history.pushState({}, "", "/app/invoices/7/");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/invoices/{invoice_id}/")
+        return Promise.resolve(
+          response({
+            ...invoice,
+            invoice_type: "REPLACEMENT",
+            original_invoice_id: 5,
+            correction_reason: "Wrong details",
+            grand_total: "119.00",
+          }),
+        );
+      return Promise.resolve(response([]));
+    });
+    mount(canMutate);
+    expect(await screen.findByText(/Replacement invoice:/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Original invoice #5" })).toBeInTheDocument();
+    if (canMutate) {
+      expect(screen.getByLabelText("Issue date")).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Save draft" })).toBeInTheDocument();
+    } else {
+      expect(screen.getByLabelText("Issue date")).toBeDisabled();
+      expect(screen.queryByRole("button", { name: "Save draft" })).not.toBeInTheDocument();
+    }
+    expect(
+      screen.queryByRole("button", { name: "Issue cancellation invoice" }),
+    ).not.toBeInTheDocument();
+  },
+);

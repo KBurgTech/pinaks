@@ -3,17 +3,18 @@ name = "pinaks-backend"
 version = "0.1.0"
 description = "Backend scaffold for Pinaks"
 readme = "README.md"
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.14,<3.16"
 dependencies = [
     "dj-database-url>=3.0,<4",
     "django>=6.1,<6.2",
-    "django-allauth>=65,<66",
+    "django-allauth>=65.19.6,<66",
     "djangorestframework>=3.16,<4",
     "drf-spectacular>=0.28,<0.29",
-    "factur-x>=6.8,<7",
-    "gunicorn>=23,<24",
+    "factur-x>=7.8,<8",
+    "gunicorn>=26.2.0,<27",
     "jinja2>=3.1,<4",
     "psycopg[binary]>=3.2,<4",
+    "pypdf>=6.19,<7",
     "weasyprint>=67,<68",
 ]
 
@@ -25,7 +26,7 @@ dev = [
     "pytest>=8.4,<9",
     "pytest-cov>=7,<8",
     "pytest-django>=4.11,<5",
-    "ruff>=0.13,<0.14",
+    "ruff>=0.16.9,<0.17",
 ]
 
 [build-system]

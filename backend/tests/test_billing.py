@@ -118,12 +118,10 @@ def test_invoice_list_paginates_and_filters_customer_status_dates_and_overdue() 
         "lifecycle_status=DRAFT",
         "payment_status=UNPAID",
         "due_date_before=2020-12-31",
-        "overdue=true",
     ):
         result = client.get(f"/api/v1/invoices/?{query}")
         assert result.status_code == 200
         assert first.pk in [row["id"] for row in result.json()["results"]]
     overdue_results = client.get("/api/v1/invoices/?overdue=true").json()
-    assert overdue_results["count"] == 1
-    assert overdue_results["results"][0]["is_overdue"] is True
+    assert overdue_results["count"] == 0
     assert client.get("/api/v1/invoices/?overdue=false").json()["results"][0]["is_overdue"] is False

@@ -10,6 +10,7 @@ import { CustomerPage } from "@/customers/customer-page";
 import { CustomFieldsAdmin } from "@/custom-fields/custom-fields";
 import { TemplatePage } from "@/documents/template-page";
 import { setUiLanguage } from "@/i18n";
+import { EmailTemplatePage } from "@/notifications/template-page";
 import { InvoicePage } from "@/invoices/invoice-page";
 
 import type { components } from "@/api/generated/schema";
@@ -140,6 +141,11 @@ function Shell() {
             )}
             {canAdminister && (
               <li>
+                <a href="/app/email-templates/">{t("email.heading")}</a>
+              </li>
+            )}
+            {canAdminister && (
+              <li>
                 <a href="/app/users/">{t("users")}</a>
               </li>
             )}
@@ -151,9 +157,15 @@ function Shell() {
           ) : window.location.pathname === "/app/catalog/" ? (
             <CatalogPage canMutate={canCreateDrafts} />
           ) : window.location.pathname.startsWith("/app/invoices/") ? (
-            <InvoicePage canMutate={canCreateDrafts} canAdminister={canAdminister} />
+            <InvoicePage
+              canMutate={canCreateDrafts}
+              canAdminister={canAdminister}
+              canManagePayments={capabilities.data.capabilities.payment_management}
+            />
           ) : canAdminister && window.location.pathname === "/app/document-templates/" ? (
             <TemplatePage />
+          ) : canAdminister && window.location.pathname === "/app/email-templates/" ? (
+            <EmailTemplatePage />
           ) : canAdminister && window.location.pathname === "/app/custom-fields/" ? (
             <CustomFieldsAdmin />
           ) : canAdminister && window.location.pathname === "/app/settings/" ? (

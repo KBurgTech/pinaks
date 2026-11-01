@@ -6,9 +6,9 @@ RUN apt-get update \
 COPY scripts/install-mustang-validator.sh /usr/local/bin/install-mustang-validator
 RUN /usr/local/bin/install-mustang-validator /opt/pinaks/mustang
 
-FROM ghcr.io/astral-sh/uv:0.12.19 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.6 AS uv
 
-FROM python:3.14-slim-trixie
+FROM python:3.15-slim-trixie
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
@@ -26,7 +26,11 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY backend/pyproject.toml backend/README.md backend/manage.py backend/
 COPY backend/src backend/src
-RUN uv sync --frozen --no-dev --package pinaks-backend
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends build-essential \
+    && uv sync --frozen --no-dev --package pinaks-backend \
+    && apt-get purge --yes --auto-remove build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV DJANGO_SETTINGS_MODULE=pinaks.settings.production \
     MUSTANG_CLI_JAR=/opt/pinaks/mustang/Mustang-CLI-2.23.0.jar \

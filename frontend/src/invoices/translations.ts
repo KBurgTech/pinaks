@@ -1,5 +1,70 @@
 export const invoiceTranslations = {
   en: {
+    replacement: "Replacement invoice",
+    issueReplacement: "Issue replacement invoice",
+    saveReplacementFirst: "Save your changes before issuing the replacement.",
+    createReplacement: "Create replacement",
+    replacementReason: "Replacement reason",
+    createReplacementDraft: "Create replacement draft",
+    replacementPreview:
+      "Invoice {{number}} has been cancelled in full. Create a new draft from its {{amount}} content, then correct and review it before issuing a new invoice. The original evidence stays available. Partial credits do not allow replacement.",
+    replacementDraftPreview:
+      "Replacement invoice: {{amount}}. Review the corrected content below. Issuance creates a new receivable with its own number; the original remains cancelled.",
+    replacementError:
+      "Replacement could not be created. Retry the same command or open the existing related replacement. A healthy issued full cancellation is required.",
+    creditNote: "Credit note",
+    createCredit: "Create partial credit",
+    creditReason: "Credit reason",
+    creditQuantity: "Credit quantity: {{description}}",
+    creditPrice: "Credit unit price: {{description}}",
+    createCreditDraft: "Create credit draft",
+    creditPreview:
+      "Select quantities and unit prices to credit for invoice {{number}}. Zero quantities are omitted. The backend checks remaining quantities and amounts, including reserved drafts. Review the exact total in the linked draft before issuing.",
+    creditError:
+      "Credit could not be created. Retry the same command or reload to start a new one. Existing credits or cancellation may reserve the available amount.",
+    creditDraftPreview:
+      "Credit amount: {{amount}}. This reserved draft cannot be edited. Issuance preserves the original invoice and its documents.",
+    issueCredit: "Issue credit note",
+    relatedCorrection: "Related document #{{id}}",
+    cancellation: "Cancellation",
+    cancelInvoice: "Cancel invoice",
+    cancellationReason: "Cancellation reason",
+    createCancellation: "Create cancellation draft",
+    closeCancellation: "Close",
+    cancellationError:
+      "Cancellation could not be completed. Retry the same command or reload the invoice.",
+    cancelPreview:
+      "Create a full credit for invoice {{number}} ({{amount}}). Review the linked draft before issuing. The original documents remain available.",
+    cancellationDraftPreview:
+      "Full cancellation credit: {{amount}}. Issuing this document cancels the original invoice after validation. This draft cannot be edited.",
+    issueCancellation: "Issue cancellation invoice",
+    originalInvoice: "Original invoice #{{id}}",
+    relatedCancellation: "Cancellation invoice #{{id}}",
+    cancelled: "Cancelled",
+
+    paid: "Paid",
+    unpaid: "Unpaid",
+    overdue: "Overdue",
+    markPaid: "Mark paid",
+    markUnpaid: "Mark unpaid",
+    paymentError: "Payment status could not be updated.",
+    paymentStatus: "Payment status",
+    dueStatus: "Due status",
+    all: "All",
+    notOverdue: "Not overdue",
+
+    documents: "Issued documents",
+    documentsLoading: "Loading issued documents…",
+    documentsError: "Document status could not be loaded.",
+    documentsIssued: "Invoice issued. Original documents are available.",
+    documentsUnhealthy: "Document integrity verification failed. Contact an administrator.",
+    documentsGenerating: "Generating and validating invoice documents…",
+    documentsRetrying: "Document generation failed. An automatic retry is scheduled.",
+    documentsFailed:
+      "Document generation stopped after repeated failures. Contact an administrator.",
+    download_pdf: "Download PDF",
+    download_xml: "Download XML",
+    download_report: "Download validation report",
     heading: "Invoices",
     loading: "Loading invoices…",
     loadError: "Invoices could not be loaded.",
@@ -104,6 +169,73 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    replacement: "Ersatzrechnung",
+    issueReplacement: "Ersatzrechnung ausstellen",
+    saveReplacementFirst: "Speichern Sie Ihre Änderungen vor der Ausstellung.",
+    createReplacement: "Ersatzrechnung erstellen",
+    replacementReason: "Korrekturgrund",
+    createReplacementDraft: "Ersatzentwurf erstellen",
+    replacementPreview:
+      "Rechnung {{number}} wurde vollständig storniert. Erstellen Sie einen neuen Entwurf über {{amount}} und korrigieren und prüfen Sie ihn vor der Ausstellung. Die Originalbelege bleiben verfügbar. Teilgutschriften erlauben keinen Ersatz.",
+    replacementDraftPreview:
+      "Ersatzrechnung: {{amount}}. Prüfen Sie die korrigierten Inhalte unten. Die Ausstellung erstellt eine neue Forderung mit eigener Nummer; das Original bleibt storniert.",
+    replacementError:
+      "Der Ersatzentwurf konnte nicht erstellt werden. Wiederholen Sie denselben Befehl oder öffnen Sie die verknüpfte Ersatzrechnung. Ein geprüfter, ausgestellter Vollstorno ist erforderlich.",
+    creditNote: "Gutschrift",
+    createCredit: "Teilweise Gutschrift erstellen",
+    creditReason: "Gutschriftgrund",
+    creditQuantity: "Gutgeschriebene Menge: {{description}}",
+    creditPrice: "Gutschriftstückpreis: {{description}}",
+    createCreditDraft: "Gutschriftentwurf erstellen",
+    creditPreview:
+      "Mengen und Stückpreise für die Gutschrift zu Rechnung {{number}} auswählen. Mengen von null werden ausgelassen. Der Server prüft die verbleibenden Mengen und Beträge einschließlich reservierter Entwürfe. Den genauen Betrag vor Ausstellung im verknüpften Entwurf prüfen.",
+    creditError:
+      "Die Gutschrift konnte nicht erstellt werden. Denselben Vorgang erneut versuchen oder für einen neuen Vorgang neu laden. Vorhandene Gutschriften oder Stornierungen können den verfügbaren Betrag reservieren.",
+    creditDraftPreview:
+      "Gutschriftbetrag: {{amount}}. Dieser reservierte Entwurf kann nicht bearbeitet werden. Die Ausstellung erhält die ursprüngliche Rechnung und ihre Dokumente.",
+    issueCredit: "Gutschrift ausstellen",
+    relatedCorrection: "Verknüpftes Dokument #{{id}}",
+    cancellation: "Stornierung",
+    cancelInvoice: "Rechnung stornieren",
+    cancellationReason: "Stornogrund",
+    createCancellation: "Stornoentwurf erstellen",
+    closeCancellation: "Schließen",
+    cancellationError:
+      "Die Stornierung konnte nicht abgeschlossen werden. Wiederholen Sie denselben Vorgang oder laden Sie die Rechnung neu.",
+    cancelPreview:
+      "Vollständige Gutschrift für Rechnung {{number}} ({{amount}}) erstellen. Prüfen Sie den verknüpften Entwurf vor der Ausstellung. Die Originaldokumente bleiben verfügbar.",
+    cancellationDraftPreview:
+      "Vollständiger Stornobetrag: {{amount}}. Die Ausstellung storniert die ursprüngliche Rechnung nach erfolgreicher Validierung. Dieser Entwurf kann nicht bearbeitet werden.",
+    issueCancellation: "Stornorechnung ausstellen",
+    originalInvoice: "Ursprüngliche Rechnung #{{id}}",
+    relatedCancellation: "Stornorechnung #{{id}}",
+    cancelled: "Storniert",
+
+    paid: "Bezahlt",
+    unpaid: "Unbezahlt",
+    overdue: "Überfällig",
+    markPaid: "Als bezahlt markieren",
+    markUnpaid: "Als unbezahlt markieren",
+    paymentError: "Der Zahlungsstatus konnte nicht aktualisiert werden.",
+    paymentStatus: "Zahlungsstatus",
+    dueStatus: "Fälligkeitsstatus",
+    all: "Alle",
+    notOverdue: "Nicht überfällig",
+
+    documents: "Ausgestellte Dokumente",
+    documentsLoading: "Ausgestellte Dokumente werden geladen…",
+    documentsError: "Der Dokumentstatus konnte nicht geladen werden.",
+    documentsIssued: "Rechnung ausgestellt. Die Originaldokumente sind verfügbar.",
+    documentsUnhealthy:
+      "Die Dokumentintegrität konnte nicht bestätigt werden. Wenden Sie sich an die Administration.",
+    documentsGenerating: "Rechnungsdokumente werden erstellt und validiert…",
+    documentsRetrying:
+      "Die Dokumenterstellung ist fehlgeschlagen. Ein automatischer Wiederholungsversuch ist geplant.",
+    documentsFailed:
+      "Die Dokumenterstellung wurde nach wiederholten Fehlern angehalten. Wenden Sie sich an die Administration.",
+    download_pdf: "PDF herunterladen",
+    download_xml: "XML herunterladen",
+    download_report: "Validierungsbericht herunterladen",
     heading: "Rechnungen",
     loading: "Rechnungen werden geladen…",
     loadError: "Rechnungen konnten nicht geladen werden.",

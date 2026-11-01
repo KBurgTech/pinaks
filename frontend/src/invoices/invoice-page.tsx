@@ -3,6 +3,12 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiClient } from "@/api/client";
+import { Replacement } from "./replacement";
+import { CreditNote } from "./credit-note";
+import { Cancellation } from "./cancellation";
+import { InvoiceEmail } from "@/notifications/invoice-email";
+import { PaymentStatus } from "./payment-status";
+import { IssuedDocuments } from "./issued-documents";
 import { CustomFields } from "@/custom-fields/custom-fields";
 import { loadDefinitions } from "@/custom-fields/definitions";
 import { DataTable, Field, PageHeader, Status } from "@/ui/primitives";
@@ -73,6 +79,8 @@ function serverError(error: unknown): { code: string; fields: ErrorFields } {
 
 async function fetchInvoices(
   page: number,
+  payment: string,
+  overdue: string,
   filter: { field: string; operator: string; value: string } | null,
 ): Promise<components["schemas"]["PaginatedInvoiceList"]> {
   const { data } = await apiClient.GET("/api/v1/invoices/", {
@@ -80,6 +88,8 @@ async function fetchInvoices(
       query: {
         page,
         page_size: 25,
+        ...(payment ? { payment_status: payment } : {}),
+        ...(overdue ? { overdue: overdue === "true" } : {}),
         ...(filter?.field.startsWith("invoice_line:")
           ? {
               line_custom_field: filter.field.slice("invoice_line:".length),
@@ -191,13 +201,17 @@ function formatTotal(amount: string, currency: string) {
 export function InvoicePage({
   canMutate,
   canAdminister = false,
+  canManagePayments = false,
 }: {
   canMutate: boolean;
   canAdminister?: boolean;
+  canManagePayments?: boolean;
 }) {
   const { t, i18n } = useTranslation("shell");
   const [route, setRoute] = useState(initialRoute);
   const [page, setPage] = useState(1);
+  const [paymentFilter, setPaymentFilter] = useState("");
+  const [overdueFilter, setOverdueFilter] = useState("");
   const [filterField, setFilterField] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [filterOperator, setFilterOperator] = useState("exact");
@@ -227,8 +241,8 @@ export function InvoicePage({
   const [creating, setCreating] = useState(false);
   const clients = useQueryClient();
   const invoices = useQuery({
-    queryKey: ["invoices", page, appliedFilter],
-    queryFn: () => fetchInvoices(page, appliedFilter),
+    queryKey: ["invoices", page, paymentFilter, overdueFilter, appliedFilter],
+    queryFn: () => fetchInvoices(page, paymentFilter, overdueFilter, appliedFilter),
     enabled: route.mode === "list",
   });
   const customers = useQuery({
@@ -296,6 +310,38 @@ export function InvoicePage({
             </button>
           )}
         </PageHeader>
+        <div className="mb-4 flex flex-wrap gap-4">
+          <Field inputId="payment-filter" label={t("invoicePage.paymentStatus")}>
+            <select
+              id="payment-filter"
+              className={inputClass}
+              value={paymentFilter}
+              onChange={(event) => {
+                setPaymentFilter(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t("invoicePage.all")}</option>
+              <option value="PAID">{t("invoicePage.paid")}</option>
+              <option value="UNPAID">{t("invoicePage.unpaid")}</option>
+            </select>
+          </Field>
+          <Field inputId="overdue-filter" label={t("invoicePage.dueStatus")}>
+            <select
+              id="overdue-filter"
+              className={inputClass}
+              value={overdueFilter}
+              onChange={(event) => {
+                setOverdueFilter(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t("invoicePage.all")}</option>
+              <option value="true">{t("invoicePage.overdue")}</option>
+              <option value="false">{t("invoicePage.notOverdue")}</option>
+            </select>
+          </Field>
+        </div>
         {searchableFields.length > 0 && (
           <form
             className="mb-4 flex flex-wrap items-end gap-2"
@@ -402,6 +448,7 @@ export function InvoicePage({
                     <td>{item.issue_date}</td>
                     <td>
                       <Status>{item.lifecycle_status}</Status>
+                      <PaymentStatus invoice={item} canManage={canManagePayments} />
                     </td>
                     <td>{formatTotal(item.grand_total, item.currency)}</td>
                     <td>
@@ -509,9 +556,11 @@ export function InvoicePage({
     <DraftEditor
       key={detail.data.id + ":" + detail.data.version}
       canMutate={canMutate}
+      canManagePayments={canManagePayments}
       canAdminister={canAdminister}
       invoice={detail.data}
       onBack={() => navigate("list")}
+      onOpen={(id) => navigate("detail", id)}
       onSaved={(updated) => {
         clients.setQueryData(["invoice", updated.id], updated);
         void clients.invalidateQueries({ queryKey: ["invoices"] });
@@ -597,15 +646,19 @@ function DraftEditor({
   invoice,
   canMutate,
   canAdminister,
+  canManagePayments,
   onSaved,
   onBack,
+  onOpen,
   onReload,
 }: {
   invoice: Invoice;
   canMutate: boolean;
   canAdminister: boolean;
+  canManagePayments: boolean;
   onSaved: (invoice: Invoice) => void;
   onBack: () => void;
+  onOpen: (id: number) => void;
   onReload: () => void;
 }) {
   const { t } = useTranslation("shell");
@@ -720,7 +773,10 @@ function DraftEditor({
     onBack();
   }
 
-  const editable = canMutate && invoice.lifecycle_status === "DRAFT";
+  const editable =
+    canMutate &&
+    invoice.lifecycle_status === "DRAFT" &&
+    ["STANDARD", "REPLACEMENT"].includes(invoice.invoice_type);
   const fieldError = (name: string) => fields[name]?.[0]?.message;
   return (
     <>
@@ -729,6 +785,21 @@ function DraftEditor({
           {t("invoicePage.back")}
         </button>
       </PageHeader>
+      <Replacement
+        invoice={invoice}
+        canManage={canMutate}
+        onOpen={onOpen}
+        hasUnsavedChanges={dirty}
+      />
+      <CreditNote invoice={invoice} canManage={canMutate} onOpen={onOpen} />
+      <Cancellation invoice={invoice} canManage={canMutate} onOpen={onOpen} />
+      <InvoiceEmail
+        invoiceId={invoice.id}
+        lifecycle={invoice.lifecycle_status}
+        canSend={canMutate}
+      />
+      <PaymentStatus invoice={invoice} canManage={canManagePayments} />
+      {invoice.lifecycle_status !== "DRAFT" && <IssuedDocuments invoiceId={invoice.id} />}
       {!editable && <p className="mb-4 text-sm text-neutral-600">{t("invoicePage.readOnly")}</p>}
       {dirty && (
         <p className="mb-4 text-sm text-amber-800" role="status">

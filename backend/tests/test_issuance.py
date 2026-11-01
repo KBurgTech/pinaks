@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -472,3 +473,334 @@ def test_frozen_issuance_snapshot_serializes_without_live_models(
     )
     report = validator.validate(first, filename="issued.xml")
     assert report.valid, report.findings
+
+
+def test_frozen_published_template_renders_after_current_data_changes(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+) -> None:
+    from io import BytesIO
+
+    from pypdf import PdfReader
+
+    from pinaks.apps.documents.snapshot_renderer import WeasyPrintRenderer
+
+    invoice, actor, template = ready_invoice
+    issued = issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="visual-snapshot",
+        actor=actor,
+        correlation_id="test",
+    )
+    assert issued.snapshot is not None
+    frozen_template = issued.snapshot["template"]
+    assert isinstance(frozen_template, dict)
+    DocumentTemplateVersion.objects.create(
+        template=template,
+        language="en",
+        version=2,
+        html="<p>NEW TEMPLATE</p>",
+        page_settings={"size": "A4"},
+        created_by=actor,
+    )
+    CompanyProfile.objects.update(legal_name="New seller")
+    result = WeasyPrintRenderer().render(issued.snapshot)
+    text = PdfReader(BytesIO(result.pdf)).pages[0].extract_text()
+    assert issued.invoice_number is not None
+    assert issued.invoice_number in text
+    assert "NEW TEMPLATE" not in text
+    assert result.template_version_id == frozen_template["version_id"]
+    issued.refresh_from_db()
+    assert issued.lifecycle_status == LifecycleStatus.ISSUING
+
+
+def test_generation_persists_exact_artifacts_and_finalizes_once(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+) -> None:
+    import json
+    from hashlib import sha256
+    from io import BytesIO
+
+    from django.test import override_settings
+    from pypdf import PdfReader
+
+    from pinaks.apps.audit.models import AuditEvent
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    invoice, actor, template = ready_invoice
+    frozen = issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="persist",
+        actor=actor,
+        correlation_id="test",
+    )
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path):
+        generate_invoice(invoice_id=invoice.pk)
+        artifacts = list(IssuedArtifact.objects.filter(invoice_id=invoice.pk))
+        assert {a.kind for a in artifacts} == {"pdf", "xml", "report"}
+        before = [(a.pk, a.sha256) for a in artifacts]
+        for artifact in artifacts:
+            payload = (tmp_path / artifact.storage_key).read_bytes()
+            assert sha256(payload).hexdigest() == artifact.sha256
+            assert len(payload) == artifact.size
+        stored = {a.kind: (tmp_path / a.storage_key).read_bytes() for a in artifacts}
+        assert PdfReader(BytesIO(stored["pdf"])).attachments["factur-x.xml"] == [stored["xml"]]
+        report = json.loads(stored["report"])
+        assert report["xml"]["valid"] and report["pdf"]["valid"]
+        for artifact in artifacts:
+            assert (tmp_path / artifact.storage_key).stat().st_mode & 0o777 == 0o600
+        generate_invoice(invoice_id=invoice.pk)
+        assert (
+            list(IssuedArtifact.objects.filter(invoice_id=invoice.pk).values_list("pk", "sha256"))
+            == before
+        )
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUED"
+    assert invoice.snapshot == frozen.snapshot
+    assert invoice.invoice_number == frozen.invoice_number
+    assert AuditEvent.objects.filter(action_code="billing.invoice_issued").count() == 1
+
+
+@pytest.mark.parametrize(
+    "operation", ["artifact_update", "artifact_delete", "regress_state", "invoice_content"]
+)
+def test_issued_evidence_rejects_database_mutation(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+    operation: str,
+) -> None:
+    from django.db import DatabaseError, transaction
+    from django.test import override_settings
+
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    invoice, actor, template = ready_invoice
+    issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="immutable",
+        actor=actor,
+        correlation_id="test",
+    )
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path):
+        generate_invoice(invoice_id=invoice.pk)
+    with pytest.raises(DatabaseError), transaction.atomic():
+        if operation == "artifact_update":
+            IssuedArtifact.objects.filter(invoice_id=invoice.pk).update(sha256="0" * 64)
+        elif operation == "artifact_delete":
+            IssuedArtifact.objects.filter(invoice_id=invoice.pk).delete()
+        elif operation == "regress_state":
+            Invoice.objects.filter(pk=invoice.pk).update(lifecycle_status="ISSUING")
+        else:
+            Invoice.objects.filter(pk=invoice.pk).update(recipient={})
+
+
+def test_published_bundle_survives_database_failure_and_is_reused(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+) -> None:
+    from django.db import DatabaseError, connection
+    from django.test import override_settings
+
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    invoice, actor, template = ready_invoice
+    frozen = issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="recovery",
+        actor=actor,
+        correlation_id="test",
+    )
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            CREATE FUNCTION test_reject_artifact() RETURNS trigger AS $$
+            BEGIN RAISE EXCEPTION 'simulated database failure'; END;
+            $$ LANGUAGE plpgsql;
+            CREATE TRIGGER test_reject_artifact BEFORE INSERT ON documents_issuedartifact
+            FOR EACH ROW EXECUTE FUNCTION test_reject_artifact();
+        """)
+    try:
+        with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path), pytest.raises(DatabaseError):
+            generate_invoice(invoice_id=invoice.pk)
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DROP TRIGGER test_reject_artifact ON documents_issuedartifact; "
+                "DROP FUNCTION test_reject_artifact();"
+            )
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUING"
+    assert not IssuedArtifact.objects.exists()
+    bundles = list(tmp_path.iterdir())
+    assert len(bundles) == 1
+    original = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in bundles[0].iterdir()}
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path):
+        generate_invoice(invoice_id=invoice.pk)
+    assert {
+        p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in bundles[0].iterdir()
+    } == original
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUED"
+    assert invoice.snapshot == frozen.snapshot
+
+
+def test_storage_failure_leaves_issuance_retryable(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+) -> None:
+    from django.test import override_settings
+
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.workers.registry import HANDLERS
+    from pinaks.apps.workers.services import run_one
+
+    invoice, actor, template = ready_invoice
+    issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="storage",
+        actor=actor,
+        correlation_id="test",
+    )
+    blocked = tmp_path / "unavailable"
+    blocked.write_text("not a directory")
+    with override_settings(ISSUED_DOCUMENT_ROOT=blocked):
+        assert not run_one(handlers=HANDLERS)
+    item = WorkItem.objects.get(identity=str(invoice.pk))
+    assert item.state == "queued"
+    assert item.failure_code == "handler_error"
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUING"
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path / "recovered"):
+        generate_invoice(invoice_id=invoice.pk)
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUED"
+
+
+def test_completed_issue_command_can_be_replayed(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+) -> None:
+    from django.test import override_settings
+
+    from pinaks.apps.documents.issuance import generate_invoice
+
+    invoice, actor, template = ready_invoice
+
+    def replay() -> Invoice:
+        return issue_invoice(
+            invoice_id=invoice.pk,
+            expected_version=invoice.version,
+            template_id=template.pk,
+            idempotency_key="replay-issued",
+            actor=actor,
+            correlation_id="test",
+        )
+
+    replay()
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path):
+        generate_invoice(invoice_id=invoice.pk)
+    assert replay().lifecycle_status == "ISSUED"
+    assert WorkItem.objects.count() == 1
+
+
+@pytest.mark.parametrize("after_publish", [False, True])
+def test_retry_recovers_from_interrupted_filesystem_publication(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    after_publish: bool,
+) -> None:
+    import os
+
+    from django.test import override_settings
+
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    invoice, actor, template = ready_invoice
+    issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="interruption",
+        actor=actor,
+        correlation_id="test",
+    )
+    rename = os.rename
+
+    def interrupt(source: Path, destination: Path) -> None:
+        if after_publish:
+            rename(source, destination)
+        raise OSError("simulated filesystem interruption")
+
+    with override_settings(ISSUED_DOCUMENT_ROOT=tmp_path):
+        with monkeypatch.context() as patch:
+            patch.setattr(os, "rename", interrupt)
+            with pytest.raises(OSError):
+                generate_invoice(invoice_id=invoice.pk)
+        invoice.refresh_from_db()
+        assert invoice.lifecycle_status == "ISSUING"
+        assert not IssuedArtifact.objects.exists()
+        assert not list(tmp_path.glob(".issuance-*"))
+        before = {p: p.read_bytes() for p in tmp_path.glob("*/pdf")}
+        generate_invoice(invoice_id=invoice.pk)
+        for path, payload in before.items():
+            assert path.read_bytes() == payload
+    invoice.refresh_from_db()
+    assert invoice.lifecycle_status == "ISSUED"
+
+
+def test_concurrent_generation_finalizes_one_artifact_set(
+    ready_invoice: tuple[Invoice, User, DocumentTemplate],
+    tmp_path: Path,
+) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from django.db import connections
+    from django.test import override_settings
+
+    from pinaks.apps.audit.models import AuditEvent
+    from pinaks.apps.documents.issuance import generate_invoice
+    from pinaks.apps.documents.models import IssuedArtifact
+
+    invoice, actor, template = ready_invoice
+    issue_invoice(
+        invoice_id=invoice.pk,
+        expected_version=invoice.version,
+        template_id=template.pk,
+        idempotency_key="parallel",
+        actor=actor,
+        correlation_id="test",
+    )
+    barrier = Barrier(2)
+
+    def generate() -> None:
+        try:
+            barrier.wait()
+            generate_invoice(invoice_id=invoice.pk)
+        finally:
+            connections.close_all()
+
+    with (
+        override_settings(ISSUED_DOCUMENT_ROOT=tmp_path),
+        ThreadPoolExecutor(max_workers=2) as pool,
+    ):
+        futures = [pool.submit(generate) for _ in range(2)]
+        for future in futures:
+            future.result()
+    assert IssuedArtifact.objects.filter(invoice_id=invoice.pk).count() == 3
+    assert len(list(tmp_path.iterdir())) == 1
+    assert AuditEvent.objects.filter(action_code="billing.invoice_issued").count() == 1

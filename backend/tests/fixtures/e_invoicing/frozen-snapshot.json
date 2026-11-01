@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "invoice": {
+    "number": "INV-2026-0001",
+    "type": "STANDARD",
+    "issue_date": "2026-09-15",
+    "due_date": "2026-09-29",
+    "currency": "EUR",
+    "language": "en",
+    "subtotal": "200.00",
+    "tax_total": "38.00",
+    "grand_total": "238.00"
+  },
+  "seller": {
+    "legal_name": "Beispiel Dienstleistungen GmbH",
+    "address_line_1": "Musterweg 12",
+    "postal_code": "10115",
+    "city": "Berlin",
+    "country_code": "DE",
+    "vat_identifier": "DE123456789",
+    "tax_number": "",
+    "iban": "DE89370400440532013000",
+    "bic": "COBADEFFXXX",
+    "bank_account_holder": "Beispiel Dienstleistungen GmbH",
+    "payment_instructions": "Bank transfer"
+  },
+  "customer": {
+    "number": "C-1",
+    "organization_name": "Other Company GmbH"
+  },
+  "recipient": {
+    "organization_name": "Beispiel Kunde GmbH",
+    "address_line_1": "Testallee 7",
+    "postal_code": "20095",
+    "city": "Hamburg",
+    "country_code": "DE"
+  },
+  "tax_profile": {
+    "category": "S",
+    "rate": "19.00",
+    "exemption_reason_code": "",
+    "exemption_wording_de": "",
+    "exemption_wording_en": "",
+    "tax_column_policy": "show"
+  },
+  "lines": [
+    {
+      "position": 1,
+      "item_code": "CONSULT",
+      "description": "Consulting",
+      "unit": "HUR",
+      "quantity": "2.0000",
+      "unit_price": "100.00",
+      "discount_percent": "0.00",
+      "price_entry_policy": "net",
+      "service_date": "2026-09-15",
+      "service_period_end": null,
+      "tax_category": "S",
+      "tax_rate": "19.00",
+      "exemption_reason_code": "",
+      "exemption_wording": "Exempt from VAT",
+      "net_total": "200.00",
+      "tax_total": "38.00",
+      "gross_total": "238.00"
+    }
+  ],
+  "tax_breakdowns": [
+    {
+      "category": "S",
+      "rate": "19.00",
+      "net": "200.00",
+      "tax": "38.00"
+    }
+  ],
+  "template": {
+    "language": "en",
+    "version_id": 42,
+    "version": 1,
+    "html": "<h1>{{ labels.invoice }} {{ invoice.number }}</h1><p>{{ seller.legal_name }} {{ customer.organization_name }} {{ recipient.organization_name }}</p><p>{{ invoice.issue_date | date }} {{ invoice.grand_total | money }} EUR</p><p>{{ seller.payment_instructions }} {{ seller.iban }}</p><p>{{ invoice.exemption_wording }}</p>{% for line in invoice.lines %}<p class=\"line\">{{ line.description }} {{ line.net_total | money }}</p>{% endfor %}",
+    "css": ".line { break-before: page; }",
+    "page_settings": {
+      "size": "A4"
+    },
+    "asset_keys": []
+  }
+}
