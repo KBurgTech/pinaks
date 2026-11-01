@@ -6,7 +6,7 @@ See [`docs/TARGET_ARCHITECTURE.md`](docs/TARGET_ARCHITECTURE.md) for the accepte
 
 ## Stack
 
-- Python 3.14, Django 6.1, Django REST Framework, PostgreSQL 18
+- Python 3.15, Django 6.1, Django REST Framework, PostgreSQL 18
 - React 19, TypeScript, Vite, shadcn/ui, Base UI, Tailwind CSS
 - `uv` for Python; `pnpm` for TypeScript
 - pytest, Ruff, mypy, Vitest, Testing Library, ESLint, Prettier
@@ -27,7 +27,7 @@ The backend domain packages are deliberately empty placeholders until behavior i
 
 The recommended path is to open the repository in a dev-container capable editor. The container installs locked dependencies and starts PostgreSQL automatically.
 
-For a local setup, install Python 3.14, uv, Node.js 24 LTS, pnpm 12.5.1, and PostgreSQL 18:
+For a local setup, install Python 3.15, uv, Node.js 24 LTS, pnpm 12.5.1, and PostgreSQL 18:
 
 ```bash
 uv sync --all-packages --all-groups
