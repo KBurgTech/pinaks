@@ -10,6 +10,8 @@ from django.db.models import Q
 from pinaks.apps.accounts.models import User
 
 if TYPE_CHECKING:
+    from django.db.models.fields.related_descriptors import RelatedManager
+
     from pinaks.apps.billing.models import Invoice
     from pinaks.apps.documents.models import IssuedArtifact
 
@@ -68,7 +70,7 @@ class EmailTemplateVersion(models.Model):
 class OutgoingEmail(models.Model):
     invoice_id: int
     if TYPE_CHECKING:
-        attempts: models.Manager[DeliveryAttempt]
+        attempts: RelatedManager[DeliveryAttempt]
 
     id: models.UUIDField[UUID, UUID] = models.UUIDField(
         primary_key=True, default=uuid4, editable=False
