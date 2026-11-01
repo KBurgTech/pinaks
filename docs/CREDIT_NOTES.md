@@ -49,7 +49,7 @@ The original invoice remains issued. Its content, payment history, snapshots,
 and stored artifact bytes are unchanged. Credit issuance does not mark the
 original paid or cancelled. Both documents keep authorized original-byte
 downloads and bidirectional relationship navigation. Full cancellation is
-covered separately; corrected replacements remain tracked by issue #98.
+covered separately; corrected replacements are described in `REPLACEMENTS.md` (#98).
 
 No production dependencies are added. Tests cover reservation races,
 permission/CSRF checks, database bypasses, immutable content, retries, frozen

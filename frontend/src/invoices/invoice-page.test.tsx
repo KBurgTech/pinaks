@@ -812,3 +812,36 @@ it("filters invoices by payment and overdue status", async () => {
     }),
   );
 });
+
+it.each([true, false])(
+  "allows replacement draft editing only with capability %s",
+  async (canMutate) => {
+    window.history.pushState({}, "", "/app/invoices/7/");
+    get.mockImplementation((path) => {
+      if (path === "/api/v1/invoices/{invoice_id}/")
+        return Promise.resolve(
+          response({
+            ...invoice,
+            invoice_type: "REPLACEMENT",
+            original_invoice_id: 5,
+            correction_reason: "Wrong details",
+            grand_total: "119.00",
+          }),
+        );
+      return Promise.resolve(response([]));
+    });
+    mount(canMutate);
+    expect(await screen.findByText(/Replacement invoice:/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Original invoice #5" })).toBeInTheDocument();
+    if (canMutate) {
+      expect(screen.getByLabelText("Issue date")).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Save draft" })).toBeInTheDocument();
+    } else {
+      expect(screen.getByLabelText("Issue date")).toBeDisabled();
+      expect(screen.queryByRole("button", { name: "Save draft" })).not.toBeInTheDocument();
+    }
+    expect(
+      screen.queryByRole("button", { name: "Issue cancellation invoice" }),
+    ).not.toBeInTheDocument();
+  },
+);

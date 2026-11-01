@@ -1,5 +1,17 @@
 export const invoiceTranslations = {
   en: {
+    replacement: "Replacement invoice",
+    issueReplacement: "Issue replacement invoice",
+    saveReplacementFirst: "Save your changes before issuing the replacement.",
+    createReplacement: "Create replacement",
+    replacementReason: "Replacement reason",
+    createReplacementDraft: "Create replacement draft",
+    replacementPreview:
+      "Invoice {{number}} has been cancelled in full. Create a new draft from its {{amount}} content, then correct and review it before issuing a new invoice. The original evidence stays available. Partial credits do not allow replacement.",
+    replacementDraftPreview:
+      "Replacement invoice: {{amount}}. Review the corrected content below. Issuance creates a new receivable with its own number; the original remains cancelled.",
+    replacementError:
+      "Replacement could not be created. Retry the same command or open the existing related replacement. A healthy issued full cancellation is required.",
     creditNote: "Credit note",
     createCredit: "Create partial credit",
     creditReason: "Credit reason",
@@ -157,6 +169,18 @@ export const invoiceTranslations = {
     pagePrevious: "Previous page",
   },
   de: {
+    replacement: "Ersatzrechnung",
+    issueReplacement: "Ersatzrechnung ausstellen",
+    saveReplacementFirst: "Speichern Sie Ihre Änderungen vor der Ausstellung.",
+    createReplacement: "Ersatzrechnung erstellen",
+    replacementReason: "Korrekturgrund",
+    createReplacementDraft: "Ersatzentwurf erstellen",
+    replacementPreview:
+      "Rechnung {{number}} wurde vollständig storniert. Erstellen Sie einen neuen Entwurf über {{amount}} und korrigieren und prüfen Sie ihn vor der Ausstellung. Die Originalbelege bleiben verfügbar. Teilgutschriften erlauben keinen Ersatz.",
+    replacementDraftPreview:
+      "Ersatzrechnung: {{amount}}. Prüfen Sie die korrigierten Inhalte unten. Die Ausstellung erstellt eine neue Forderung mit eigener Nummer; das Original bleibt storniert.",
+    replacementError:
+      "Der Ersatzentwurf konnte nicht erstellt werden. Wiederholen Sie denselben Befehl oder öffnen Sie die verknüpfte Ersatzrechnung. Ein geprüfter, ausgestellter Vollstorno ist erforderlich.",
     creditNote: "Gutschrift",
     createCredit: "Teilweise Gutschrift erstellen",
     creditReason: "Gutschriftgrund",

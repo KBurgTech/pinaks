@@ -127,3 +127,31 @@ def test_fractional_credit_with_reduced_price_preserves_cent_rounding() -> None:
     group.update(net="13.34", tax="2.53")
     generated = HybridInvoiceGenerator().generate(snapshot)
     assert generated.xml_report.valid and generated.pdf_report.valid
+
+
+@pytest.mark.parametrize("language", ["en", "de"])
+@pytest.mark.parametrize("exempt", [False, True])
+def test_replacement_is_positive_new_invoice_with_visible_traceability(
+    language: str, exempt: bool
+) -> None:
+    snapshot = cancellation_snapshot(language, exempt)
+    invoice = snapshot["invoice"]
+    assert isinstance(invoice, dict)
+    invoice["type"] = "REPLACEMENT"
+    generated = HybridInvoiceGenerator().generate(snapshot)
+    xml = etree.fromstring(generated.xml)
+    ns = {
+        "ram": "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+    }
+    assert xml.xpath("string(//ram:TypeCode)", namespaces=ns) == "380"
+    assert (
+        xml.xpath("string(//ram:InvoiceReferencedDocument/ram:IssuerAssignedID)", namespaces=ns)
+        == "ORIGINAL-2026-01"
+    )
+    assert b"Duplicate &lt;invoice&gt;" in generated.xml
+    reader = PdfReader(BytesIO(generated.pdf))
+    text = " ".join(page.extract_text() for page in reader.pages)
+    assert ("Ersatzrechnung" if language == "de" else "Replacement invoice") in text
+    assert "ORIGINAL-2026-01" in text and "Duplicate <invoice>" in text
+    assert generated.xml_report.valid and generated.pdf_report.valid
+    assert reader.attachments["factur-x.xml"] == [generated.xml]

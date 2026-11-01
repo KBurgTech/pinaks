@@ -106,6 +106,21 @@ def issue_invoice(
             actor=actor,
             correlation_id=correlation_id,
         )
+    if invoice.invoice_type == "REPLACEMENT":
+        from pinaks.apps.billing.replacements import (
+            InvalidReplacementError,
+            validate_replacement_original,
+        )
+
+        original = Invoice.objects.select_for_update().get(pk=invoice.original_invoice_id)
+        try:
+            validate_replacement_original(original)
+        except InvalidReplacementError as error:
+            raise ValidationError(
+                {"original_invoice": "Completed healthy cancellation required."}
+            ) from error
+        if invoice.issue_date < original.issue_date:
+            raise ValidationError({"issue_date": "Replacement cannot precede the original."})
     company = CompanyProfile.objects.select_for_update().first()
     if company is None:
         raise ValidationError({"company": "Company profile is missing."})
@@ -309,6 +324,17 @@ def issue_invoice(
             for group in totals.groups
         ],
     }
+    if invoice.invoice_type == "REPLACEMENT":
+        original = Invoice.objects.get(pk=invoice.original_invoice_id)
+        document = snapshot["invoice"]
+        assert isinstance(document, dict)
+        document.update(
+            correction_reason=invoice.correction_reason,
+            original_reference={
+                "number": original.invoice_number,
+                "issue_date": original.issue_date.isoformat(),
+            },
+        )
     invoice.invoice_number = number
     invoice.issuance_key = idempotency_key
     invoice.snapshot = snapshot
