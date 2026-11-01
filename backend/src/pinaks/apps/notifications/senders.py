@@ -92,11 +92,11 @@ class SMTPSender:
             return DeliveryResult(
                 "failed", "smtp_transient" if retryable else "smtp_permanent", code, retryable
             )
-        except (OSError, smtplib.SMTPServerDisconnected):
+        except OSError, smtplib.SMTPServerDisconnected:
             if handing_off:
                 return DeliveryResult("unknown", "delivery_unknown")
             return DeliveryResult("failed", "smtp_unavailable", retryable=True)
-        except (ValueError, smtplib.SMTPException, ImproperlyConfigured, ValidationError):
+        except ValueError, smtplib.SMTPException, ImproperlyConfigured, ValidationError:
             return DeliveryResult("failed", "smtp_configuration")
         finally:
             # QUIT failure after a successful DATA response must never cause a resend.
