@@ -42,3 +42,11 @@ backend-dev:
 
 frontend-dev:
 	corepack pnpm --filter @pinaks/web dev --host 0.0.0.0
+
+.PHONY: dev
+dev:
+	bash scripts/dev.sh
+
+.PHONY: dev-bootstrap
+dev-bootstrap:
+	bash scripts/dev-bootstrap.sh
