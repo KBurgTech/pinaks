@@ -14,7 +14,7 @@ dependencies = [
     "gunicorn>=26.2.0,<27",
     "jinja2>=3.1,<4",
     "psycopg[binary]>=3.2,<4",
-    "pypdf>=6.19,<7",
+    "pypdf>=6.21.4,<7",
     "weasyprint>=67,<68",
 ]
 
