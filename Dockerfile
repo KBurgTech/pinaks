@@ -6,7 +6,7 @@ RUN apt-get update \
 COPY scripts/install-mustang-validator.sh /usr/local/bin/install-mustang-validator
 RUN /usr/local/bin/install-mustang-validator /opt/pinaks/mustang
 
-FROM ghcr.io/astral-sh/uv:0.13.6 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.7 AS uv
 
 FROM python:3.15-slim-trixie
 
